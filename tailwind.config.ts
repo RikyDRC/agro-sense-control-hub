@@ -61,8 +61,31 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
-			},
+				},
+                // Agricultural theme colors
+                agro: {
+                    green: {
+                        light: '#8FBF9F',
+                        DEFAULT: '#3D8361',
+                        dark: '#1C6758'
+                    },
+                    earth: {
+                        light: '#D8CCA3',
+                        DEFAULT: '#A77979',
+                        dark: '#613F40'
+                    },
+                    blue: {
+                        light: '#8EC3E6',
+                        DEFAULT: '#4B91C5',
+                        dark: '#2E5984'
+                    },
+                    status: {
+                        success: '#4CAF50',
+                        warning: '#FF9800',
+                        danger: '#F44336',
+                        info: '#2196F3'
+                    }
+                },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

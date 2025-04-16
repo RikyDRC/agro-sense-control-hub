@@ -5,6 +5,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
 import DeviceStatusList from '@/components/dashboard/DeviceStatusList';
 import WeatherWidget from '@/components/dashboard/WeatherWidget';
+import QuickActions from '@/components/dashboard/QuickActions';
 import { Device, DeviceStatus, DeviceType, WeatherCondition, WeatherForecast } from '@/types';
 
 // Mock Data
@@ -134,7 +135,7 @@ const Dashboard: React.FC = () => {
             />
           </div>
           <div>
-            {/* We could add a quick actions card or alerts list here */}
+            <QuickActions />
           </div>
         </div>
       </div>

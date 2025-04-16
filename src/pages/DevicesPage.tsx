@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,23 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from '@/components/ui/table';
-import { 
   Dialog, DialogClose, DialogContent, DialogDescription, 
-  DialogFooter, DialogHeader, DialogTitle, DialogTrigger 
+  DialogFooter, DialogHeader, DialogTitle
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Battery, Droplet, Thermometer, Zap, Activity, 
   Eye, FlaskConical, Plus, Pencil, Trash2, Check, X 
 } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 import { 
   Device, DeviceStatus, DeviceType, Zone, IrrigationStatus
 } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import DeviceCard from '@/components/DeviceCard';
 
-// Mock Data
 const initialDevices: Device[] = [
   {
     id: '1',
@@ -54,7 +50,7 @@ const initialDevices: Device[] = [
     type: DeviceType.VALVE,
     status: DeviceStatus.OFFLINE,
     batteryLevel: 15,
-    lastUpdated: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    lastUpdated: new Date(Date.now() - 86400000).toISOString(),
     location: { lat: 35.6895, lng: 139.6917 },
     zoneId: 'zone-b'
   },
@@ -73,7 +69,7 @@ const initialDevices: Device[] = [
     type: DeviceType.WEATHER_STATION,
     status: DeviceStatus.MAINTENANCE,
     batteryLevel: 42,
-    lastUpdated: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
+    lastUpdated: new Date(Date.now() - 43200000).toISOString(),
     location: { lat: 35.6895, lng: 139.6917 }
   }
 ];
@@ -113,55 +109,6 @@ interface DeviceFormValues {
   zoneId?: string;
 }
 
-const getDeviceIcon = (type: DeviceType) => {
-  switch (type) {
-    case DeviceType.MOISTURE_SENSOR:
-      return <Droplet className="h-5 w-5" />;
-    case DeviceType.TEMPERATURE_SENSOR:
-      return <Thermometer className="h-5 w-5" />;
-    case DeviceType.VALVE:
-      return <Activity className="h-5 w-5" />;
-    case DeviceType.PUMP:
-      return <Zap className="h-5 w-5" />;
-    case DeviceType.WEATHER_STATION:
-      return <Eye className="h-5 w-5" />;
-    case DeviceType.PH_SENSOR:
-      return <FlaskConical className="h-5 w-5" />;
-    default:
-      return <Activity className="h-5 w-5" />;
-  }
-};
-
-const getStatusColor = (status: DeviceStatus) => {
-  switch (status) {
-    case DeviceStatus.ONLINE:
-      return "bg-agro-status-success";
-    case DeviceStatus.OFFLINE:
-      return "bg-slate-400";
-    case DeviceStatus.MAINTENANCE:
-      return "bg-agro-status-warning";
-    case DeviceStatus.ALERT:
-      return "bg-agro-status-danger";
-    default:
-      return "bg-slate-400";
-  }
-};
-
-const getStatusText = (status: DeviceStatus) => {
-  switch (status) {
-    case DeviceStatus.ONLINE:
-      return "Online";
-    case DeviceStatus.OFFLINE:
-      return "Offline";
-    case DeviceStatus.MAINTENANCE:
-      return "Maintenance";
-    case DeviceStatus.ALERT:
-      return "Alert";
-    default:
-      return "Unknown";
-  }
-};
-
 const DevicesPage: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [zones, setZones] = useState<Zone[]>(initialZones);
@@ -177,6 +124,7 @@ const DevicesPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deviceToDelete, setDeviceToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
 
   const filteredDevices = activeTab === 'all' 
     ? devices 
@@ -197,6 +145,7 @@ const DevicesPage: React.FC = () => {
     setDevices(prev => [...prev, newDevice]);
     resetForm();
     setIsDialogOpen(false);
+    toast.success("Device added successfully");
   };
 
   const handleUpdateDevice = () => {
@@ -221,6 +170,7 @@ const DevicesPage: React.FC = () => {
     resetForm();
     setIsDialogOpen(false);
     setIsEditing(false);
+    toast.success("Device updated successfully");
   };
 
   const handleEditDevice = (device: Device) => {
@@ -243,6 +193,17 @@ const DevicesPage: React.FC = () => {
     setDevices(prev => prev.filter(device => device.id !== deviceToDelete));
     setDeviceToDelete(null);
     setIsDeleteDialogOpen(false);
+    toast.success("Device deleted successfully");
+  };
+
+  const handleStatusChange = (deviceId: string, status: DeviceStatus) => {
+    setDevices(prev => 
+      prev.map(device => 
+        device.id === deviceId 
+          ? { ...device, status, lastUpdated: new Date().toISOString() } 
+          : device
+      )
+    );
   };
 
   const resetForm = () => {
@@ -263,13 +224,33 @@ const DevicesPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Devices</h1>
             <p className="text-muted-foreground">Manage your field sensors and irrigation equipment</p>
           </div>
-          <Button onClick={() => {
-            resetForm();
-            setIsEditing(false);
-            setIsDialogOpen(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" /> Add Device
-          </Button>
+          <div className="flex gap-2">
+            <div className="flex rounded-md overflow-hidden border">
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'outline'}
+                size="sm"
+                className="rounded-none px-3"
+                onClick={() => setViewMode('table')}
+              >
+                Table
+              </Button>
+              <Button
+                variant={viewMode === 'cards' ? 'default' : 'outline'}
+                size="sm"
+                className="rounded-none px-3"
+                onClick={() => setViewMode('cards')}
+              >
+                Cards
+              </Button>
+            </div>
+            <Button onClick={() => {
+              resetForm();
+              setIsEditing(false);
+              setIsDialogOpen(true);
+            }}>
+              <Plus className="h-4 w-4 mr-2" /> Add Device
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
@@ -282,100 +263,127 @@ const DevicesPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value={activeTab} className="mt-6">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Device</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Zone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Battery</TableHead>
-                      <TableHead>Last Updated</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredDevices.length === 0 ? (
+            {filteredDevices.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-6">
+                  <p className="text-muted-foreground mb-4">No devices found</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      resetForm();
+                      setIsEditing(false);
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Device
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : viewMode === 'cards' ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredDevices.map((device) => (
+                  <DeviceCard 
+                    key={device.id} 
+                    device={device} 
+                    onStatusChange={handleStatusChange}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6">
-                          <p className="text-muted-foreground">No devices found</p>
-                        </TableCell>
+                        <TableHead>Device</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Zone</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Battery</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredDevices.map((device) => (
-                        <TableRow key={device.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 rounded-md bg-primary/10">
-                                {getDeviceIcon(device.type)}
-                              </div>
-                              <span>{device.name}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {device.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                          </TableCell>
-                          <TableCell>
-                            {device.zoneId 
-                              ? zones.find(zone => zone.id === device.zoneId)?.name || 'Unknown Zone'
-                              : 'Unassigned'
-                            }
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`${getStatusColor(device.status)} text-white`}>
-                              {getStatusText(device.status)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
-                              <span className={
-                                device.batteryLevel < 20 ? "text-red-500" : 
-                                device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
-                              }>
-                                {device.batteryLevel}%
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(device.lastUpdated).toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="icon"
-                                onClick={() => handleEditDevice(device)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="icon" 
-                                className="text-red-500"
-                                onClick={() => {
-                                  setDeviceToDelete(device.id);
-                                  setIsDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDevices.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-6">
+                            <p className="text-muted-foreground">No devices found</p>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                      ) : (
+                        filteredDevices.map((device) => (
+                          <TableRow key={device.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-primary/10">
+                                  {getDeviceIcon(device.type)}
+                                </div>
+                                <span>{device.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {device.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                            </TableCell>
+                            <TableCell>
+                              {device.zoneId 
+                                ? zones.find(zone => zone.id === device.zoneId)?.name || 'Unknown Zone'
+                                : 'Unassigned'
+                              }
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${getStatusColor(device.status)} text-white`}>
+                                {getStatusText(device.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span className={
+                                  device.batteryLevel < 20 ? "text-red-500" : 
+                                  device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
+                                }>
+                                  {device.batteryLevel}%
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(device.lastUpdated).toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleEditDevice(device)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="icon" 
+                                  className="text-red-500"
+                                  onClick={() => {
+                                    setDeviceToDelete(device.id);
+                                    setIsDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Device Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -499,7 +507,6 @@ const DevicesPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

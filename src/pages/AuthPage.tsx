@@ -1,178 +1,233 @@
 
-import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
-const AuthPage: React.FC = () => {
-  const { user, signIn, signUp } = useAuth();
+const AuthPage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<string>('signin');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [displayName, setDisplayName] = useState<string>('');
+  const { signIn, signUp, session, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
 
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  // Pre-fill super admin credentials for demonstration
+  const fillSuperAdminCredentials = () => {
+    setEmail('superadmin@agrosmart.com');
+    setPassword('Test1234!');
+  };
+
+  useEffect(() => {
+    if (session) {
+      navigate('/dashboard');
+    }
+  }, [session, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
-    
+    setIsProcessing(true);
+
     try {
       const { error } = await signIn(email, password);
+      
       if (error) {
         setError(error.message);
         return;
       }
+      
       toast.success('Signed in successfully');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign in');
+      setError(err.message || 'Failed to sign in');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
-    
+    setIsProcessing(true);
+
     try {
       const { error } = await signUp(email, password, displayName);
+      
       if (error) {
         setError(error.message);
         return;
       }
-      toast.success('Account created successfully. Please check your email for verification.');
-      setActiveTab('signin');
+      
+      toast.success('Signed up successfully. Check your email for confirmation.');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign up');
+      setError(err.message || 'Failed to sign up');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-agro-green-light/30 to-muted/30">
-      <div className="w-full max-w-md p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-agro-green-dark">AgroSense Hub</h1>
-          <p className="text-muted-foreground">Smart agriculture management platform</p>
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold">AgroSmart</h1>
+          <p className="text-muted-foreground">Smart irrigation and farm management</p>
         </div>
-        
+
         <Card>
-          <CardHeader>
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>
-              Sign in to your account or create a new one
-            </CardDescription>
-          </CardHeader>
-          
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-2 w-full">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-            
-            <CardContent className="pt-6">
-              {error && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn}>
+                <CardHeader>
+                  <CardTitle>Sign In</CardTitle>
+                  <CardDescription>
+                    Enter your credentials to access your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="your@email.com" 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <Button type="button" variant="link" className="p-0 h-auto text-xs">
+                        Forgot password?
+                      </Button>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
                   </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing In...' : 'Sign In'}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full" 
+                    onClick={fillSuperAdminCredentials}
+                  >
+                    Use Super Admin Demo Credentials
                   </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
+                </CardContent>
+                <CardFooter>
+                  <Button type="submit" className="w-full" disabled={isProcessing}>
+                    {isProcessing ? (
+                      <span>Signing in...</span>
+                    ) : (
+                      <>
+                        <LogIn className="mr-2 h-4 w-4" /> Sign In
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp}>
+                <CardHeader>
+                  <CardTitle>Create Account</CardTitle>
+                  <CardDescription>
+                    Register for a new account to start managing your farm
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input 
-                      id="signup-email" 
-                      type="email" 
-                      placeholder="your@email.com" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="display-name">Display Name</Label>
-                    <Input 
-                      id="display-name" 
-                      type="text" 
-                      placeholder="John Doe" 
+                    <Label htmlFor="displayName">Display Name</Label>
+                    <Input
+                      id="displayName"
+                      placeholder="John Doe"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
+                      required
                     />
                   </div>
-                  
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input 
-                      id="signup-password" 
-                      type="password" 
+                    <Input
+                      id="signup-password"
+                      type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Password must be at least 8 characters
+                    </p>
                   </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating Account...' : 'Create Account'}
+                </CardContent>
+                <CardFooter>
+                  <Button type="submit" className="w-full" disabled={isProcessing}>
+                    {isProcessing ? (
+                      <span>Creating account...</span>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" /> Sign Up
+                      </>
+                    )}
                   </Button>
-                </form>
-              </TabsContent>
-            </CardContent>
+                </CardFooter>
+              </form>
+            </TabsContent>
           </Tabs>
-          
-          <CardFooter className="flex justify-center text-sm text-muted-foreground">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </CardFooter>
         </Card>
       </div>
     </div>

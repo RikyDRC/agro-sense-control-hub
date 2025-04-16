@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,14 +59,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener first
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          // Use setTimeout to avoid potential recursive auth operations
           setTimeout(() => {
             fetchUserProfile(newSession.user.id);
             fetchUserSubscription(newSession.user.id);
@@ -79,7 +76,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -131,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
-        if (error.code !== 'PGRST116') { // No rows returned
+        if (error.code !== 'PGRST116') {
           console.error('Error fetching user subscription:', error);
         }
         setSubscription(null);

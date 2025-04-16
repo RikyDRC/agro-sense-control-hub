@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,17 +10,18 @@ import {
 } from '@/components/ui/table';
 import { 
   Dialog, DialogClose, DialogContent, DialogDescription, 
-  DialogFooter, DialogHeader, DialogTitle, DialogTrigger 
+  DialogFooter, DialogHeader, DialogTitle
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Pencil, Trash2, Check, X, Layers, MapPin, 
-  Droplet, ThermometerIcon, PlayCircle, PauseCircle, BarChart3
+  Droplet, ThermometerIcon, PlayCircle, PauseCircle, BarChart3, Map
 } from 'lucide-react';
-import { Zone, Device, DeviceType, DeviceStatus, IrrigationStatus } from '@/types';
+import { Zone, Device, DeviceType, DeviceStatus, IrrigationStatus, GeoLocation } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from '@/components/ui/sonner';
+import { useNavigate } from 'react-router-dom';
 
-// Mock data
 const initialZones: Zone[] = [
   {
     id: 'zone-a',
@@ -116,6 +116,7 @@ interface ZoneFormValues {
   name: string;
   description: string;
   soilMoistureThreshold?: number;
+  boundaryCoordinates?: GeoLocation[];
 }
 
 const getIrrigationStatusBadge = (status: IrrigationStatus) => {
@@ -170,6 +171,7 @@ const Clock = ({ className }: { className?: string }) => (
 );
 
 const ZonesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [zones, setZones] = useState<Zone[]>(initialZones);
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [formValues, setFormValues] = useState<ZoneFormValues>({
@@ -183,42 +185,30 @@ const ZonesPage: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleCreateZone = () => {
-    const newZone: Zone = {
-      id: uuidv4(),
-      name: formValues.name,
-      description: formValues.description,
-      boundaryCoordinates: [],
-      areaSize: 0,
-      devices: [],
-      irrigationStatus: IrrigationStatus.INACTIVE,
-      soilMoistureThreshold: formValues.soilMoistureThreshold,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    setZones(prev => [...prev, newZone]);
-    resetForm();
+    navigate('/map', { 
+      state: { 
+        action: 'createZone', 
+        zoneName: formValues.name,
+        zoneDescription: formValues.description,
+        soilMoistureThreshold: formValues.soilMoistureThreshold
+      } 
+    });
     setIsDialogOpen(false);
   };
 
   const handleUpdateZone = () => {
     if (!formValues.id) return;
 
-    setZones(prev => 
-      prev.map(zone => 
-        zone.id === formValues.id 
-          ? {
-              ...zone,
-              name: formValues.name,
-              description: formValues.description,
-              soilMoistureThreshold: formValues.soilMoistureThreshold,
-              updatedAt: new Date().toISOString()
-            } 
-          : zone
-      )
-    );
+    navigate('/map', { 
+      state: { 
+        action: 'editZone', 
+        zoneId: formValues.id,
+        zoneName: formValues.name,
+        zoneDescription: formValues.description,
+        soilMoistureThreshold: formValues.soilMoistureThreshold
+      } 
+    });
 
-    resetForm();
     setIsDialogOpen(false);
     setIsEditing(false);
   };
@@ -228,7 +218,8 @@ const ZonesPage: React.FC = () => {
       id: zone.id,
       name: zone.name,
       description: zone.description || '',
-      soilMoistureThreshold: zone.soilMoistureThreshold
+      soilMoistureThreshold: zone.soilMoistureThreshold,
+      boundaryCoordinates: zone.boundaryCoordinates
     });
     setIsEditing(true);
     setIsDialogOpen(true);
@@ -239,7 +230,6 @@ const ZonesPage: React.FC = () => {
     
     setZones(prev => prev.filter(zone => zone.id !== zoneToDelete));
     
-    // Update any devices that were in this zone
     setDevices(prev => 
       prev.map(device => 
         device.zoneId === zoneToDelete 
@@ -250,6 +240,7 @@ const ZonesPage: React.FC = () => {
     
     setZoneToDelete(null);
     setIsDeleteDialogOpen(false);
+    toast.success("Zone deleted successfully");
   };
 
   const resetForm = () => {
@@ -270,6 +261,28 @@ const ZonesPage: React.FC = () => {
     ).length;
   };
 
+  const toggleIrrigationStatus = (zoneId: string) => {
+    setZones(prev => 
+      prev.map(zone => 
+        zone.id === zoneId 
+          ? { 
+              ...zone, 
+              irrigationStatus: zone.irrigationStatus === IrrigationStatus.ACTIVE ? 
+                                IrrigationStatus.INACTIVE : 
+                                IrrigationStatus.ACTIVE,
+              updatedAt: new Date().toISOString()
+            } 
+          : zone
+      )
+    );
+    
+    const zone = zones.find(z => z.id === zoneId);
+    if (zone) {
+      const action = zone.irrigationStatus === IrrigationStatus.ACTIVE ? 'deactivated' : 'activated';
+      toast.success(`Irrigation ${action} for ${zone.name}`);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -278,13 +291,21 @@ const ZonesPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Zones</h1>
             <p className="text-muted-foreground">Manage your field zones and irrigation settings</p>
           </div>
-          <Button onClick={() => {
-            resetForm();
-            setIsEditing(false);
-            setIsDialogOpen(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" /> Add Zone
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/map')}
+            >
+              <Map className="h-4 w-4 mr-2" /> Open Map
+            </Button>
+            <Button onClick={() => {
+              resetForm();
+              setIsEditing(false);
+              setIsDialogOpen(true);
+            }}>
+              <Plus className="h-4 w-4 mr-2" /> Add Zone
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -344,7 +365,14 @@ const ZonesPage: React.FC = () => {
                         <span>{zone.areaSize.toLocaleString()} m²</span>
                       </TableCell>
                       <TableCell>
-                        {getIrrigationStatusBadge(zone.irrigationStatus)}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="p-0 h-auto"
+                          onClick={() => toggleIrrigationStatus(zone.id)}
+                        >
+                          {getIrrigationStatusBadge(zone.irrigationStatus)}
+                        </Button>
                       </TableCell>
                       <TableCell>
                         {new Date(zone.updatedAt).toLocaleString()}
@@ -445,6 +473,12 @@ const ZonesPage: React.FC = () => {
                 />
                 <span>%</span>
               </div>
+            </div>
+
+            <div className="col-span-4 pt-2">
+              <p className="text-sm text-muted-foreground">
+                After clicking {isEditing ? 'Update Zone' : 'Add Zone'}, you'll be redirected to the map where you can draw the zone boundaries.
+              </p>
             </div>
           </div>
 

@@ -1,810 +1,535 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { 
-  Separator
-} from '@/components/ui/separator';
-import { 
-  User, Key, Bell, Database, Shield, CloudSun, 
-  Save, RefreshCw, Languages, Upload
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { InfoIcon, Save, UserIcon, BellIcon, Globe, Lock, ShieldCheck, Database, PlugZap, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { UserRole } from '@/types';
 
-interface UserProfile {
-  id: string;
-  displayName: string;
-  email: string;
-  phone: string;
-  role: string;
-  avatar?: string;
-}
-
-interface SystemSettings {
-  temperature: 'celsius' | 'fahrenheit';
-  distance: 'metric' | 'imperial';
-  dateFormat: 'dd/mm/yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd';
-  language: string;
-  notifications: {
-    email: boolean;
-    push: boolean;
-    sms: boolean;
-  };
-  alerts: {
-    lowMoisture: boolean;
-    deviceOffline: boolean;
-    weatherAlert: boolean;
-    systemUpdate: boolean;
-  };
-  theme: 'light' | 'dark' | 'system';
-  dataRetention: number;
-}
-
-// Mock data
-const mockUser: UserProfile = {
-  id: 'user-1',
-  displayName: 'John Farmer',
-  email: 'john@agrosmart.com',
-  phone: '+1 (555) 123-4567',
-  role: 'admin',
-  avatar: ''
-};
-
-const mockSettings: SystemSettings = {
-  temperature: 'celsius',
-  distance: 'metric',
-  dateFormat: 'dd/mm/yyyy',
-  language: 'en',
-  notifications: {
-    email: true,
-    push: true,
-    sms: false
-  },
-  alerts: {
-    lowMoisture: true,
-    deviceOffline: true,
-    weatherAlert: true,
-    systemUpdate: true
-  },
-  theme: 'light',
-  dataRetention: 90
+// Mock user
+const currentUser = {
+  id: '1',
+  displayName: 'Alex Johnson',
+  email: 'alex.johnson@example.com',
+  role: UserRole.ADMIN,
+  farmName: 'Green Valley Farm',
+  location: 'California, USA',
+  measurementUnit: 'metric',
+  timeZone: 'America/Los_Angeles',
+  notificationsEnabled: true,
+  emailNotifications: true,
+  pushNotifications: false,
+  alertThreshold: 15,
+  dataRetentionDays: 90,
+  darkMode: false,
+  twoFactorEnabled: false,
+  language: 'en-US',
+  lastLogin: '2025-03-15T14:30:00Z'
 };
 
 const SettingsPage: React.FC = () => {
-  const [user, setUser] = useState<UserProfile>(mockUser);
-  const [settings, setSettings] = useState<SystemSettings>(mockSettings);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  const handleProfileUpdate = () => {
-    setIsUpdating(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdating(false);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been updated successfully.",
-      });
-    }, 1000);
+  const [userSettings, setUserSettings] = useState(currentUser);
+  const [activeTab, setActiveTab] = useState('profile');
+  
+  const handleToggleChange = (field: string) => (checked: boolean) => {
+    setUserSettings({
+      ...userSettings,
+      [field]: checked
+    });
   };
-
-  const handlePasswordChange = () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords Don't Match",
-        description: "New password and confirm password must match.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (currentPassword === '') {
-      toast({
-        title: "Current Password Required",
-        description: "Please enter your current password.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsUpdating(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdating(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      toast({
-        title: "Password Changed",
-        description: "Your password has been changed successfully.",
-      });
-    }, 1000);
+  
+  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserSettings({
+      ...userSettings,
+      [field]: e.target.value
+    });
   };
-
-  const handleSettingsUpdate = () => {
-    setIsUpdating(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdating(false);
-      toast({
-        title: "Settings Saved",
-        description: "Your system settings have been updated successfully.",
-      });
-    }, 1000);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAvatar(e.target.files[0]);
-    }
-  };
-
-  const handleAvatarUpload = () => {
-    if (!avatar) return;
-    
-    setIsUpdating(true);
-    
-    // Simulate upload
-    setTimeout(() => {
-      setIsUpdating(false);
-      toast({
-        title: "Avatar Updated",
-        description: "Your profile picture has been updated successfully.",
-      });
-      setAvatar(null);
-    }, 1500);
+  
+  const handleSelectChange = (field: string) => (value: string) => {
+    setUserSettings({
+      ...userSettings,
+      [field]: value
+    });
   };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and system preferences</p>
+          <h1 className="text-2xl font-bold text-gray-800">System Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account, preferences, and system configuration
+          </p>
         </div>
 
-        <Tabs defaultValue="account">
-          <TabsList className="grid grid-cols-4 w-full max-w-xl">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:w-[600px]">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
-          
-          <div className="mt-6">
-            <TabsContent value="account" className="space-y-6">
+
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            <div className="grid gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserIcon className="h-5 w-5" /> User Profile
+                  </CardTitle>
                   <CardDescription>
-                    Update your personal details and contact information
+                    Manage your personal information and preferences
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                        {user.avatar ? (
-                          <img src={user.avatar} alt={user.displayName} className="h-full w-full object-cover" />
-                        ) : (
-                          <User className="h-10 w-10 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            id="avatar-upload"
-                            className="max-w-xs"
-                          />
-                          <Button 
-                            size="sm" 
-                            onClick={handleAvatarUpload}
-                            disabled={!avatar || isUpdating}
-                          >
-                            <Upload className="h-4 w-4 mr-1" /> Upload
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          JPG, PNG or GIF. Maximum size 2MB.
-                        </p>
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="displayName">Full Name</Label>
-                        <Input
-                          id="displayName"
-                          value={user.displayName}
-                          onChange={(e) => setUser({...user, displayName: e.target.value})}
+                        <Label htmlFor="displayName">Display Name</Label>
+                        <Input 
+                          id="displayName" 
+                          value={userSettings.displayName} 
+                          onChange={handleInputChange('displayName')} 
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email Address</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={user.email}
-                          onChange={(e) => setUser({...user, email: e.target.value})}
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          value={userSettings.email} 
+                          onChange={handleInputChange('email')} 
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="farmName">Farm Name</Label>
+                        <Input 
+                          id="farmName" 
+                          value={userSettings.farmName} 
+                          onChange={handleInputChange('farmName')} 
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          value={user.phone}
-                          onChange={(e) => setUser({...user, phone: e.target.value})}
+                        <Label htmlFor="location">Location</Label>
+                        <Input 
+                          id="location" 
+                          value={userSettings.location} 
+                          onChange={handleInputChange('location')} 
                         />
                       </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="role">Role</Label>
+                        <Label htmlFor="role">User Role</Label>
                         <Select 
-                          value={user.role} 
-                          onValueChange={(value) => setUser({...user, role: value})}
+                          value={userSettings.role} 
+                          onValueChange={handleSelectChange('role')}
                           disabled
                         >
                           <SelectTrigger id="role">
-                            <SelectValue />
+                            <SelectValue placeholder="Select role" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="admin">Administrator</SelectItem>
-                            <SelectItem value="manager">Farm Manager</SelectItem>
-                            <SelectItem value="technician">Technician</SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
+                            {Object.values(UserRole).map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Role cannot be changed. Contact system administrator.
+                          Contact your administrator to change roles
                         </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="language">Language</Label>
+                        <Select 
+                          value={userSettings.language} 
+                          onValueChange={handleSelectChange('language')}
+                        >
+                          <SelectTrigger id="language">
+                            <SelectValue placeholder="Select language" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en-US">English (US)</SelectItem>
+                            <SelectItem value="es-ES">Español</SelectItem>
+                            <SelectItem value="fr-FR">Français</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleProfileUpdate}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Updating...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </div>
                 </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </Button>
+                </CardFooter>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="security" className="space-y-6">
+              
               <Card>
                 <CardHeader>
-                  <CardTitle>Password</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" /> Regional Settings
+                  </CardTitle>
                   <CardDescription>
-                    Change your password to keep your account secure
+                    Configure regional preferences for your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                      />
+                      <Label htmlFor="measurementUnit">Measurement Units</Label>
+                      <Select 
+                        value={userSettings.measurementUnit} 
+                        onValueChange={handleSelectChange('measurementUnit')}
+                      >
+                        <SelectTrigger id="measurementUnit">
+                          <SelectValue placeholder="Select unit system" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="metric">Metric (°C, mm, km)</SelectItem>
+                          <SelectItem value="imperial">Imperial (°F, in, mi)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
+                      <Label htmlFor="timeZone">Time Zone</Label>
+                      <Select 
+                        value={userSettings.timeZone} 
+                        onValueChange={handleSelectChange('timeZone')}
+                      >
+                        <SelectTrigger id="timeZone">
+                          <SelectValue placeholder="Select time zone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
+                          <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
+                          <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
+                          <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                          <SelectItem value="Europe/London">GMT/UTC</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handlePasswordChange}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Updating...
-                        </>
-                      ) : (
-                        <>
-                          <Key className="h-4 w-4 mr-2" />
-                          Change Password
-                        </>
-                      )}
-                    </Button>
                   </div>
                 </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </Button>
+                </CardFooter>
               </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Two-Factor Authentication</CardTitle>
-                  <CardDescription>
-                    Add an extra layer of security to your account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+            </div>
+          </TabsContent>
+          
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BellIcon className="h-5 w-5" /> Notification Preferences
+                </CardTitle>
+                <CardDescription>
+                  Configure how and when you receive notifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="notifications-enabled">Enable Notifications</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Turn on/off all notifications
+                    </p>
+                  </div>
+                  <Switch 
+                    id="notifications-enabled" 
+                    checked={userSettings.notificationsEnabled}
+                    onCheckedChange={handleToggleChange('notificationsEnabled')}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Notification Channels</h3>
+                  
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <h4 className="font-medium">Authenticator App</h4>
+                      <Label htmlFor="email-notifications">Email Notifications</Label>
                       <p className="text-sm text-muted-foreground">
-                        Use an authenticator app to generate one-time codes
+                        Receive notifications via email
                       </p>
                     </div>
-                    <Button variant="outline">Setup</Button>
+                    <Switch 
+                      id="email-notifications" 
+                      checked={userSettings.emailNotifications}
+                      onCheckedChange={handleToggleChange('emailNotifications')}
+                      disabled={!userSettings.notificationsEnabled}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push-notifications">Push Notifications</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive push notifications on your device
+                      </p>
+                    </div>
+                    <Switch 
+                      id="push-notifications" 
+                      checked={userSettings.pushNotifications}
+                      onCheckedChange={handleToggleChange('pushNotifications')}
+                      disabled={!userSettings.notificationsEnabled}
+                    />
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Alert Settings</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="alertThreshold">Alert Threshold (%)</Label>
+                    <div className="grid grid-cols-4 gap-4 items-center">
+                      <Input 
+                        id="alertThreshold" 
+                        type="number" 
+                        value={userSettings.alertThreshold.toString()} 
+                        onChange={handleInputChange('alertThreshold')}
+                        min="5"
+                        max="50"
+                        className="col-span-3"
+                        disabled={!userSettings.notificationsEnabled}
+                      />
+                      <Badge>{userSettings.alertThreshold}%</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Receive alerts when moisture levels deviate from ideal by this percentage
+                    </p>
+                  </div>
+                </div>
+                
+                <Alert>
+                  <InfoIcon className="h-4 w-4" />
+                  <AlertTitle>Email Verification</AlertTitle>
+                  <AlertDescription>
+                    To receive email notifications, please ensure your email address is verified.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button>
+                  <Save className="mr-2 h-4 w-4" /> Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          {/* System Tab */}
+          <TabsContent value="system">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5" /> Data Management
+                  </CardTitle>
+                  <CardDescription>
+                    Configure how your data is stored and managed
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="dataRetention">Data Retention Period (days)</Label>
+                    <div className="grid grid-cols-4 gap-4 items-center">
+                      <Input 
+                        id="dataRetention" 
+                        type="number" 
+                        value={userSettings.dataRetentionDays.toString()} 
+                        onChange={handleInputChange('dataRetentionDays')}
+                        min="30"
+                        max="365"
+                        className="col-span-3"
+                      />
+                      <Badge>{userSettings.dataRetentionDays} days</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Sensor data older than this will be automatically archived
+                    </p>
                   </div>
                   
                   <Separator />
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <h4 className="font-medium">SMS Authentication</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive a code via SMS to verify your identity
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">App Settings</h3>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="dark-mode">Dark Mode</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Enable dark theme for the application
+                        </p>
+                      </div>
+                      <Switch 
+                        id="dark-mode" 
+                        checked={userSettings.darkMode}
+                        onCheckedChange={handleToggleChange('darkMode')}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PlugZap className="h-5 w-5" /> Device Connectivity
+                  </CardTitle>
+                  <CardDescription>
+                    Manage device connection settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="apiKey">API Key</Label>
+                      <div className="flex items-center space-x-2">
+                        <Input 
+                          id="apiKey" 
+                          type="password" 
+                          value="••••••••••••••••••••••••"
+                          disabled
+                          className="font-mono"
+                        />
+                        <Button variant="outline" size="sm">Reveal</Button>
+                        <Button variant="outline" size="sm">Regenerate</Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Used for device integrations and external connections
                       </p>
                     </div>
-                    <Button variant="outline">Setup</Button>
+                    
+                    <Alert className="bg-yellow-50 text-yellow-800 border-yellow-200">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Security Notice</AlertTitle>
+                      <AlertDescription>
+                        Keep your API key secret. If compromised, regenerate it immediately.
+                      </AlertDescription>
+                    </Alert>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="notifications" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Control how you receive alerts and updates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Notification Channels</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="email-notifications">Email Notifications</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Receive alerts and updates via email
-                          </p>
-                        </div>
-                        <Switch
-                          id="email-notifications"
-                          checked={settings.notifications.email}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              notifications: {...settings.notifications, email: checked}
-                            })
-                          }
-                        />
-                      </div>
-                      
-                      <Separator />
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="push-notifications">Push Notifications</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Receive alerts on your device
-                          </p>
-                        </div>
-                        <Switch
-                          id="push-notifications"
-                          checked={settings.notifications.push}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              notifications: {...settings.notifications, push: checked}
-                            })
-                          }
-                        />
-                      </div>
-                      
-                      <Separator />
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="sms-notifications">SMS Notifications</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Receive alerts via text message
-                          </p>
-                        </div>
-                        <Switch
-                          id="sms-notifications"
-                          checked={settings.notifications.sms}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              notifications: {...settings.notifications, sms: checked}
-                            })
-                          }
-                        />
-                      </div>
+            </div>
+          </TabsContent>
+          
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" /> Security Settings
+                </CardTitle>
+                <CardDescription>
+                  Manage account security and authentication options
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Current Password</Label>
+                      <Input id="current-password" type="password" />
                     </div>
                   </div>
                   
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Alert Categories</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="moisture-alerts">Low Moisture Alerts</Label>
-                        <Switch
-                          id="moisture-alerts"
-                          checked={settings.alerts.lowMoisture}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              alerts: {...settings.alerts, lowMoisture: checked}
-                            })
-                          }
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="device-alerts">Device Offline Alerts</Label>
-                        <Switch
-                          id="device-alerts"
-                          checked={settings.alerts.deviceOffline}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              alerts: {...settings.alerts, deviceOffline: checked}
-                            })
-                          }
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="weather-alerts">Weather Alerts</Label>
-                        <Switch
-                          id="weather-alerts"
-                          checked={settings.alerts.weatherAlert}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              alerts: {...settings.alerts, weatherAlert: checked}
-                            })
-                          }
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="system-alerts">System Updates</Label>
-                        <Switch
-                          id="system-alerts"
-                          checked={settings.alerts.systemUpdate}
-                          onCheckedChange={(checked) => 
-                            setSettings({
-                              ...settings, 
-                              alerts: {...settings.alerts, systemUpdate: checked}
-                            })
-                          }
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">New Password</Label>
+                      <Input id="new-password" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm New Password</Label>
+                      <Input id="confirm-password" type="password" />
                     </div>
                   </div>
-
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleSettingsUpdate}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Bell className="h-4 w-4 mr-2" />
-                          Save Preferences
-                        </>
-                      )}
-                    </Button>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    Password must be at least 8 characters and include uppercase, lowercase, number, and special character
+                  </p>
+                  
+                  <Button size="sm" className="mt-2">Change Password</Button>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="two-factor">Two-Factor Authentication</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add an extra layer of security to your account
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="system" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Preferences</CardTitle>
-                  <CardDescription>
-                    Customize your dashboard experience and units of measurement
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label>Temperature Unit</Label>
-                      <RadioGroup 
-                        value={settings.temperature}
-                        onValueChange={(value) => 
-                          setSettings({...settings, temperature: value as 'celsius' | 'fahrenheit'})
-                        }
-                        className="flex flex-col space-y-1"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="celsius" id="celsius" />
-                          <Label htmlFor="celsius">Celsius (°C)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="fahrenheit" id="fahrenheit" />
-                          <Label htmlFor="fahrenheit">Fahrenheit (°F)</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label>Distance Unit</Label>
-                      <RadioGroup 
-                        value={settings.distance}
-                        onValueChange={(value) => 
-                          setSettings({...settings, distance: value as 'metric' | 'imperial'})
-                        }
-                        className="flex flex-col space-y-1"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="metric" id="metric" />
-                          <Label htmlFor="metric">Metric (m, km)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="imperial" id="imperial" />
-                          <Label htmlFor="imperial">Imperial (ft, mi)</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label htmlFor="dateFormat">Date Format</Label>
-                      <Select 
-                        value={settings.dateFormat} 
-                        onValueChange={(value) => 
-                          setSettings({...settings, dateFormat: value as any})
-                        }
-                      >
-                        <SelectTrigger id="dateFormat">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="dd/mm/yyyy">DD/MM/YYYY</SelectItem>
-                          <SelectItem value="mm/dd/yyyy">MM/DD/YYYY</SelectItem>
-                          <SelectItem value="yyyy-mm-dd">YYYY-MM-DD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label htmlFor="language">Language</Label>
-                      <Select 
-                        value={settings.language} 
-                        onValueChange={(value) => 
-                          setSettings({...settings, language: value})
-                        }
-                      >
-                        <SelectTrigger id="language">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="es">Español</SelectItem>
-                          <SelectItem value="fr">Français</SelectItem>
-                          <SelectItem value="de">Deutsch</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label htmlFor="theme">Interface Theme</Label>
-                      <Select 
-                        value={settings.theme} 
-                        onValueChange={(value) => 
-                          setSettings({...settings, theme: value as any})
-                        }
-                      >
-                        <SelectTrigger id="theme">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="light">Light</SelectItem>
-                          <SelectItem value="dark">Dark</SelectItem>
-                          <SelectItem value="system">System Default</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label htmlFor="dataRetention">Data Retention (days)</Label>
-                      <Select 
-                        value={settings.dataRetention.toString()} 
-                        onValueChange={(value) => 
-                          setSettings({...settings, dataRetention: parseInt(value)})
-                        }
-                      >
-                        <SelectTrigger id="dataRetention">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="30">30 days</SelectItem>
-                          <SelectItem value="60">60 days</SelectItem>
-                          <SelectItem value="90">90 days</SelectItem>
-                          <SelectItem value="180">180 days</SelectItem>
-                          <SelectItem value="365">1 year</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <Switch 
+                    id="two-factor" 
+                    checked={userSettings.twoFactorEnabled}
+                    onCheckedChange={handleToggleChange('twoFactorEnabled')}
+                  />
+                </div>
+                
+                {!userSettings.twoFactorEnabled && (
+                  <Alert>
+                    <ShieldCheck className="h-4 w-4" />
+                    <AlertTitle>Enhance Your Security</AlertTitle>
+                    <AlertDescription>
+                      We strongly recommend enabling two-factor authentication for additional account protection.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Active Sessions</h3>
+                  <div className="rounded-md border p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium">Current Session</p>
+                        <p className="text-xs text-muted-foreground">Started: {new Date().toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">IP: 192.168.1.1</p>
+                      </div>
+                      <Badge>Active</Badge>
                     </div>
                   </div>
-
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleSettingsUpdate}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Settings
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>API Integrations</CardTitle>
-                  <CardDescription>
-                    Connect with external services and APIs
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h4 className="font-medium">Weather Service</h4>
-                        <p className="text-sm text-muted-foreground">
-                          OpenWeatherMap API for weather forecasts
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-500">Connected</Badge>
-                        <Button variant="outline" size="sm">Configure</Button>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h4 className="font-medium">Google Maps</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Mapping and geolocation services
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-orange-500">Setup Required</Badge>
-                        <Button variant="outline" size="sm">Connect</Button>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h4 className="font-medium">MQTT Broker</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Real-time device communication
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-500">Connected</Badge>
-                        <Button variant="outline" size="sm">Configure</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Information</CardTitle>
-                  <CardDescription>
-                    Details about your installation and database
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Version</span>
-                      <span className="text-sm">AgroSense Hub v1.0.0</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Last Updated</span>
-                      <span className="text-sm">June 15, 2023</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Database Size</span>
-                      <span className="text-sm">42.3 MB</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Total Devices</span>
-                      <span className="text-sm">12</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Total Zones</span>
-                      <span className="text-sm">4</span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2">
-                    <Button variant="outline">
-                      <Database className="h-4 w-4 mr-2" />
-                      Export Data
-                    </Button>
-                    <Button variant="outline">
-                      <Shield className="h-4 w-4 mr-2" />
-                      View Logs
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </div>
+                  <Button variant="outline" size="sm" className="mt-2">Log Out All Other Devices</Button>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button>
+                  <Save className="mr-2 h-4 w-4" /> Save Security Settings
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>

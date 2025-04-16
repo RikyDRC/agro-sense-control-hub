@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // You would typically store this in an environment variable
 const GOOGLE_MAPS_API_KEY = "REPLACE_WITH_YOUR_API_KEY";
@@ -46,6 +48,8 @@ const MapView: React.FC<MapViewProps> = ({
   const [isAddingDevice, setIsAddingDevice] = useState(false);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [scriptLoadError, setScriptLoadError] = useState<Error | null>(null);
   
   const polygonRefs = useRef<{[key: string]: google.maps.Polygon | null}>({});
   const markerRefs = useRef<{[key: string]: google.maps.Marker | null}>({});
@@ -54,15 +58,28 @@ const MapView: React.FC<MapViewProps> = ({
   const [newZoneName, setNewZoneName] = useState('');
   const [isNamingZone, setIsNamingZone] = useState(false);
 
+  const onScriptLoad = useCallback(() => {
+    console.log("Google Maps script loaded successfully");
+    setIsScriptLoaded(true);
+  }, []);
+
+  const onScriptError = useCallback((error: Error) => {
+    console.error("Error loading Google Maps script:", error);
+    setScriptLoadError(error);
+  }, []);
+
   const onMapLoad = useCallback((map: google.maps.Map) => {
+    console.log("Map loaded successfully");
     setMapInstance(map);
   }, []);
 
   const onDrawingManagerLoad = useCallback((drawingManager: google.maps.drawing.DrawingManager) => {
+    console.log("Drawing manager loaded successfully");
     setDrawingManager(drawingManager);
   }, []);
 
   const onPolygonComplete = useCallback((polygon: google.maps.Polygon) => {
+    console.log("Polygon drawing completed");
     setCreatedPolygon(polygon);
     setIsNamingZone(true);
     
@@ -209,6 +226,18 @@ const MapView: React.FC<MapViewProps> = ({
     }
   };
 
+  // If script failed to load, show error message
+  if (scriptLoadError) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load Google Maps API. Please check your API key and try again.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col lg:flex-row gap-4">
@@ -218,7 +247,12 @@ const MapView: React.FC<MapViewProps> = ({
             <CardDescription>Manage your fields, zones, and device placement</CardDescription>
           </CardHeader>
           <CardContent>
-            <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={libraries}>
+            <LoadScript 
+              googleMapsApiKey={GOOGLE_MAPS_API_KEY} 
+              libraries={libraries}
+              onLoad={onScriptLoad}
+              onError={onScriptError}
+            >
               <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={center}
@@ -227,7 +261,7 @@ const MapView: React.FC<MapViewProps> = ({
                 onClick={handleMapClick}
               >
                 {/* Zone Polygons */}
-                {zones.map((zone) => (
+                {isScriptLoaded && zones.map((zone) => (
                   <Polygon
                     key={zone.id}
                     paths={zone.boundaryCoordinates}
@@ -245,7 +279,7 @@ const MapView: React.FC<MapViewProps> = ({
                 ))}
                 
                 {/* Device Markers */}
-                {devices.map((device) => (
+                {isScriptLoaded && devices.map((device) => (
                   <Marker
                     key={device.id}
                     position={device.location}
@@ -259,19 +293,21 @@ const MapView: React.FC<MapViewProps> = ({
                 ))}
                 
                 {/* Drawing Manager for creating zones */}
-                <DrawingManager
-                  onLoad={onDrawingManagerLoad}
-                  onPolygonComplete={onPolygonComplete}
-                  options={{
-                    drawingControl: !isAddingDevice && !isNamingZone,
-                    drawingControlOptions: {
-                      position: google.maps.ControlPosition.TOP_CENTER,
-                      drawingModes: [
-                        google.maps.drawing.OverlayType.POLYGON,
-                      ],
-                    },
-                  }}
-                />
+                {isScriptLoaded && (
+                  <DrawingManager
+                    onLoad={onDrawingManagerLoad}
+                    onPolygonComplete={onPolygonComplete}
+                    options={{
+                      drawingControl: !isAddingDevice && !isNamingZone,
+                      drawingControlOptions: {
+                        position: google.maps.ControlPosition.TOP_CENTER,
+                        drawingModes: [
+                          google.maps.drawing.OverlayType.POLYGON,
+                        ],
+                      },
+                    }}
+                  />
+                )}
               </GoogleMap>
             </LoadScript>
           </CardContent>
@@ -304,12 +340,12 @@ const MapView: React.FC<MapViewProps> = ({
                   variant="outline" 
                   onClick={() => {
                     setIsAddingDevice(false);
-                    if (drawingManager) {
+                    if (drawingManager && isScriptLoaded) {
                       drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
                     }
                   }}
                   className="w-full"
-                  disabled={isNamingZone || isAddingDevice}
+                  disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
                 >
                   Draw New Zone
                 </Button>
@@ -354,11 +390,11 @@ const MapView: React.FC<MapViewProps> = ({
                 className="w-full"
                 onClick={() => {
                   setIsAddingDevice(true);
-                  if (drawingManager) {
+                  if (drawingManager && isScriptLoaded) {
                     drawingManager.setDrawingMode(null);
                   }
                 }}
-                disabled={isNamingZone || isAddingDevice}
+                disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
               >
                 {isAddingDevice ? 'Click on Map to Place' : 'Place Device on Map'}
               </Button>

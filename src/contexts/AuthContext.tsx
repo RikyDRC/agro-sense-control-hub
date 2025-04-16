@@ -39,7 +39,7 @@ interface AuthContextProps {
   subscription: UserSubscription | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any | null }>;
+  signUp: (email: string, password: string, displayName?: string, role?: UserRole) => Promise<{ error: any | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
@@ -162,19 +162,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, role: UserRole = 'farmer') => {
     try {
-      const { error } = await supabase.auth.signUp({ 
+      const { error, data } = await supabase.auth.signUp({
         email, 
         password,
         options: {
           data: {
-            display_name: displayName || email.split('@')[0]
+            display_name: displayName || email.split('@')[0],
+            role: role
           }
         }
       });
-      return { error };
-    } catch (error) {
+
+      if (error) {
+        console.error('Signup error:', error);
+        return { error };
+      }
+
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update({ role })
+          .eq('id', data.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Signup catch error:', error);
       return { error };
     }
   };
@@ -221,3 +240,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -21,17 +21,15 @@ const AuthPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill super admin credentials for demonstration
-  const fillSuperAdminCredentials = () => {
-    setEmail('superadmin@agrosmart.com');
-    setPassword('Test1234!');
-  };
-
   useEffect(() => {
     if (session) {
       navigate('/dashboard');
     }
   }, [session, navigate]);
+
+  const isSpecialAdminEmail = (email: string) => {
+    return email === 'akremi.atef@gmail.com';
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +59,12 @@ const AuthPage = () => {
     setIsProcessing(true);
 
     try {
-      const { error } = await signUp(email, password, displayName);
+      const { error } = await signUp(
+        email, 
+        password, 
+        displayName, 
+        isSpecialAdminEmail(email) ? 'super_admin' : 'farmer'
+      );
       
       if (error) {
         setError(error.message);
@@ -69,11 +72,22 @@ const AuthPage = () => {
       }
       
       toast.success('Signed up successfully. Check your email for confirmation.');
+      
+      if (isSpecialAdminEmail(email)) {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const fillSuperAdminCredentials = () => {
+    setEmail('akremi.atef@gmail.com');
+    setPassword('Lovable2023');
+    setDisplayName('Super Admin');
+    setActiveTab('signup');
   };
 
   if (loading) {
@@ -144,10 +158,10 @@ const AuthPage = () => {
                     type="button" 
                     variant="outline" 
                     size="sm" 
-                    className="w-full" 
+                    className="w-full mt-2" 
                     onClick={fillSuperAdminCredentials}
                   >
-                    Use Super Admin Demo Credentials
+                    Create Super Admin Account
                   </Button>
                 </CardContent>
                 <CardFooter>

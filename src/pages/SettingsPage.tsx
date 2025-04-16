@@ -1,11 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import ProfileForm from '@/components/settings/ProfileForm';
+import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
+import { Globe, BellIcon, Settings as SettingsIcon, ShieldCheck, CreditCard } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,113 +16,49 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
-  InfoIcon, Save, UserIcon, BellIcon, Globe, Lock, ShieldCheck, Database, 
-  PlugZap, AlertCircle, CreditCard, Settings as SettingsIcon, Crown, Shield, CheckCircle
+  InfoIcon, Save, UserIcon, AlertCircle, PlugZap, Database, MapPin, CloudSun, Lock, Shield, CheckCircle
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/components/ui/sonner';
 
 const SettingsPage: React.FC = () => {
-  const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, signOut } = useAuth();
+  const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, loading } = useAuth();
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading] = useState(false);
   
-  const [formData, setFormData] = useState({
-    displayName: '',
-    email: '',
-    farmName: 'Green Valley Farm',
-    location: 'California, USA',
-    measurementUnit: 'metric',
-    timeZone: 'America/Los_Angeles',
-    notificationsEnabled: true,
-    emailNotifications: true,
-    pushNotifications: false,
-    alertThreshold: 15,
-    dataRetentionDays: 90,
-    darkMode: false,
-    language: 'en-US'
-  });
-  
-  useEffect(() => {
-    if (profile) {
-      setFormData(prev => ({
-        ...prev,
-        displayName: profile.display_name || '',
-        email: profile.email || ''
-      }));
-    }
-  }, [profile]);
-  
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [field]: e.target.value
-    });
-  };
-  
-  const handleSelectChange = (field: string) => (value: string) => {
-    setFormData({
-      ...formData,
-      [field]: value
-    });
-  };
-  
-  const handleToggleChange = (field: string) => (checked: boolean) => {
-    setFormData({
-      ...formData,
-      [field]: checked
-    });
-  };
+  // Show a loading state while the profile is being fetched
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Loading settings...</h1>
+            <p className="text-muted-foreground">Please wait while we load your profile information</p>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const handleUpdateProfile = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          display_name: formData.displayName,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-      
-      await refreshProfile();
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      toast.error('Failed to open subscription management');
-    }
-  };
-
-  // Add a guard for the profile
+  // Check if the profile is loaded
   if (!profile) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Loading settings...</h2>
-            <p className="text-muted-foreground">Please wait while we load your profile information</p>
+            <h2 className="text-xl font-semibold mb-2">Profile not found</h2>
+            <p className="text-muted-foreground">Please sign in to access your settings</p>
+            <button 
+              className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+              onClick={() => navigate('/auth')}
+            >
+              Go to Login
+            </button>
           </div>
         </div>
       </DashboardLayout>
@@ -148,163 +86,64 @@ const SettingsPage: React.FC = () => {
 
           <TabsContent value="profile">
             <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserIcon className="h-5 w-5" /> User Profile
-                    {profile && (
-                      <Badge 
-                        className={
-                          profile.role === 'super_admin' ? 'bg-red-500' :
-                          profile.role === 'admin' ? 'bg-blue-500' : 
-                          'bg-green-500'
-                        }
-                      >
-                        {profile.role.replace('_', ' ')}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your personal information and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
+              {/* Profile Form Component */}
+              <ProfileForm profile={profile} refreshProfile={refreshProfile} />
+              
+              {/* Regional Settings */}
+              <div className="grid gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Globe className="h-5 w-5" /> Regional Settings
+                    </CardTitle>
+                    <CardDescription>
+                      Configure regional preferences for your account
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="displayName">Display Name</Label>
-                        <Input 
-                          id="displayName" 
-                          value={formData.displayName} 
-                          onChange={handleInputChange('displayName')} 
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          value={formData.email} 
-                          disabled
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="farmName">Farm Name</Label>
-                        <Input 
-                          id="farmName" 
-                          value={formData.farmName} 
-                          onChange={handleInputChange('farmName')} 
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input 
-                          id="location" 
-                          value={formData.location} 
-                          onChange={handleInputChange('location')} 
-                        />
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="role">User Role</Label>
-                        <Input
-                          id="role"
-                          value={profile.role.replace('_', ' ')}
-                          disabled
-                          className="capitalize"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {isRoleSuperAdmin() ? 
-                            'You have full system administration privileges' : 
-                            'Contact a super admin to change roles'}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="language">Language</Label>
+                        <Label htmlFor="measurementUnit">Measurement Units</Label>
                         <Select 
-                          value={formData.language} 
-                          onValueChange={handleSelectChange('language')}
+                          value="metric" 
+                          onValueChange={() => {}}
                         >
-                          <SelectTrigger id="language">
-                            <SelectValue placeholder="Select language" />
+                          <SelectTrigger id="measurementUnit">
+                            <SelectValue placeholder="Select unit system" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="en-US">English (US)</SelectItem>
-                            <SelectItem value="es-ES">Español</SelectItem>
-                            <SelectItem value="fr-FR">Français</SelectItem>
+                            <SelectItem value="metric">Metric (°C, mm, km)</SelectItem>
+                            <SelectItem value="imperial">Imperial (°F, in, mi)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="timeZone">Time Zone</Label>
+                        <Select 
+                          value="America/Los_Angeles" 
+                          onValueChange={() => {}}
+                        >
+                          <SelectTrigger id="timeZone">
+                            <SelectValue placeholder="Select time zone" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
+                            <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
+                            <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
+                            <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                            <SelectItem value="Europe/London">GMT/UTC</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button onClick={handleUpdateProfile} disabled={loading}>
-                    <Save className="mr-2 h-4 w-4" /> 
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5" /> Regional Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Configure regional preferences for your account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="measurementUnit">Measurement Units</Label>
-                      <Select 
-                        value={formData.measurementUnit} 
-                        onValueChange={handleSelectChange('measurementUnit')}
-                      >
-                        <SelectTrigger id="measurementUnit">
-                          <SelectValue placeholder="Select unit system" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="metric">Metric (°C, mm, km)</SelectItem>
-                          <SelectItem value="imperial">Imperial (°F, in, mi)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="timeZone">Time Zone</Label>
-                      <Select 
-                        value={formData.timeZone} 
-                        onValueChange={handleSelectChange('timeZone')}
-                      >
-                        <SelectTrigger id="timeZone">
-                          <SelectValue placeholder="Select time zone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                          <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                          <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                          <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                          <SelectItem value="Europe/London">GMT/UTC</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button>
-                    <Save className="mr-2 h-4 w-4" /> Save Changes
-                  </Button>
-                </CardFooter>
-              </Card>
+                  </CardContent>
+                  <CardFooter className="flex justify-end">
+                    <Button>
+                      <Save className="mr-2 h-4 w-4" /> Save Changes
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
             </div>
           </TabsContent>
           
@@ -328,8 +167,8 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <Switch 
                     id="notifications-enabled" 
-                    checked={formData.notificationsEnabled}
-                    onCheckedChange={handleToggleChange('notificationsEnabled')}
+                    checked={true}
+                    onCheckedChange={() => {}}
                   />
                 </div>
                 
@@ -347,9 +186,9 @@ const SettingsPage: React.FC = () => {
                     </div>
                     <Switch 
                       id="email-notifications" 
-                      checked={formData.emailNotifications}
-                      onCheckedChange={handleToggleChange('emailNotifications')}
-                      disabled={!formData.notificationsEnabled}
+                      checked={true}
+                      onCheckedChange={() => {}}
+                      disabled={false}
                     />
                   </div>
                   
@@ -362,9 +201,9 @@ const SettingsPage: React.FC = () => {
                     </div>
                     <Switch 
                       id="push-notifications" 
-                      checked={formData.pushNotifications}
-                      onCheckedChange={handleToggleChange('pushNotifications')}
-                      disabled={!formData.notificationsEnabled}
+                      checked={false}
+                      onCheckedChange={() => {}}
+                      disabled={false}
                     />
                   </div>
                 </div>
@@ -380,14 +219,14 @@ const SettingsPage: React.FC = () => {
                       <Input 
                         id="alertThreshold" 
                         type="number" 
-                        value={formData.alertThreshold.toString()} 
-                        onChange={handleInputChange('alertThreshold')}
+                        value="15"
+                        onChange={() => {}}
                         min="5"
                         max="50"
                         className="col-span-3"
-                        disabled={!formData.notificationsEnabled}
+                        disabled={false}
                       />
-                      <Badge>{formData.alertThreshold}%</Badge>
+                      <Badge>15%</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Receive alerts when moisture levels deviate from ideal by this percentage
@@ -429,13 +268,13 @@ const SettingsPage: React.FC = () => {
                       <Input 
                         id="dataRetention" 
                         type="number" 
-                        value={formData.dataRetentionDays.toString()} 
-                        onChange={handleInputChange('dataRetentionDays')}
+                        value="90"
+                        onChange={() => {}}
                         min="30"
                         max="365"
                         className="col-span-3"
                       />
-                      <Badge>{formData.dataRetentionDays} days</Badge>
+                      <Badge>90 days</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Sensor data older than this will be automatically archived
@@ -456,8 +295,8 @@ const SettingsPage: React.FC = () => {
                       </div>
                       <Switch 
                         id="dark-mode" 
-                        checked={formData.darkMode}
-                        onCheckedChange={handleToggleChange('darkMode')}
+                        checked={false}
+                        onCheckedChange={() => {}}
                       />
                     </div>
                   </div>
@@ -469,54 +308,62 @@ const SettingsPage: React.FC = () => {
                 </CardFooter>
               </Card>
               
+              {/* Google Maps API Key configuration (super_admin only) */}
+              {isRoleSuperAdmin() && <GoogleMapsApiKey />}
+              
+              {/* Administrative Controls for admins */}
               {(isRoleSuperAdmin() || isRoleAdmin()) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <SettingsIcon className="h-5 w-5" /> Administrative Controls
-                    </CardTitle>
-                    <CardDescription>
-                      Access administrative features and settings
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {isRoleSuperAdmin() && (
+                
+                <div className="grid gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <SettingsIcon className="h-5 w-5" /> Administrative Controls
+                      </CardTitle>
+                      <CardDescription>
+                        Access administrative features and settings
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {isRoleSuperAdmin() && (
+                          <div className="flex justify-between items-center p-4 border rounded-md">
+                            <div>
+                              <h3 className="font-medium flex items-center">
+                                <Crown className="h-4 w-4 mr-2 text-red-500" /> 
+                                Platform Configuration
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                Manage API keys, system settings, and user roles
+                              </p>
+                            </div>
+                            <Button onClick={() => navigate('/admin/config')}>
+                              Manage
+                            </Button>
+                          </div>
+                        )}
+                        
                         <div className="flex justify-between items-center p-4 border rounded-md">
                           <div>
                             <h3 className="font-medium flex items-center">
-                              <Crown className="h-4 w-4 mr-2 text-red-500" /> 
-                              Platform Configuration
+                              <Shield className="h-4 w-4 mr-2 text-blue-500" /> 
+                              User Management
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Manage API keys, system settings, and user roles
+                              View and manage system users
                             </p>
                           </div>
-                          <Button onClick={() => navigate('/admin/config')}>
-                            Manage
+                          <Button variant={isRoleSuperAdmin() ? "default" : "outline"}>
+                            {isRoleSuperAdmin() ? 'Manage' : 'View'}
                           </Button>
                         </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center p-4 border rounded-md">
-                        <div>
-                          <h3 className="font-medium flex items-center">
-                            <Shield className="h-4 w-4 mr-2 text-blue-500" /> 
-                            User Management
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            View and manage system users
-                          </p>
-                        </div>
-                        <Button variant={isRoleSuperAdmin() ? "default" : "outline"}>
-                          {isRoleSuperAdmin() ? 'Manage' : 'View'}
-                        </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
               
+              {/* Device Connectivity */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -636,7 +483,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" size="sm">Log Out All Other Devices</Button>
-                    <Button variant="destructive" size="sm" onClick={signOut}>Log Out</Button>
+                    <Button variant="destructive" size="sm" onClick={() => {}}>Log Out</Button>
                   </div>
                 </div>
               </CardContent>
@@ -659,7 +506,7 @@ const SettingsPage: React.FC = () => {
                     <InfoIcon className="h-4 w-4" />
                     <AlertTitle>Admin Account</AlertTitle>
                     <AlertDescription>
-                      As an {profile.role.replace('_', ' ')}, you have access to all features without requiring a subscription.
+                      As an admin, you have access to all features without requiring a subscription.
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -708,7 +555,7 @@ const SettingsPage: React.FC = () => {
                           </div>
                           
                           <div className="mt-4 flex gap-2">
-                            <Button onClick={handleManageSubscription}>
+                            <Button onClick={() => {}}>
                               Manage Subscription
                             </Button>
                             <Button variant="outline" onClick={() => navigate('/subscription/plans')}>

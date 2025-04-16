@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -112,8 +113,18 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  // Add a guard for the profile
   if (!profile) {
-    return null; // or loading spinner
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">Loading settings...</h2>
+            <p className="text-muted-foreground">Please wait while we load your profile information</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (

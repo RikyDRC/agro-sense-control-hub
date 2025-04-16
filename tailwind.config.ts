@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -85,7 +86,8 @@ export default {
                         danger: '#F44336',
                         info: '#2196F3'
                     }
-                },
+                }
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

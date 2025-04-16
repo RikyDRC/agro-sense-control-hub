@@ -12,7 +12,16 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Eye, FlaskConical, Plus, Pencil, Trash2, Check, X, Battery 
+  Droplet, 
+  Thermometer, 
+  Battery, 
+  Eye, 
+  FlaskConical, 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  Check, 
+  X 
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { 

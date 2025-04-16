@@ -470,14 +470,14 @@ const DevicesPage: React.FC = () => {
                 Zone
               </Label>
               <Select 
-                value={formValues.zoneId || ''}
-                onValueChange={(value) => setFormValues({...formValues, zoneId: value || undefined})}
+                value={formValues.zoneId || 'unassigned'}
+                onValueChange={(value) => setFormValues({...formValues, zoneId: value === 'unassigned' ? undefined : value})}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Assign to zone (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {zones.map((zone) => (
                     <SelectItem key={zone.id} value={zone.id}>
                       {zone.name}

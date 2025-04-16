@@ -321,12 +321,12 @@ const MapView: React.FC<MapViewProps> = ({
               <CardDescription>Select or create field zones</CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={selectedZone || ''} onValueChange={setSelectedZone}>
+              <Select value={selectedZone || 'all'} onValueChange={setSelectedZone}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a zone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Zones</SelectItem>
+                  <SelectItem value="all">All Zones</SelectItem>
                   {zones.map((zone) => (
                     <SelectItem key={zone.id} value={zone.id}>
                       {zone.name}

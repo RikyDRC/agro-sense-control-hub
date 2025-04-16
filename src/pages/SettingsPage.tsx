@@ -1,6 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -10,55 +13,110 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { InfoIcon, Save, UserIcon, BellIcon, Globe, Lock, ShieldCheck, Database, PlugZap, AlertCircle } from 'lucide-react';
+import { 
+  InfoIcon, Save, UserIcon, BellIcon, Globe, Lock, ShieldCheck, Database, 
+  PlugZap, AlertCircle, CreditCard, Settings as SettingsIcon, Crown, Shield
+} from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { UserRole } from '@/types';
-
-// Mock user
-const currentUser = {
-  id: '1',
-  displayName: 'Alex Johnson',
-  email: 'alex.johnson@example.com',
-  role: UserRole.ADMIN,
-  farmName: 'Green Valley Farm',
-  location: 'California, USA',
-  measurementUnit: 'metric',
-  timeZone: 'America/Los_Angeles',
-  notificationsEnabled: true,
-  emailNotifications: true,
-  pushNotifications: false,
-  alertThreshold: 15,
-  dataRetentionDays: 90,
-  darkMode: false,
-  twoFactorEnabled: false,
-  language: 'en-US',
-  lastLogin: '2025-03-15T14:30:00Z'
-};
+import { toast } from '@/components/ui/sonner';
 
 const SettingsPage: React.FC = () => {
-  const [userSettings, setUserSettings] = useState(currentUser);
-  const [activeTab, setActiveTab] = useState('profile');
+  const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   
-  const handleToggleChange = (field: string) => (checked: boolean) => {
-    setUserSettings({
-      ...userSettings,
-      [field]: checked
-    });
-  };
+  const [activeTab, setActiveTab] = useState('profile');
+  const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    displayName: '',
+    email: '',
+    farmName: 'Green Valley Farm',
+    location: 'California, USA',
+    measurementUnit: 'metric',
+    timeZone: 'America/Los_Angeles',
+    notificationsEnabled: true,
+    emailNotifications: true,
+    pushNotifications: false,
+    alertThreshold: 15,
+    dataRetentionDays: 90,
+    darkMode: false,
+    language: 'en-US'
+  });
+  
+  // Initialize form data from user profile
+  useEffect(() => {
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        displayName: profile.display_name || '',
+        email: profile.email || ''
+      }));
+    }
+  }, [profile]);
   
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserSettings({
-      ...userSettings,
+    setFormData({
+      ...formData,
       [field]: e.target.value
     });
   };
   
   const handleSelectChange = (field: string) => (value: string) => {
-    setUserSettings({
-      ...userSettings,
+    setFormData({
+      ...formData,
       [field]: value
     });
   };
+  
+  const handleToggleChange = (field: string) => (checked: boolean) => {
+    setFormData({
+      ...formData,
+      [field]: checked
+    });
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          display_name: formData.displayName,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      await refreshProfile();
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast.error('Failed to open subscription management');
+    }
+  };
+
+  if (!profile) {
+    return null; // or loading spinner
+  }
 
   return (
     <DashboardLayout>
@@ -71,11 +129,12 @@ const SettingsPage: React.FC = () => {
         </div>
 
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:w-[600px]">
+          <TabsList className="grid grid-cols-3 md:grid-cols-5 lg:w-[600px]">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -85,6 +144,17 @@ const SettingsPage: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <UserIcon className="h-5 w-5" /> User Profile
+                    {profile && (
+                      <Badge 
+                        className={
+                          profile.role === 'super_admin' ? 'bg-red-500' :
+                          profile.role === 'admin' ? 'bg-blue-500' : 
+                          'bg-green-500'
+                        }
+                      >
+                        {profile.role.replace('_', ' ')}
+                      </Badge>
+                    )}
                   </CardTitle>
                   <CardDescription>
                     Manage your personal information and preferences
@@ -97,7 +167,7 @@ const SettingsPage: React.FC = () => {
                         <Label htmlFor="displayName">Display Name</Label>
                         <Input 
                           id="displayName" 
-                          value={userSettings.displayName} 
+                          value={formData.displayName} 
                           onChange={handleInputChange('displayName')} 
                         />
                       </div>
@@ -106,8 +176,8 @@ const SettingsPage: React.FC = () => {
                         <Input 
                           id="email" 
                           type="email" 
-                          value={userSettings.email} 
-                          onChange={handleInputChange('email')} 
+                          value={formData.email} 
+                          disabled
                         />
                       </div>
                     </div>
@@ -117,7 +187,7 @@ const SettingsPage: React.FC = () => {
                         <Label htmlFor="farmName">Farm Name</Label>
                         <Input 
                           id="farmName" 
-                          value={userSettings.farmName} 
+                          value={formData.farmName} 
                           onChange={handleInputChange('farmName')} 
                         />
                       </div>
@@ -125,7 +195,7 @@ const SettingsPage: React.FC = () => {
                         <Label htmlFor="location">Location</Label>
                         <Input 
                           id="location" 
-                          value={userSettings.location} 
+                          value={formData.location} 
                           onChange={handleInputChange('location')} 
                         />
                       </div>
@@ -136,30 +206,22 @@ const SettingsPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="role">User Role</Label>
-                        <Select 
-                          value={userSettings.role} 
-                          onValueChange={handleSelectChange('role')}
+                        <Input
+                          id="role"
+                          value={profile.role.replace('_', ' ')}
                           disabled
-                        >
-                          <SelectTrigger id="role">
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.values(UserRole).map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          className="capitalize"
+                        />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Contact your administrator to change roles
+                          {isRoleSuperAdmin() ? 
+                            'You have full system administration privileges' : 
+                            'Contact a super admin to change roles'}
                         </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="language">Language</Label>
                         <Select 
-                          value={userSettings.language} 
+                          value={formData.language} 
                           onValueChange={handleSelectChange('language')}
                         >
                           <SelectTrigger id="language">
@@ -176,8 +238,9 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button>
-                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  <Button onClick={handleUpdateProfile} disabled={loading}>
+                    <Save className="mr-2 h-4 w-4" /> 
+                    {loading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </CardFooter>
               </Card>
@@ -196,7 +259,7 @@ const SettingsPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="measurementUnit">Measurement Units</Label>
                       <Select 
-                        value={userSettings.measurementUnit} 
+                        value={formData.measurementUnit} 
                         onValueChange={handleSelectChange('measurementUnit')}
                       >
                         <SelectTrigger id="measurementUnit">
@@ -211,7 +274,7 @@ const SettingsPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="timeZone">Time Zone</Label>
                       <Select 
-                        value={userSettings.timeZone} 
+                        value={formData.timeZone} 
                         onValueChange={handleSelectChange('timeZone')}
                       >
                         <SelectTrigger id="timeZone">
@@ -258,7 +321,7 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <Switch 
                     id="notifications-enabled" 
-                    checked={userSettings.notificationsEnabled}
+                    checked={formData.notificationsEnabled}
                     onCheckedChange={handleToggleChange('notificationsEnabled')}
                   />
                 </div>
@@ -277,9 +340,9 @@ const SettingsPage: React.FC = () => {
                     </div>
                     <Switch 
                       id="email-notifications" 
-                      checked={userSettings.emailNotifications}
+                      checked={formData.emailNotifications}
                       onCheckedChange={handleToggleChange('emailNotifications')}
-                      disabled={!userSettings.notificationsEnabled}
+                      disabled={!formData.notificationsEnabled}
                     />
                   </div>
                   
@@ -292,9 +355,9 @@ const SettingsPage: React.FC = () => {
                     </div>
                     <Switch 
                       id="push-notifications" 
-                      checked={userSettings.pushNotifications}
+                      checked={formData.pushNotifications}
                       onCheckedChange={handleToggleChange('pushNotifications')}
-                      disabled={!userSettings.notificationsEnabled}
+                      disabled={!formData.notificationsEnabled}
                     />
                   </div>
                 </div>
@@ -310,14 +373,14 @@ const SettingsPage: React.FC = () => {
                       <Input 
                         id="alertThreshold" 
                         type="number" 
-                        value={userSettings.alertThreshold.toString()} 
+                        value={formData.alertThreshold.toString()} 
                         onChange={handleInputChange('alertThreshold')}
                         min="5"
                         max="50"
                         className="col-span-3"
-                        disabled={!userSettings.notificationsEnabled}
+                        disabled={!formData.notificationsEnabled}
                       />
-                      <Badge>{userSettings.alertThreshold}%</Badge>
+                      <Badge>{formData.alertThreshold}%</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Receive alerts when moisture levels deviate from ideal by this percentage
@@ -360,13 +423,13 @@ const SettingsPage: React.FC = () => {
                       <Input 
                         id="dataRetention" 
                         type="number" 
-                        value={userSettings.dataRetentionDays.toString()} 
+                        value={formData.dataRetentionDays.toString()} 
                         onChange={handleInputChange('dataRetentionDays')}
                         min="30"
                         max="365"
                         className="col-span-3"
                       />
-                      <Badge>{userSettings.dataRetentionDays} days</Badge>
+                      <Badge>{formData.dataRetentionDays} days</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Sensor data older than this will be automatically archived
@@ -387,7 +450,7 @@ const SettingsPage: React.FC = () => {
                       </div>
                       <Switch 
                         id="dark-mode" 
-                        checked={userSettings.darkMode}
+                        checked={formData.darkMode}
                         onCheckedChange={handleToggleChange('darkMode')}
                       />
                     </div>
@@ -399,6 +462,55 @@ const SettingsPage: React.FC = () => {
                   </Button>
                 </CardFooter>
               </Card>
+              
+              {/* Admin-only section */}
+              {(isRoleSuperAdmin() || isRoleAdmin()) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <SettingsIcon className="h-5 w-5" /> Administrative Controls
+                    </CardTitle>
+                    <CardDescription>
+                      Access administrative features and settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {isRoleSuperAdmin() && (
+                        <div className="flex justify-between items-center p-4 border rounded-md">
+                          <div>
+                            <h3 className="font-medium flex items-center">
+                              <Crown className="h-4 w-4 mr-2 text-red-500" /> 
+                              Platform Configuration
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Manage API keys, system settings, and user roles
+                            </p>
+                          </div>
+                          <Button onClick={() => navigate('/admin/config')}>
+                            Manage
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center p-4 border rounded-md">
+                        <div>
+                          <h3 className="font-medium flex items-center">
+                            <Shield className="h-4 w-4 mr-2 text-blue-500" /> 
+                            User Management
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            View and manage system users
+                          </p>
+                        </div>
+                        <Button variant={isRoleSuperAdmin() ? "default" : "outline"}>
+                          {isRoleSuperAdmin() ? 'Manage' : 'View'}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               
               <Card>
                 <CardHeader>
@@ -491,20 +603,18 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <Switch 
                     id="two-factor" 
-                    checked={userSettings.twoFactorEnabled}
-                    onCheckedChange={handleToggleChange('twoFactorEnabled')}
+                    checked={false}
+                    disabled
                   />
                 </div>
                 
-                {!userSettings.twoFactorEnabled && (
-                  <Alert>
-                    <ShieldCheck className="h-4 w-4" />
-                    <AlertTitle>Enhance Your Security</AlertTitle>
-                    <AlertDescription>
-                      We strongly recommend enabling two-factor authentication for additional account protection.
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <Alert>
+                  <ShieldCheck className="h-4 w-4" />
+                  <AlertTitle>Enhance Your Security</AlertTitle>
+                  <AlertDescription>
+                    We strongly recommend enabling two-factor authentication for additional account protection.
+                  </AlertDescription>
+                </Alert>
                 
                 <Separator />
                 
@@ -520,14 +630,129 @@ const SettingsPage: React.FC = () => {
                       <Badge>Active</Badge>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="mt-2">Log Out All Other Devices</Button>
+                  <div className="flex gap-2 mt-4">
+                    <Button variant="outline" size="sm">Log Out All Other Devices</Button>
+                    <Button variant="destructive" size="sm" onClick={signOut}>Log Out</Button>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button>
-                  <Save className="mr-2 h-4 w-4" /> Save Security Settings
-                </Button>
-              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          {/* Subscription Tab */}
+          <TabsContent value="subscription">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" /> Subscription Management
+                </CardTitle>
+                <CardDescription>
+                  Manage your subscription plan and billing
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {isRoleSuperAdmin() || isRoleAdmin() ? (
+                  <Alert>
+                    <InfoIcon className="h-4 w-4" />
+                    <AlertTitle>Admin Account</AlertTitle>
+                    <AlertDescription>
+                      As an {profile.role.replace('_', ' ')}, you have access to all features without requiring a subscription.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    {subscription ? (
+                      <div className="space-y-4">
+                        <div className="bg-agro-green-light/20 p-4 rounded-md border border-agro-green">
+                          <h3 className="font-medium text-agro-green-dark flex items-center">
+                            <CheckCircle2 className="h-4 w-4 mr-2" /> 
+                            Active Subscription
+                          </h3>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-sm">
+                              <span className="font-medium">Plan:</span> {subscription.plan?.name}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-medium">Price:</span> ${Number(subscription.plan?.price).toFixed(2)}/{subscription.plan?.billing_interval}
+                            </p>
+                            {subscription.end_date && (
+                              <p className="text-sm">
+                                <span className="font-medium">Next billing date:</span> {new Date(subscription.end_date).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="mt-4">
+                            <p className="text-sm font-medium mb-2">Features included:</p>
+                            <ul className="text-sm space-y-1 ml-6 list-disc">
+                              {subscription.plan?.features && Object.entries(subscription.plan.features).map(([key, value]) => {
+                                if (value === true) {
+                                  return (
+                                    <li key={key}>
+                                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                    </li>
+                                  );
+                                } else if (typeof value === 'number') {
+                                  return (
+                                    <li key={key}>
+                                      {value} {key.replace(/_/g, ' ')}
+                                    </li>
+                                  );
+                                }
+                                return null;
+                              })}
+                            </ul>
+                          </div>
+                          
+                          <div className="mt-4 flex gap-2">
+                            <Button onClick={handleManageSubscription}>
+                              Manage Subscription
+                            </Button>
+                            <Button variant="outline" onClick={() => navigate('/subscription/plans')}>
+                              View All Plans
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <Alert>
+                          <InfoIcon className="h-4 w-4" />
+                          <AlertTitle>Billing Questions?</AlertTitle>
+                          <AlertDescription>
+                            For any billing inquiries, please contact our support team at support@agrosense.com
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>No Active Subscription</AlertTitle>
+                          <AlertDescription>
+                            You don't have an active subscription plan. Some features may be limited.
+                          </AlertDescription>
+                        </Alert>
+                        
+                        <div className="bg-muted p-4 rounded-md">
+                          <h3 className="font-medium">Why Subscribe?</h3>
+                          <ul className="mt-2 space-y-2 ml-6 list-disc">
+                            <li>Access to advanced irrigation automation</li>
+                            <li>Detailed analytics and reporting</li>
+                            <li>Support for more devices and zones</li>
+                            <li>Premium weather forecasting</li>
+                          </ul>
+                          
+                          <Button 
+                            className="mt-4" 
+                            onClick={() => navigate('/subscription/plans')}
+                          >
+                            View Subscription Plans
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>

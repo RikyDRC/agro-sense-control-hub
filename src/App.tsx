@@ -8,6 +8,10 @@ import Dashboard from "./pages/Dashboard";
 import DevicesPage from "./pages/DevicesPage";
 import MapPage from "./pages/MapPage";
 import ZonesPage from "./pages/ZonesPage";
+import CropsPage from "./pages/CropsPage";
+import WeatherPage from "./pages/WeatherPage";
+import AutomationPage from "./pages/AutomationPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/devices" element={<DevicesPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/zones" element={<ZonesPage />} />
+          <Route path="/crops" element={<CropsPage />} />
+          <Route path="/weather" element={<WeatherPage />} />
+          <Route path="/automation" element={<AutomationPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

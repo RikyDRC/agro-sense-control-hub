@@ -40,7 +40,16 @@ const SubscriptionPlansPage: React.FC = () => {
         .order('price', { ascending: true });
 
       if (error) throw error;
-      setPlans(data || []);
+      
+      // Convert the features from Json to Record<string, any>
+      const formattedPlans = data?.map(plan => ({
+        ...plan,
+        features: typeof plan.features === 'string' 
+          ? JSON.parse(plan.features) 
+          : plan.features
+      })) as SubscriptionPlan[];
+      
+      setPlans(formattedPlans || []);
     } catch (error) {
       console.error('Error fetching subscription plans:', error);
       toast.error('Failed to load subscription plans');

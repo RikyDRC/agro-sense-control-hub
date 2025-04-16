@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -15,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
   InfoIcon, Save, UserIcon, BellIcon, Globe, Lock, ShieldCheck, Database, 
-  PlugZap, AlertCircle, CreditCard, Settings as SettingsIcon, Crown, Shield
+  PlugZap, AlertCircle, CreditCard, Settings as SettingsIcon, Crown, Shield, CheckCircle
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/components/ui/sonner';
@@ -43,7 +42,6 @@ const SettingsPage: React.FC = () => {
     language: 'en-US'
   });
   
-  // Initialize form data from user profile
   useEffect(() => {
     if (profile) {
       setFormData(prev => ({
@@ -137,7 +135,6 @@ const SettingsPage: React.FC = () => {
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
-          {/* Profile Tab */}
           <TabsContent value="profile">
             <div className="grid gap-6">
               <Card>
@@ -300,7 +297,6 @@ const SettingsPage: React.FC = () => {
             </div>
           </TabsContent>
           
-          {/* Notifications Tab */}
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
@@ -404,7 +400,6 @@ const SettingsPage: React.FC = () => {
             </Card>
           </TabsContent>
           
-          {/* System Tab */}
           <TabsContent value="system">
             <div className="grid gap-6">
               <Card>
@@ -463,7 +458,6 @@ const SettingsPage: React.FC = () => {
                 </CardFooter>
               </Card>
               
-              {/* Admin-only section */}
               {(isRoleSuperAdmin() || isRoleAdmin()) && (
                 <Card>
                   <CardHeader>
@@ -554,7 +548,6 @@ const SettingsPage: React.FC = () => {
             </div>
           </TabsContent>
           
-          {/* Security Tab */}
           <TabsContent value="security">
             <Card>
               <CardHeader>
@@ -639,7 +632,6 @@ const SettingsPage: React.FC = () => {
             </Card>
           </TabsContent>
           
-          {/* Subscription Tab */}
           <TabsContent value="subscription">
             <Card>
               <CardHeader>
@@ -665,7 +657,7 @@ const SettingsPage: React.FC = () => {
                       <div className="space-y-4">
                         <div className="bg-agro-green-light/20 p-4 rounded-md border border-agro-green">
                           <h3 className="font-medium text-agro-green-dark flex items-center">
-                            <CheckCircle2 className="h-4 w-4 mr-2" /> 
+                            <CheckCircle className="h-4 w-4 mr-2" /> 
                             Active Subscription
                           </h3>
                           <div className="mt-2 space-y-1">

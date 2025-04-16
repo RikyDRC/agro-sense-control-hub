@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { UserRole } from '@/contexts/AuthContext';
 
 interface ConfigItem {
   id: string;
@@ -27,7 +28,7 @@ interface UserProfile {
   id: string;
   email: string;
   display_name: string | null;
-  role: string;
+  role: UserRole;
   created_at: string;
 }
 
@@ -109,7 +110,7 @@ const AdminConfigPage: React.FC = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, role: string) => {
+  const updateUserRole = async (userId: string, role: UserRole) => {
     try {
       const { error } = await supabase
         .from('user_profiles')
@@ -282,7 +283,7 @@ const AdminConfigPage: React.FC = () => {
                           <select
                             className="border rounded px-2 py-1"
                             value={user.role}
-                            onChange={e => updateUserRole(user.id, e.target.value)}
+                            onChange={e => updateUserRole(user.id, e.target.value as UserRole)}
                             disabled={user.id === profile.id} // Can't change own role
                           >
                             <option value="super_admin">Super Admin</option>

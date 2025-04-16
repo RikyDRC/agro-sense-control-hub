@@ -16,7 +16,9 @@ import {
   DeviceStatus,
   DeviceType,
   IrrigationStatus,
-  AutomationRule
+  AutomationRule,
+  Zone,
+  Device
 } from '@/types';
 import AutomationRuleForm from '@/components/automation/AutomationRuleForm';
 
@@ -62,54 +64,79 @@ const initialRules: AutomationRule[] = [
   }
 ];
 
-const zones = [
+const zones: Zone[] = [
   {
     id: 'zone-a',
     name: 'Field Zone A',
+    description: 'Primary field zone',
+    boundaryCoordinates: [],
+    areaSize: 1200,
     devices: ['1', '2', '3'],
-    irrigationStatus: IrrigationStatus.ACTIVE
+    irrigationStatus: IrrigationStatus.ACTIVE,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 'zone-b',
     name: 'Field Zone B',
+    description: 'Secondary field zone',
+    boundaryCoordinates: [],
+    areaSize: 900,
     devices: ['4', '5'],
-    irrigationStatus: IrrigationStatus.SCHEDULED
+    irrigationStatus: IrrigationStatus.SCHEDULED,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
-const devices = [
+const devices: Device[] = [
   {
     id: '1',
     name: 'Moisture Sensor A1',
     type: DeviceType.MOISTURE_SENSOR,
     status: DeviceStatus.ONLINE,
-    lastReading: 45.5
+    batteryLevel: 85,
+    lastReading: 45.5,
+    lastUpdated: new Date().toISOString(),
+    location: { lat: 35.6895, lng: 139.6917 }
   },
   {
     id: '2',
     name: 'Valve A1',
     type: DeviceType.VALVE,
-    status: DeviceStatus.ONLINE
+    status: DeviceStatus.ONLINE,
+    batteryLevel: 78,
+    lastUpdated: new Date().toISOString(),
+    location: { lat: 35.6895, lng: 139.6917 }
   },
   {
     id: '3',
     name: 'Temperature Sensor A1',
     type: DeviceType.TEMPERATURE_SENSOR,
     status: DeviceStatus.ONLINE,
-    lastReading: 22.3
+    batteryLevel: 92,
+    lastReading: 22.3,
+    lastUpdated: new Date().toISOString(),
+    location: { lat: 35.6895, lng: 139.6917 }
   },
   {
     id: '4',
     name: 'Moisture Sensor B1',
     type: DeviceType.MOISTURE_SENSOR,
     status: DeviceStatus.ONLINE,
-    lastReading: 62.1
+    batteryLevel: 65,
+    lastReading: 62.1,
+    lastUpdated: new Date().toISOString(),
+    location: { lat: 35.6895, lng: 139.6917 }
   },
   {
     id: '5',
     name: 'Valve B1',
     type: DeviceType.VALVE,
-    status: DeviceStatus.ONLINE
+    status: DeviceStatus.ONLINE,
+    batteryLevel: 70,
+    lastUpdated: new Date().toISOString(),
+    location: { lat: 35.6895, lng: 139.6917 }
   }
 ];
 

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Eye, FlaskConical, Plus, Pencil, Trash2, Check, X 
+  Eye, FlaskConical, Plus, Pencil, Trash2, Check, X, Battery 
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { 
@@ -20,6 +20,14 @@ import {
 } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import DeviceCard from '@/components/DeviceCard';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell
+} from '@/components/ui/table';
 
 const initialDevices: Device[] = [
   {
@@ -214,6 +222,51 @@ const DevicesPage: React.FC = () => {
       batteryLevel: 100,
       location: { lat: 0, lng: 0 }
     });
+  };
+
+  const getDeviceIcon = (type: DeviceType) => {
+    switch (type) {
+      case DeviceType.MOISTURE_SENSOR:
+        return <Droplet className="h-4 w-4" />;
+      case DeviceType.TEMPERATURE_SENSOR:
+        return <Thermometer className="h-4 w-4" />;
+      case DeviceType.VALVE:
+        return <Eye className="h-4 w-4" />;
+      case DeviceType.PUMP:
+        return <FlaskConical className="h-4 w-4" />;
+      default:
+        return <Eye className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusColor = (status: DeviceStatus) => {
+    switch (status) {
+      case DeviceStatus.ONLINE:
+        return "bg-green-500";
+      case DeviceStatus.OFFLINE:
+        return "bg-slate-400";
+      case DeviceStatus.MAINTENANCE:
+        return "bg-yellow-500";
+      case DeviceStatus.ALERT:
+        return "bg-red-500";
+      default:
+        return "bg-slate-400";
+    }
+  };
+
+  const getStatusText = (status: DeviceStatus) => {
+    switch (status) {
+      case DeviceStatus.ONLINE:
+        return "Online";
+      case DeviceStatus.OFFLINE:
+        return "Offline";
+      case DeviceStatus.MAINTENANCE:
+        return "Maintenance";
+      case DeviceStatus.ALERT:
+        return "Alert";
+      default:
+        return "Unknown";
+    }
   };
 
   return (

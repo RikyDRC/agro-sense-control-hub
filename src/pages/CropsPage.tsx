@@ -54,12 +54,24 @@ const zones: Zone[] = [
   {
     id: 'zone-a',
     name: 'Field Zone A',
-    irrigationStatus: IrrigationStatus.ACTIVE
+    description: 'Primary field zone',
+    boundaryCoordinates: [],
+    areaSize: 1200,
+    devices: ['1', '2'],
+    irrigationStatus: IrrigationStatus.ACTIVE,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 'zone-b',
     name: 'Field Zone B',
-    irrigationStatus: IrrigationStatus.SCHEDULED
+    description: 'Secondary field zone',
+    boundaryCoordinates: [],
+    areaSize: 900,
+    devices: ['3'],
+    irrigationStatus: IrrigationStatus.SCHEDULED,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 

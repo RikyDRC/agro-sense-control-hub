@@ -61,8 +61,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
   useEffect(() => {
+    // First set up the auth state listener to avoid missing any auth events
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log("Auth state changed:", event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -88,8 +89,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id);
-        fetchUserSubscription(currentSession.user.id);
+        // Use setTimeout to prevent potential deadlocks
+        setTimeout(() => {
+          fetchUserProfile(currentSession.user.id);
+          fetchUserSubscription(currentSession.user.id);
+        }, 0);
       } else {
         setLoading(false);
       }
@@ -103,9 +107,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log("Fetching user profile for:", userId);
+      
+      // Use a simplified query to avoid recursive policy issues
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select('id, email, display_name, role, profile_image, created_at, updated_at')
         .eq('id', userId)
         .single();
 
@@ -117,20 +123,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       console.log("Profile data received:", data);
       setProfile(data as UserProfile);
-      setLoading(false);
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchUserSubscription = async (userId: string) => {
     try {
+      // Simplify the query to avoid recursive policy issues
       const { data, error } = await supabase
         .from('user_subscriptions')
         .select(`
-          *,
-          plan:plan_id(*)
+          id, plan_id, status, start_date, end_date,
+          plan:plan_id(id, name, description, price, billing_interval, features)
         `)
         .eq('user_id', userId)
         .eq('status', 'active')

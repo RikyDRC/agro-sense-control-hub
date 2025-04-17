@@ -25,20 +25,19 @@ const GoogleMapsApiKey: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('platform_config')
-        .select('*')
+        .select('value')
         .eq('key', 'google_maps_api_key')
         .single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching Google Maps API key:', error);
-        return;
-      }
-
-      if (data) {
+        toast.error('Failed to load Google Maps API key');
+      } else if (data) {
         setApiKey(data.value);
       }
     } catch (error) {
       console.error('Error in fetchApiKey:', error);
+      toast.error('Failed to load Google Maps API key');
     } finally {
       setIsLoading(false);
     }

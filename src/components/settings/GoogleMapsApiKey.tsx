@@ -8,17 +8,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Eye, EyeOff, Save, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const GoogleMapsApiKey: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [loading, setSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchApiKey();
   }, []);
 
   const fetchApiKey = async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('platform_config')
@@ -36,6 +39,8 @@ const GoogleMapsApiKey: React.FC = () => {
       }
     } catch (error) {
       console.error('Error in fetchApiKey:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,6 +90,26 @@ const GoogleMapsApiKey: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-1/2 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-10 w-32" />
+        </CardFooter>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -119,7 +144,7 @@ const GoogleMapsApiKey: React.FC = () => {
           </div>
         </div>
         
-        <Alert variant="info" className="bg-blue-50 text-blue-800 border-blue-200">
+        <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
           <AlertDescription>
             You can get a Google Maps API key from the <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a>. Make sure to enable the Maps JavaScript API.
           </AlertDescription>

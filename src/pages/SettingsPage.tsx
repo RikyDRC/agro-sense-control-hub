@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,10 +17,11 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
-  InfoIcon, Save, UserIcon, AlertCircle, PlugZap, Database, MapPin, CloudSun, Lock, Shield, CheckCircle
+  InfoIcon, Save, UserIcon, AlertCircle, PlugZap, Database, MapPin, CloudSun, Lock, Shield
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/components/ui/sonner';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const SettingsPage: React.FC = () => {
   const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, loading } = useAuth();
@@ -68,11 +70,36 @@ const SettingsPage: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">System Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account, preferences, and system configuration
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">System Settings</h1>
+            <p className="text-muted-foreground">
+              Manage your account, preferences, and system configuration
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              {profile.profile_image ? (
+                <AvatarImage src={profile.profile_image} alt={profile.display_name || "User"} />
+              ) : (
+                <AvatarFallback className="bg-primary text-white text-lg">
+                  {profile.display_name ? profile.display_name.charAt(0).toUpperCase() : "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div>
+              <h3 className="font-medium">{profile.display_name || profile.email}</h3>
+              <Badge 
+                className={
+                  profile.role === 'super_admin' ? 'bg-red-500' :
+                  profile.role === 'admin' ? 'bg-blue-500' : 
+                  'bg-green-500'
+                }
+              >
+                {profile.role.replace('_', ' ')}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -330,7 +357,7 @@ const SettingsPage: React.FC = () => {
                           <div className="flex justify-between items-center p-4 border rounded-md">
                             <div>
                               <h3 className="font-medium flex items-center">
-                                <Crown className="h-4 w-4 mr-2 text-red-500" /> 
+                                <ShieldCheck className="h-4 w-4 mr-2 text-red-500" /> 
                                 Platform Configuration
                               </h3>
                               <p className="text-sm text-muted-foreground">
@@ -515,7 +542,7 @@ const SettingsPage: React.FC = () => {
                       <div className="space-y-4">
                         <div className="bg-agro-green-light/20 p-4 rounded-md border border-agro-green">
                           <h3 className="font-medium text-agro-green-dark flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2" /> 
+                            <InfoIcon className="h-4 w-4 mr-2" /> 
                             Active Subscription
                           </h3>
                           <div className="mt-2 space-y-1">

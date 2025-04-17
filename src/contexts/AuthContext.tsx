@@ -11,6 +11,7 @@ export interface UserProfile {
   email: string;
   display_name: string | null;
   role: UserRole;
+  profile_image: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setSubscription(null);
+          setLoading(false);
         }
       }
     );
@@ -166,6 +168,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error) {
+        // Refresh the profile after successful sign in
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          await fetchUserProfile(data.user.id);
+        }
+      }
       return { error };
     } catch (error) {
       return { error };
@@ -191,14 +200,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
+        // Make sure the profile has the right role and display name
         const { error: profileError } = await supabase
           .from('user_profiles')
-          .update({ role })
+          .update({ 
+            role,
+            display_name: displayName || email.split('@')[0]
+          })
           .eq('id', data.user.id);
 
         if (profileError) {
           console.error('Profile update error:', profileError);
         }
+        
+        // Immediately fetch the profile
+        await fetchUserProfile(data.user.id);
       }
 
       return { error: null };

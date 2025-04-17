@@ -60,19 +60,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
+  // Function to safely fetch user profile without causing recursion
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log("Fetching user profile for:", userId);
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, email, display_name, role, profile_image, created_at, updated_at')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      console.log("Profile data received:", data);
+      return data as UserProfile;
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return null;
+    }
+  };
+
+  // Function to safely fetch user subscription without causing recursion
+  const fetchUserSubscription = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          id, plan_id, status, start_date, end_date,
+          plan:subscription_plans(id, name, description, price, billing_interval, features)
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user subscription:', error);
+        return null;
+      }
+
+      return data as UserSubscription;
+    } catch (error) {
+      console.error('Error in fetchUserSubscription:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     // First set up the auth state listener to avoid missing any auth events
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         console.log("Auth state changed:", event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          // Use setTimeout to prevent potential deadlocks with Supabase auth
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
-            fetchUserSubscription(newSession.user.id);
+          setLoading(true);
+          // Use timeout to prevent potential deadlocks with Supabase auth
+          setTimeout(async () => {
+            const userProfile = await fetchUserProfile(newSession.user.id);
+            setProfile(userProfile);
+            
+            const userSubscription = await fetchUserSubscription(newSession.user.id);
+            setSubscription(userSubscription);
+            
+            setLoading(false);
           }, 0);
         } else {
           setProfile(null);
@@ -83,105 +140,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // Initial session check
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    const initAuth = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
       console.log("Initial session check:", currentSession?.user?.id);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        // Use setTimeout to prevent potential deadlocks
-        setTimeout(() => {
-          fetchUserProfile(currentSession.user.id);
-          fetchUserSubscription(currentSession.user.id);
-        }, 0);
-      } else {
-        setLoading(false);
+        const userProfile = await fetchUserProfile(currentSession.user.id);
+        setProfile(userProfile);
+        
+        const userSubscription = await fetchUserSubscription(currentSession.user.id);
+        setSubscription(userSubscription);
       }
-    });
+      
+      setLoading(false);
+    };
+    
+    initAuth();
 
     return () => {
       authSubscription.unsubscribe();
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      console.log("Fetching user profile for:", userId);
-      
-      // Use a simplified query to avoid recursive policy issues
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('id, email, display_name, role, profile_image, created_at, updated_at')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setLoading(false);
-        return;
-      }
-
-      console.log("Profile data received:", data);
-      setProfile(data as UserProfile);
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUserSubscription = async (userId: string) => {
-    try {
-      // Simplify the query to avoid recursive policy issues
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select(`
-          id, plan_id, status, start_date, end_date,
-          plan:plan_id(id, name, description, price, billing_interval, features)
-        `)
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) {
-        if (error.code !== 'PGRST116') {
-          console.error('Error fetching user subscription:', error);
-        }
-        setSubscription(null);
-        return;
-      }
-
-      setSubscription(data as UserSubscription);
-    } catch (error) {
-      console.error('Error in fetchUserSubscription:', error);
-      setSubscription(null);
-    }
-  };
-
   const refreshProfile = async () => {
-    if (user) {
-      await fetchUserProfile(user.id);
-    }
+    if (!user) return;
+    
+    setLoading(true);
+    const userProfile = await fetchUserProfile(user.id);
+    setProfile(userProfile);
+    setLoading(false);
   };
 
   const refreshSubscription = async () => {
-    if (user) {
-      await fetchUserSubscription(user.id);
-    }
+    if (!user) return;
+    
+    setLoading(true);
+    const userSubscription = await fetchUserSubscription(user.id);
+    setSubscription(userSubscription);
+    setLoading(false);
   };
 
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (!error) {
-        // Refresh the profile after successful sign in
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          await fetchUserProfile(data.user.id);
-        }
-      }
       return { error };
     } catch (error) {
       return { error };
@@ -206,24 +209,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      if (data.user) {
-        // Make sure the profile has the right role and display name
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .update({ 
-            role,
-            display_name: displayName || email.split('@')[0]
-          })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-        
-        // Immediately fetch the profile
-        await fetchUserProfile(data.user.id);
-      }
-
+      // No need to update the profile immediately as the trigger will handle it
       return { error: null };
     } catch (error: any) {
       console.error('Signup catch error:', error);

@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const GoogleMapsApiKey: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-  const [loading, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -27,9 +27,9 @@ const GoogleMapsApiKey: React.FC = () => {
         .from('platform_config')
         .select('value')
         .eq('key', 'google_maps_api_key')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching Google Maps API key:', error);
         toast.error('Failed to load Google Maps API key');
       } else if (data) {
@@ -50,9 +50,9 @@ const GoogleMapsApiKey: React.FC = () => {
         .from('platform_config')
         .select('id')
         .eq('key', 'google_maps_api_key')
-        .single();
+        .maybeSingle();
       
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         throw checkError;
       }
       
@@ -150,8 +150,8 @@ const GoogleMapsApiKey: React.FC = () => {
         </Alert>
       </CardContent>
       <CardFooter>
-        <Button onClick={saveApiKey} disabled={loading}>
-          {loading ? (
+        <Button onClick={saveApiKey} disabled={saving}>
+          {saving ? (
             <>Saving...</>
           ) : (
             <>

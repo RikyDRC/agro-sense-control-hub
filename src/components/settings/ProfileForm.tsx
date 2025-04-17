@@ -54,6 +54,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
   };
   
   const handleUpdateProfile = async () => {
+    if (!profile) return;
+    
     setLoading(true);
     
     try {
@@ -78,6 +80,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!profile) return;
+    
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -91,7 +95,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     
     try {
       // For this demo, we'll use a simple base64 encoding
-      // In production, you'd upload to Supabase Storage
       const reader = new FileReader();
       
       reader.onload = async (event) => {
@@ -127,6 +130,26 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
       setUploadingImage(false);
     }
   };
+
+  if (!profile) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>User Profile</CardTitle>
+          <CardDescription>
+            Loading profile information...
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

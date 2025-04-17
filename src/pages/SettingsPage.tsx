@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,9 +26,17 @@ const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('profile');
+  const [isPageLoading, setIsPageLoading] = useState(true);
   
-  // Show a loading state while the profile is being fetched
-  if (loading) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || isPageLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -45,8 +53,7 @@ const SettingsPage: React.FC = () => {
     );
   }
 
-  // Only redirect if user is null and loading is complete
-  if (!user && !loading) {
+  if (!user && !loading && !isPageLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
@@ -65,8 +72,8 @@ const SettingsPage: React.FC = () => {
     );
   }
 
-  // If we have a user but no profile yet, show a loading state
-  if (user && !profile) {
+  if (user && !profile && !loading && !isPageLoading) {
+    refreshProfile();
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -132,10 +139,8 @@ const SettingsPage: React.FC = () => {
 
             <TabsContent value="profile">
               <div className="grid gap-6">
-                {/* Profile Form Component */}
                 <ProfileForm profile={profile} refreshProfile={refreshProfile} />
                 
-                {/* Regional Settings */}
                 <div className="grid gap-6">
                   <Card>
                     <CardHeader>

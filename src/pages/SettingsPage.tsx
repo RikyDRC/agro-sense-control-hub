@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -27,37 +28,38 @@ const SettingsPage: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState('profile');
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [loadAttempts, setLoadAttempts] = useState(0);
   
-  // Initial loading timeout
+  // Initial loading handler with safety timeout
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPageLoading(false);
-    }, 2000);
+    console.log("Settings page mounted, loading:", loading, "profile:", !!profile);
     
-    return () => clearTimeout(timer);
-  }, []);
-  
-  // Try to refresh profile a few times if it's not loaded
-  useEffect(() => {
-    if (!loading && !profile && user && loadAttempts < 3) {
-      const timer = setTimeout(() => {
-        refreshProfile();
-        setLoadAttempts(prev => prev + 1);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
+    // If auth is not loading and profile exists, stop page loading
+    if (!loading && profile) {
+      setIsPageLoading(false);
     }
-  }, [loading, profile, user, loadAttempts, refreshProfile]);
-  
-  // Safety timeout to prevent indefinite loading
-  useEffect(() => {
+    
+    // Safety timeout to prevent infinite loading
     const safetyTimer = setTimeout(() => {
       setIsPageLoading(false);
-    }, 5000);
+    }, 3000);
     
     return () => clearTimeout(safetyTimer);
-  }, []);
+  }, [loading, profile]);
+  
+  // Try to refresh profile if needed
+  useEffect(() => {
+    if (!loading && user && !profile) {
+      console.log("Attempting to refresh profile");
+      refreshProfile();
+      
+      // Safety timeout for this specific case
+      const profileTimeout = setTimeout(() => {
+        setIsPageLoading(false);
+      }, 2000);
+      
+      return () => clearTimeout(profileTimeout);
+    }
+  }, [loading, user, profile, refreshProfile]);
 
   // Final state check
   if (!user) {
@@ -116,7 +118,26 @@ const SettingsPage: React.FC = () => {
           )}
         </div>
 
-        {profile ? (
+        {isPageLoading ? (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-48 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-32" />
+              </CardFooter>
+            </Card>
+          </div>
+        ) : profile ? (
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid grid-cols-3 md:grid-cols-5 lg:w-[600px]">
               <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -643,23 +664,13 @@ const SettingsPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         ) : (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-4 w-48 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Skeleton className="h-10 w-32" />
-              </CardFooter>
-            </Card>
+          <div className="p-8 text-center">
+            <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Profile Not Available</h2>
+            <p className="text-muted-foreground mb-4">We couldn't load your profile information. Please try refreshing the page.</p>
+            <Button onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
           </div>
         )}
       </div>

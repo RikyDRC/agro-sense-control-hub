@@ -59,22 +59,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(false);
 
-  // Function to safely fetch user profile without causing recursion
+  // Fixed functions to prevent recursion
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     if (!userId) return null;
-    if (fetchingProfile) return null;
     
     try {
-      setFetchingProfile(true);
       console.log("Fetching user profile for:", userId);
       
-      // Use simple fetch with anon key instead of supabase client with RLS
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id, email, display_name, role, profile_image, created_at, updated_at')
+        .select('*')
         .eq('id', userId)
         .single();
 
@@ -88,12 +84,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
       return null;
-    } finally {
-      setFetchingProfile(false);
     }
   };
 
-  // Function to safely fetch user subscription without causing recursion
   const fetchUserSubscription = async (userId: string) => {
     if (!userId) return null;
     
@@ -122,61 +115,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Set up auth state listener and initial session
   useEffect(() => {
-    // First set up the auth state listener to avoid missing any auth events
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log("Auth state changed:", event, newSession?.user?.id);
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          // Using setTimeout to break the potential recursion chain
-          setTimeout(async () => {
-            try {
-              const userProfile = await fetchUserProfile(newSession.user.id);
-              setProfile(userProfile);
-              
-              const userSubscription = await fetchUserSubscription(newSession.user.id);
-              setSubscription(userSubscription);
-            } catch (error) {
-              console.error("Error fetching user data:", error);
-            } finally {
-              setLoading(false);
-            }
-          }, 100);
-        } else {
-          setProfile(null);
-          setSubscription(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Initial session check
-    const initAuth = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Initial session check:", currentSession?.user?.id);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
+    const handleAuthChange = (event: string, currentSession: Session | null) => {
+      console.log("Auth state changed:", event, currentSession?.user?.id);
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        // Use setTimeout to prevent potential recursion
+        setTimeout(async () => {
           const userProfile = await fetchUserProfile(currentSession.user.id);
           setProfile(userProfile);
           
           const userSubscription = await fetchUserSubscription(currentSession.user.id);
           setSubscription(userSubscription);
-        }
-      } catch (error) {
-        console.error("Error in initial auth check:", error);
-      } finally {
+          setLoading(false);
+        }, 0);
+      } else {
+        setProfile(null);
+        setSubscription(null);
         setLoading(false);
-        setAuthInitialized(true);
       }
     };
-    
-    initAuth();
+
+    // First set up the auth state listener
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession?.user?.id);
+      
+      if (currentSession?.user && !profile) {
+        handleAuthChange('INITIAL_SESSION', currentSession);
+      } else if (!currentSession) {
+        setLoading(false);
+      }
+    });
 
     return () => {
       authSubscription.unsubscribe();
@@ -187,28 +162,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     if (fetchingProfile) return;
     
-    setLoading(true);
+    setFetchingProfile(true);
     try {
       const userProfile = await fetchUserProfile(user.id);
       setProfile(userProfile);
     } catch (error) {
       console.error("Error refreshing profile:", error);
     } finally {
-      setLoading(false);
+      setFetchingProfile(false);
     }
   };
 
   const refreshSubscription = async () => {
     if (!user) return;
     
-    setLoading(true);
     try {
       const userSubscription = await fetchUserSubscription(user.id);
       setSubscription(userSubscription);
     } catch (error) {
       console.error("Error refreshing subscription:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -223,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, displayName?: string, role: UserRole = 'farmer') => {
     try {
-      const { error, data } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email, 
         password,
         options: {
@@ -239,7 +211,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      // No need to update the profile immediately as the trigger will handle it
       return { error: null };
     } catch (error: any) {
       console.error('Signup catch error:', error);

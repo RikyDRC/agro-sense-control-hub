@@ -15,34 +15,25 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const [localLoading, setLocalLoading] = useState(true);
   
-  // Add a timer to prevent infinite loading
+  // Set a fixed timeout to prevent infinite loading
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (loading) {
-      timer = setTimeout(() => {
-        if (!user) {
-          navigate('/auth', { replace: true });
-        }
-        setLocalLoading(false);
-      }, 3000); // 3 seconds timeout
-    } else {
+    const timer = setTimeout(() => {
       setLocalLoading(false);
-    }
+    }, 2000);
     
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [loading, user, navigate]);
-
-  // Add a safety timeout to ensure we don't get stuck
-  useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      setLocalLoading(false);
-    }, 5000); // 5 seconds maximum wait time
-    
-    return () => clearTimeout(safetyTimer);
+    return () => clearTimeout(timer);
   }, []);
+
+  // Update local loading state based on auth loading
+  useEffect(() => {
+    if (!loading) {
+      // Small delay to ensure profile data has loaded
+      const timer = setTimeout(() => {
+        setLocalLoading(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   if (loading && localLoading) {
     return (

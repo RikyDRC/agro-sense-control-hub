@@ -15,13 +15,32 @@ const GoogleMapsApiKey: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadAttempts, setLoadAttempts] = useState(0);
 
   useEffect(() => {
     fetchApiKey();
+    
+    // Safety timeout to prevent indefinite loading
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+    
+    return () => clearTimeout(safetyTimer);
   }, []);
+  
+  // Try to refetch if there was an error, but only a few times
+  useEffect(() => {
+    if (loadAttempts < 3 && isLoading) {
+      const timer = setTimeout(() => {
+        fetchApiKey();
+        setLoadAttempts(prev => prev + 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loadAttempts, isLoading]);
 
   const fetchApiKey = async () => {
-    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('platform_config')

@@ -27,33 +27,40 @@ const SettingsPage: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState('profile');
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
+  // Initial loading timeout
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsPageLoading(false);
-    }, 1000);
+    }, 2000);
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // Try to refresh profile a few times if it's not loaded
+  useEffect(() => {
+    if (!loading && !profile && user && loadAttempts < 3) {
+      const timer = setTimeout(() => {
+        refreshProfile();
+        setLoadAttempts(prev => prev + 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loading, profile, user, loadAttempts, refreshProfile]);
+  
+  // Safety timeout to prevent indefinite loading
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 5000);
+    
+    return () => clearTimeout(safetyTimer);
+  }, []);
 
-  if (loading || isPageLoading) {
-    return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Loading settings...</h1>
-            <p className="text-muted-foreground">Please wait while we load your profile information</p>
-          </div>
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!user && !loading && !isPageLoading) {
+  // Final state check
+  if (!user) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
@@ -66,24 +73,6 @@ const SettingsPage: React.FC = () => {
             >
               Go to Login
             </Button>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (user && !profile && !loading && !isPageLoading) {
-    refreshProfile();
-    return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Loading profile...</h1>
-            <p className="text-muted-foreground">Please wait while we load your profile information</p>
-          </div>
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-64 w-full" />
           </div>
         </div>
       </DashboardLayout>
@@ -127,7 +116,7 @@ const SettingsPage: React.FC = () => {
           )}
         </div>
 
-        {profile && (
+        {profile ? (
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid grid-cols-3 md:grid-cols-5 lg:w-[600px]">
               <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -653,6 +642,25 @@ const SettingsPage: React.FC = () => {
               </Card>
             </TabsContent>
           </Tabs>
+        ) : (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-48 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-32" />
+              </CardFooter>
+            </Card>
+          </div>
         )}
       </div>
     </DashboardLayout>

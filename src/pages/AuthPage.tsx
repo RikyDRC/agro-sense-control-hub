@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, UserPlus, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { LogIn, UserPlus, AlertTriangle, ShieldCheck, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,16 +23,43 @@ const AuthPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'admin' | 'super_admin'>('farmer');
+  const [userCount, setUserCount] = useState<number | null>(null);
+  const [isInitialSetup, setIsInitialSetup] = useState(false);
 
   useEffect(() => {
     if (session) {
       navigate('/dashboard');
     }
+    
+    // Check if there are any users in the system to determine if this is initial setup
+    const checkUserCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('user_profiles')
+          .select('*', { count: 'exact', head: true });
+          
+        if (error) {
+          console.error('Error checking user count:', error);
+          return;
+        }
+        
+        setUserCount(count || 0);
+        setIsInitialSetup(count === 0);
+        
+        // If this is initial setup, default to creating a super admin
+        if (count === 0) {
+          setSelectedRole('super_admin');
+          setActiveTab('signup');
+          setDisplayName('System Administrator');
+          toast.info('Welcome to initial setup! Please create a Super Admin account.');
+        }
+      } catch (err) {
+        console.error('Error checking user count:', err);
+      }
+    };
+    
+    checkUserCount();
   }, [session, navigate]);
-
-  const isSpecialAdminEmail = (email: string) => {
-    return email === 'akremi.atef@gmail.com';
-  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,11 +89,18 @@ const AuthPage = () => {
     setIsProcessing(true);
 
     try {
+      // Validate password strength
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters');
+        setIsProcessing(false);
+        return;
+      }
+      
       const { error } = await signUp(
         email, 
         password, 
         displayName, 
-        isSpecialAdminEmail(email) ? 'super_admin' : selectedRole
+        selectedRole
       );
       
       if (error) {
@@ -76,7 +110,9 @@ const AuthPage = () => {
       
       toast.success('Signed up successfully. Check your email for confirmation.');
       
-      if (isSpecialAdminEmail(email)) {
+      // If this is the first user (super admin), automatically log them in
+      if (isInitialSetup) {
+        await signIn(email, password);
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -86,18 +122,27 @@ const AuthPage = () => {
     }
   };
 
+  const fillSuperAdminCredentials = () => {
+    setEmail('super@agrosense.com');
+    setPassword('SuperAdmin123!');
+    setDisplayName('Super Administrator');
+    setSelectedRole('super_admin');
+    setActiveTab('signup');
+  };
+
   const fillAdminCredentials = () => {
     setEmail('admin@agrosense.com');
-    setPassword('Password123!');
+    setPassword('Admin123!');
     setDisplayName('Admin User');
     setSelectedRole('admin');
     setActiveTab('signup');
   };
 
-  const fillSuperAdminCredentials = () => {
-    setEmail('akremi.atef@gmail.com');
-    setPassword('Lovable2023');
-    setDisplayName('Super Admin');
+  const fillFarmerCredentials = () => {
+    setEmail('farmer@agrosense.com');
+    setPassword('Farmer123!');
+    setDisplayName('Farmer User');
+    setSelectedRole('farmer');
     setActiveTab('signup');
   };
 
@@ -116,6 +161,15 @@ const AuthPage = () => {
           <h1 className="text-3xl font-bold">AgroSmart</h1>
           <p className="text-muted-foreground">Smart irrigation and farm management</p>
         </div>
+
+        {isInitialSetup && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-blue-700">
+              Welcome to initial setup! Please create your Super Admin account to get started.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -166,6 +220,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="space-y-2 pt-2">
+                    <h3 className="text-sm font-medium">Quick Login</h3>
                     <div className="flex flex-wrap gap-2">
                       <Button 
                         type="button" 
@@ -184,6 +239,15 @@ const AuthPage = () => {
                       >
                         <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
                         Admin
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillFarmerCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-green-500" />
+                        Farmer
                       </Button>
                     </div>
                   </div>
@@ -256,6 +320,7 @@ const AuthPage = () => {
                     <Select
                       value={selectedRole}
                       onValueChange={(value) => setSelectedRole(value as 'farmer' | 'admin' | 'super_admin')}
+                      disabled={isInitialSetup} // Lock to super_admin for initial setup
                     >
                       <SelectTrigger id="role">
                         <SelectValue placeholder="Select a role" />
@@ -266,9 +331,47 @@ const AuthPage = () => {
                         <SelectItem value="super_admin">Super Admin</SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Select your role in the organization
-                    </p>
+                    {isInitialSetup ? (
+                      <p className="text-xs text-blue-600">
+                        First user must be a Super Admin for system setup
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Select your role in the organization
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2 pt-2">
+                    <h3 className="text-sm font-medium">Quick Setup</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillSuperAdminCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-red-500" />
+                        Super Admin
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillAdminCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
+                        Admin
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillFarmerCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-green-500" />
+                        Farmer
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter>

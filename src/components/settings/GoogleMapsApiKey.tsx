@@ -9,19 +9,31 @@ import { toast } from '@/components/ui/sonner';
 import { Eye, EyeOff, Save, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 
 const GoogleMapsApiKey: React.FC = () => {
+  const { isRoleSuperAdmin } = useAuth();
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     
     const fetchData = async () => {
       try {
+        // Check if user has super admin role
+        if (!isRoleSuperAdmin()) {
+          if (isMounted) {
+            setAccessDenied(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('platform_config')
           .select('value')
@@ -59,7 +71,7 @@ const GoogleMapsApiKey: React.FC = () => {
       isMounted = false;
       clearTimeout(safetyTimer);
     };
-  }, []);
+  }, [isRoleSuperAdmin]);
 
   const saveApiKey = async () => {
     setSaving(true);
@@ -123,6 +135,28 @@ const GoogleMapsApiKey: React.FC = () => {
         <CardFooter>
           <Skeleton className="h-10 w-32" />
         </CardFooter>
+      </Card>
+    );
+  }
+
+  if (accessDenied) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" /> Google Maps API Key
+          </CardTitle>
+          <CardDescription className="text-red-500">
+            Access Denied
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertDescription>
+              Only Super Administrators can view and manage API keys. Please contact your system administrator for assistance.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
       </Card>
     );
   }

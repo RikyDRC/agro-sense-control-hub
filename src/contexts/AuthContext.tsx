@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +49,7 @@ interface AuthContextProps {
   isRoleAdmin: () => boolean;
   isRoleFarmer: () => boolean;
   hasRole: (role: UserRole) => boolean;
+  updateUserRole: (userId: string, newRole: UserRole) => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -260,6 +262,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSubscription(null);
   };
 
+  const updateUserRole = async (userId: string, newRole: UserRole) => {
+    try {
+      if (!isRoleSuperAdmin()) {
+        return { error: new Error('Only super admins can update user roles') };
+      }
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ 
+          role: newRole,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error updating user role:', error);
+        toast.error('Failed to update user role');
+        return { error };
+      }
+
+      toast.success(`User role updated to ${newRole}`);
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error in updateUserRole:', error);
+      toast.error(error.message || 'Failed to update user role');
+      return { error };
+    }
+  };
+
   const isRoleSuperAdmin = () => profile?.role === 'super_admin';
   const isRoleAdmin = () => profile?.role === 'admin';
   const isRoleFarmer = () => profile?.role === 'farmer';
@@ -281,7 +312,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isRoleSuperAdmin,
         isRoleAdmin,
         isRoleFarmer,
-        hasRole
+        hasRole,
+        updateUserRole
       }}
     >
       {children}

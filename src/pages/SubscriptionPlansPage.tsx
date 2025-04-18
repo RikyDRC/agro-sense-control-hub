@@ -9,8 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Check, AlertTriangle, Loader2 } from 'lucide-react';
+import { Info, Check, AlertTriangle, Loader2, Plus, Edit, Trash, Settings } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SubscriptionPlan {
   id: string;
@@ -21,12 +26,32 @@ interface SubscriptionPlan {
   features: Record<string, any>;
 }
 
+interface PlanFormData {
+  id?: string;
+  name: string;
+  description: string;
+  price: string;
+  billing_interval: string;
+  features: Record<string, any>;
+}
+
 const SubscriptionPlansPage: React.FC = () => {
-  const { user, profile, subscription, refreshSubscription } = useAuth();
+  const { user, profile, subscription, refreshSubscription, isRoleSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [planFormData, setPlanFormData] = useState<PlanFormData>({
+    name: '',
+    description: '',
+    price: '0',
+    billing_interval: 'month',
+    features: {}
+  });
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [deletingPlan, setDeletingPlan] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPlans();
@@ -48,7 +73,7 @@ const SubscriptionPlansPage: React.FC = () => {
         return;
       }
       
-      // If no plans exist, create default ones (only in development)
+      // If no plans exist, create default ones
       if (!data || data.length === 0) {
         console.log('No subscription plans found, creating default plans');
         await createDefaultPlans();
@@ -137,6 +162,7 @@ const SubscriptionPlansPage: React.FC = () => {
       
       // Fetch the plans again after creating default ones
       fetchPlans();
+      toast.success('Default subscription plans created');
     } catch (error) {
       console.error('Error creating default plans:', error);
       toast.error('Failed to create default subscription plans');
@@ -169,6 +195,131 @@ const SubscriptionPlansPage: React.FC = () => {
     }
   };
 
+  const handleAddPlan = () => {
+    setPlanFormData({
+      name: '',
+      description: '',
+      price: '0',
+      billing_interval: 'month',
+      features: {
+        basic_analytics: false,
+        advanced_analytics: false,
+        irrigation_control: false,
+        weather_data: false,
+        soil_analysis: false,
+        sensor_limit: 0,
+        zone_limit: 0
+      }
+    });
+    setIsEditing(false);
+    setShowPlanDialog(true);
+  };
+
+  const handleEditPlan = (plan: SubscriptionPlan) => {
+    setPlanFormData({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description || '',
+      price: plan.price.toString(),
+      billing_interval: plan.billing_interval,
+      features: plan.features
+    });
+    setIsEditing(true);
+    setShowPlanDialog(true);
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    if (!isRoleSuperAdmin()) {
+      toast.error('Only super admins can delete plans');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
+      setDeletingPlan(planId);
+      try {
+        const { error } = await supabase
+          .from('subscription_plans')
+          .delete()
+          .eq('id', planId);
+
+        if (error) {
+          throw error;
+        }
+
+        toast.success('Plan deleted successfully');
+        fetchPlans();
+      } catch (error: any) {
+        console.error('Error deleting plan:', error);
+        toast.error(error.message || 'Failed to delete plan');
+      } finally {
+        setDeletingPlan(null);
+      }
+    }
+  };
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isRoleSuperAdmin()) {
+      toast.error('Only super admins can manage plans');
+      return;
+    }
+
+    setSavingPlan(true);
+    
+    try {
+      const planData = {
+        name: planFormData.name,
+        description: planFormData.description,
+        price: parseFloat(planFormData.price),
+        billing_interval: planFormData.billing_interval,
+        features: planFormData.features
+      };
+      
+      let error;
+      
+      if (isEditing && planFormData.id) {
+        // Update existing plan
+        const response = await supabase
+          .from('subscription_plans')
+          .update(planData)
+          .eq('id', planFormData.id);
+          
+        error = response.error;
+      } else {
+        // Create new plan
+        const response = await supabase
+          .from('subscription_plans')
+          .insert(planData);
+          
+        error = response.error;
+      }
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success(isEditing ? 'Plan updated successfully' : 'Plan created successfully');
+      setShowPlanDialog(false);
+      fetchPlans();
+    } catch (error: any) {
+      console.error('Error saving plan:', error);
+      toast.error(error.message || 'Failed to save plan');
+    } finally {
+      setSavingPlan(false);
+    }
+  };
+
+  const handleFeatureChange = (key: string, value: any) => {
+    setPlanFormData(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        [key]: value
+      }
+    }));
+  };
+
   const formatPrice = (price: number, interval: string) => {
     return `$${price.toFixed(2)}/${interval === 'month' ? 'mo' : 'yr'}`;
   };
@@ -186,7 +337,7 @@ const SubscriptionPlansPage: React.FC = () => {
             <span>{key.split('_').join(' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
           </div>
         );
-      } else if (typeof value === 'number') {
+      } else if (typeof value === 'number' && value > 0) {
         return (
           <div key={key} className="flex items-center py-1">
             <Check className="h-4 w-4 mr-2 text-green-500" />
@@ -211,11 +362,19 @@ const SubscriptionPlansPage: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Subscription Plans</h1>
-          <p className="text-muted-foreground">
-            Choose the plan that best fits your farming needs
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Subscription Plans</h1>
+            <p className="text-muted-foreground">
+              Choose the plan that best fits your farming needs
+            </p>
+          </div>
+          
+          {isRoleSuperAdmin() && (
+            <Button onClick={handleAddPlan}>
+              <Plus className="mr-2 h-4 w-4" /> Add New Plan
+            </Button>
+          )}
         </div>
 
         {subscription && (
@@ -255,6 +414,7 @@ const SubscriptionPlansPage: React.FC = () => {
             <AlertTitle>Admin Notice</AlertTitle>
             <AlertDescription>
               As an {profile?.role.replace('_', ' ')}, you don't need a subscription plan to access all features.
+              {isRoleSuperAdmin() && " You can manage all plans and assign them to users."}
             </AlertDescription>
           </Alert>
         )}
@@ -305,9 +465,34 @@ const SubscriptionPlansPage: React.FC = () => {
                   </div>
                 </CardContent>
                 
-                <CardFooter>
+                <CardFooter className="flex justify-between">
+                  <div>
+                    {isRoleSuperAdmin() && (
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditPlan(plan)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDeletePlan(plan.id)}
+                          disabled={deletingPlan === plan.id}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          {deletingPlan === plan.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   <Button 
-                    className="w-full" 
                     variant={isPlanActive(plan.id) ? "outline" : "default"}
                     disabled={subscribing || (profile?.role !== 'farmer') || isPlanActive(plan.id)}
                     onClick={() => handleSubscribe(plan.id)}
@@ -329,6 +514,146 @@ const SubscriptionPlansPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Plan Add/Edit Dialog */}
+      <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{isEditing ? 'Edit Plan' : 'Add New Plan'}</DialogTitle>
+            <DialogDescription>
+              {isEditing 
+                ? 'Update the subscription plan details' 
+                : 'Create a new subscription plan for users'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSavePlan} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Plan Name</Label>
+              <Input 
+                id="name" 
+                value={planFormData.name} 
+                onChange={(e) => setPlanFormData({...planFormData, name: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                value={planFormData.description} 
+                onChange={(e) => setPlanFormData({...planFormData, description: e.target.value})}
+                rows={2}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <Input 
+                  id="price" 
+                  type="number" 
+                  min="0" 
+                  step="0.01" 
+                  value={planFormData.price} 
+                  onChange={(e) => setPlanFormData({...planFormData, price: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="billing_interval">Billing Interval</Label>
+                <Select 
+                  value={planFormData.billing_interval} 
+                  onValueChange={(value) => setPlanFormData({...planFormData, billing_interval: value})}
+                >
+                  <SelectTrigger id="billing_interval">
+                    <SelectValue placeholder="Select interval" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="month">Monthly</SelectItem>
+                    <SelectItem value="year">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Features</Label>
+              
+              <div className="space-y-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-normal">Toggle Features</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {['basic_analytics', 'advanced_analytics', 'irrigation_control', 'weather_data', 'soil_analysis', 'crop_recommendations', 'priority_support'].map((feature) => (
+                      <div key={feature} className="flex items-center justify-between">
+                        <Label htmlFor={feature} className="cursor-pointer">
+                          {feature.split('_').join(' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Label>
+                        <input
+                          id={feature}
+                          type="checkbox"
+                          checked={!!planFormData.features[feature]}
+                          onChange={(e) => handleFeatureChange(feature, e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-normal">Numeric Limits</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="sensor_limit">Sensor Limit</Label>
+                      <Input
+                        id="sensor_limit"
+                        type="number"
+                        min="0"
+                        value={planFormData.features.sensor_limit || 0}
+                        onChange={(e) => handleFeatureChange('sensor_limit', parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="zone_limit">Zone Limit</Label>
+                      <Input
+                        id="zone_limit"
+                        type="number"
+                        min="0"
+                        value={planFormData.features.zone_limit || 0}
+                        onChange={(e) => handleFeatureChange('zone_limit', parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowPlanDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={savingPlan}>
+                {savingPlan ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isEditing ? 'Update Plan' : 'Create Plan'}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

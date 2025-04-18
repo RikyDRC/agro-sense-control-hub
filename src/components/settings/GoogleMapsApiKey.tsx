@@ -17,37 +17,42 @@ const GoogleMapsApiKey: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchApiKey();
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('platform_config')
+          .select('value')
+          .eq('key', 'google_maps_api_key')
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching Google Maps API key:', error);
+          if (isMounted) toast.error('Failed to load Google Maps API key');
+        } else if (data && isMounted) {
+          setApiKey(data.value);
+        }
+      } catch (error) {
+        console.error('Error in fetchApiKey:', error);
+        if (isMounted) toast.error('Failed to load Google Maps API key');
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    
+    fetchData();
     
     // Safety timeout to prevent indefinite loading
     const safetyTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+      if (isMounted) setIsLoading(false);
+    }, 1500); // Reduced from 2000ms to 1500ms
     
-    return () => clearTimeout(safetyTimer);
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
-
-  const fetchApiKey = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('platform_config')
-        .select('value')
-        .eq('key', 'google_maps_api_key')
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching Google Maps API key:', error);
-        toast.error('Failed to load Google Maps API key');
-      } else if (data) {
-        setApiKey(data.value);
-      }
-    } catch (error) {
-      console.error('Error in fetchApiKey:', error);
-      toast.error('Failed to load Google Maps API key');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const saveApiKey = async () => {
     setSaving(true);

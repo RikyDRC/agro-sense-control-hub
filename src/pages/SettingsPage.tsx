@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
 import ProfileForm from '@/components/settings/ProfileForm';
 import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
 import { Globe, BellIcon, Settings as SettingsIcon, ShieldCheck, CreditCard } from 'lucide-react';
@@ -16,11 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   InfoIcon, Save, UserIcon, AlertCircle, PlugZap, Database, MapPin, CloudSun, Lock, Shield
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "@/components/ui/sonner";
 
 const SettingsPage: React.FC = () => {
   const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, loading } = useAuth();
@@ -29,39 +29,31 @@ const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isPageLoading, setIsPageLoading] = useState(true);
   
-  // Initial loading handler with safety timeout
+  useEffect(() => {
+    if (user && !profile) {
+      console.log("Attempting to refresh profile from settings page");
+      refreshProfile().catch(err => {
+        console.error("Error refreshing profile:", err);
+        toast.error("Failed to load profile data");
+      });
+    }
+  }, [user, profile, refreshProfile]);
+  
   useEffect(() => {
     console.log("Settings page mounted, loading:", loading, "profile:", !!profile);
     
-    // If auth is not loading and profile exists, stop page loading
     if (!loading && profile) {
       setIsPageLoading(false);
     }
     
-    // Safety timeout to prevent infinite loading
     const safetyTimer = setTimeout(() => {
+      console.log("Safety timeout triggered in settings page");
       setIsPageLoading(false);
-    }, 3000);
+    }, 2000);
     
     return () => clearTimeout(safetyTimer);
   }, [loading, profile]);
-  
-  // Try to refresh profile if needed
-  useEffect(() => {
-    if (!loading && user && !profile) {
-      console.log("Attempting to refresh profile");
-      refreshProfile();
-      
-      // Safety timeout for this specific case
-      const profileTimeout = setTimeout(() => {
-        setIsPageLoading(false);
-      }, 2000);
-      
-      return () => clearTimeout(profileTimeout);
-    }
-  }, [loading, user, profile, refreshProfile]);
 
-  // Final state check
   if (!user) {
     return (
       <DashboardLayout>
@@ -137,7 +129,16 @@ const SettingsPage: React.FC = () => {
               </CardFooter>
             </Card>
           </div>
-        ) : profile ? (
+        ) : !profile ? (
+          <div className="p-8 text-center">
+            <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Profile Not Available</h2>
+            <p className="text-muted-foreground mb-4">We couldn't load your profile information. Please try refreshing the page.</p>
+            <Button onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+          </div>
+        ) : (
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid grid-cols-3 md:grid-cols-5 lg:w-[600px]">
               <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -289,7 +290,7 @@ const SettingsPage: React.FC = () => {
                         />
                         <Badge>15%</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Receive alerts when moisture levels deviate from ideal by this percentage
                       </p>
                     </div>
@@ -663,15 +664,6 @@ const SettingsPage: React.FC = () => {
               </Card>
             </TabsContent>
           </Tabs>
-        ) : (
-          <div className="p-8 text-center">
-            <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Profile Not Available</h2>
-            <p className="text-muted-foreground mb-4">We couldn't load your profile information. Please try refreshing the page.</p>
-            <Button onClick={() => window.location.reload()}>
-              Refresh Page
-            </Button>
-          </div>
         )}
       </div>
     </DashboardLayout>

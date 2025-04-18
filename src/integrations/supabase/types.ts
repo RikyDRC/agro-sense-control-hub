@@ -154,6 +154,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_profile_by_id: {
+        Args: { user_id: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: string

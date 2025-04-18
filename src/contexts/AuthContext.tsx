@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,14 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [fetchingProfile, setFetchingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  // Direct DB access function to avoid recursion
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     if (!userId) return null;
     
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Use a more direct approach with .single() and proper error handling
       const { data, error } = await supabase.rpc(
         'get_profile_by_id',
         { user_id: userId }
@@ -81,8 +78,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      console.log("Profile data received:", data);
-      return data as UserProfile;
+      if (!data) {
+        console.log("No profile data received");
+        return null;
+      }
+
+      return data as unknown as UserProfile;
     } catch (error: any) {
       console.error('Error in fetchUserProfile:', error);
       setProfileError(error.message);
@@ -118,11 +119,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Set up auth state listener and initial session
   useEffect(() => {
     setLoading(true);
 
-    // Safe handler for auth state changes to prevent recursion issues
     const handleAuthChange = async (event: string, currentSession: Session | null) => {
       console.log("Auth state changed:", event, currentSession?.user?.id);
       
@@ -136,7 +135,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // For any auth events, we'll do a SINGLE attempt to load profile/subscription
       try {
         const userProfile = await fetchUserProfile(currentSession.user.id);
         setProfile(userProfile);
@@ -150,16 +148,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Set up the auth state listener
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        // First sync the session/user state immediately (sync operations only)
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Then defer the async profile/subscription fetching
         if (currentSession?.user) {
-          // Use setTimeout to break potential recursion cycles
           setTimeout(() => {
             handleAuthChange(event, currentSession);
           }, 0);
@@ -171,7 +165,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id);
       

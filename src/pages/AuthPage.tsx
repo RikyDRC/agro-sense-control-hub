@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
+import { LogIn, UserPlus, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
@@ -20,6 +22,7 @@ const AuthPage = () => {
   const [displayName, setDisplayName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'farmer' | 'admin' | 'super_admin'>('farmer');
 
   useEffect(() => {
     if (session) {
@@ -63,7 +66,7 @@ const AuthPage = () => {
         email, 
         password, 
         displayName, 
-        isSpecialAdminEmail(email) ? 'super_admin' : 'farmer'
+        isSpecialAdminEmail(email) ? 'super_admin' : selectedRole
       );
       
       if (error) {
@@ -81,6 +84,14 @@ const AuthPage = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const fillAdminCredentials = () => {
+    setEmail('admin@agrosense.com');
+    setPassword('Password123!');
+    setDisplayName('Admin User');
+    setSelectedRole('admin');
+    setActiveTab('signup');
   };
 
   const fillSuperAdminCredentials = () => {
@@ -154,15 +165,28 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full mt-2" 
-                    onClick={fillSuperAdminCredentials}
-                  >
-                    Create Super Admin Account
-                  </Button>
+                  <div className="space-y-2 pt-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillSuperAdminCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-red-500" />
+                        Super Admin
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={fillAdminCredentials}
+                      >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
+                        Admin
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isProcessing}>
@@ -225,6 +249,25 @@ const AuthPage = () => {
                     />
                     <p className="text-xs text-muted-foreground">
                       Password must be at least 8 characters
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">User Role</Label>
+                    <Select
+                      value={selectedRole}
+                      onValueChange={(value) => setSelectedRole(value as 'farmer' | 'admin' | 'super_admin')}
+                    >
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="farmer">Farmer</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="super_admin">Super Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Select your role in the organization
                     </p>
                   </div>
                 </CardContent>

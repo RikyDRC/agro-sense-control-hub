@@ -21,6 +21,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/sonner";
+import { supabase } from '@/integrations/supabase/client';
 
 const SettingsPage: React.FC = () => {
   const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, loading } = useAuth();
@@ -28,21 +29,49 @@ const SettingsPage: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState('profile');
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [fallbackUserRole, setFallbackUserRole] = useState<'super_admin' | 'admin' | 'farmer' | null>(null);
+  
+  useEffect(() => {
+    const initializeFallbackRole = async () => {
+      if (user && !profile) {
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) throw error;
+          
+          if (data) {
+            setFallbackUserRole(data.role);
+            console.log("Set fallback role from direct query:", data.role);
+          }
+        } catch (err) {
+          console.error("Error fetching fallback role:", err);
+          setFallbackUserRole('farmer');
+        }
+      }
+    };
+    
+    if (user && !profile && !fallbackUserRole) {
+      initializeFallbackRole();
+    }
+  }, [user, profile, fallbackUserRole]);
   
   useEffect(() => {
     if (user && !profile) {
       console.log("Attempting to refresh profile from settings page");
       refreshProfile().catch(err => {
         console.error("Error refreshing profile:", err);
-        toast.error("Failed to load profile data");
       });
     }
   }, [user, profile, refreshProfile]);
   
   useEffect(() => {
-    console.log("Settings page mounted, loading:", loading, "profile:", !!profile);
+    console.log("Settings page status - loading:", loading, "profile:", !!profile, "fallbackRole:", fallbackUserRole);
     
-    if (!loading && profile) {
+    if (!loading && (profile || fallbackUserRole)) {
       setIsPageLoading(false);
     }
     
@@ -52,14 +81,28 @@ const SettingsPage: React.FC = () => {
     }, 2000);
     
     return () => clearTimeout(safetyTimer);
-  }, [loading, profile]);
+  }, [loading, profile, fallbackUserRole]);
+
+  const hasAdminRights = () => {
+    if (profile) {
+      return profile.role === 'super_admin' || profile.role === 'admin';
+    }
+    return fallbackUserRole === 'super_admin' || fallbackUserRole === 'admin';
+  };
+  
+  const hasSuperAdminRights = () => {
+    if (profile) {
+      return profile.role === 'super_admin';
+    }
+    return fallbackUserRole === 'super_admin';
+  };
 
   if (!user) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Profile not found</h2>
+            <h2 className="text-xl font-semibold mb-2">Login Required</h2>
             <p className="text-muted-foreground">Please sign in to access your settings</p>
             <Button 
               className="mt-4"
@@ -73,6 +116,55 @@ const SettingsPage: React.FC = () => {
     );
   }
 
+  const renderProfileDisplay = () => {
+    if (profile) {
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            {profile.profile_image ? (
+              <AvatarImage src={profile.profile_image} alt={profile.display_name || "User"} />
+            ) : (
+              <AvatarFallback className="bg-primary text-white text-lg">
+                {profile.display_name ? profile.display_name.charAt(0).toUpperCase() : "U"}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div>
+            <h3 className="font-medium">{profile.display_name || profile.email}</h3>
+            <Badge 
+              className={
+                profile.role === 'super_admin' ? 'bg-red-500' :
+                profile.role === 'admin' ? 'bg-blue-500' : 
+                'bg-green-500'
+              }
+            >
+              {profile.role.replace('_', ' ')}
+            </Badge>
+          </div>
+        </div>
+      );
+    } else if (user) {
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-primary text-white text-lg">
+              {user.email ? user.email.charAt(0).toUpperCase() : "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-medium">{user.email || "User"}</h3>
+            <Badge className={fallbackUserRole === 'super_admin' ? 'bg-red-500' : 
+                             fallbackUserRole === 'admin' ? 'bg-blue-500' : 'bg-green-500'}>
+              {fallbackUserRole || 'User'}
+            </Badge>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -83,31 +175,7 @@ const SettingsPage: React.FC = () => {
               Manage your account, preferences, and system configuration
             </p>
           </div>
-          {profile && (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                {profile.profile_image ? (
-                  <AvatarImage src={profile.profile_image} alt={profile.display_name || "User"} />
-                ) : (
-                  <AvatarFallback className="bg-primary text-white text-lg">
-                    {profile.display_name ? profile.display_name.charAt(0).toUpperCase() : "U"}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div>
-                <h3 className="font-medium">{profile.display_name || profile.email}</h3>
-                <Badge 
-                  className={
-                    profile.role === 'super_admin' ? 'bg-red-500' :
-                    profile.role === 'admin' ? 'bg-blue-500' : 
-                    'bg-green-500'
-                  }
-                >
-                  {profile.role.replace('_', ' ')}
-                </Badge>
-              </div>
-            </div>
-          )}
+          {renderProfileDisplay()}
         </div>
 
         {isPageLoading ? (
@@ -129,14 +197,19 @@ const SettingsPage: React.FC = () => {
               </CardFooter>
             </Card>
           </div>
-        ) : !profile ? (
+        ) : !profile && !fallbackUserRole ? (
           <div className="p-8 text-center">
             <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Profile Not Available</h2>
-            <p className="text-muted-foreground mb-4">We couldn't load your profile information. Please try refreshing the page.</p>
-            <Button onClick={() => window.location.reload()}>
-              Refresh Page
-            </Button>
+            <p className="text-muted-foreground mb-4">We couldn't load your profile information. This might be due to database permission issues. Please try refreshing the page or contact support.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={() => window.location.reload()}>
+                Refresh Page
+              </Button>
+              <Button variant="outline" onClick={() => refreshProfile()}>
+                Retry Loading Profile
+              </Button>
+            </div>
           </div>
         ) : (
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -150,7 +223,35 @@ const SettingsPage: React.FC = () => {
 
             <TabsContent value="profile">
               <div className="grid gap-6">
-                <ProfileForm profile={profile} refreshProfile={refreshProfile} />
+                {profile ? (
+                  <ProfileForm profile={profile} refreshProfile={refreshProfile} />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <UserIcon className="h-5 w-5" /> User Profile
+                      </CardTitle>
+                      <CardDescription>
+                        Profile information is currently unavailable
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Alert variant="warning">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Profile Data Unavailable</AlertTitle>
+                        <AlertDescription>
+                          We're having trouble loading your profile information. This might be due to a database issue. 
+                          Basic functionality will still work, but some personalized features may be limited.
+                        </AlertDescription>
+                      </Alert>
+                    </CardContent>
+                    <CardFooter>
+                      <Button onClick={() => refreshProfile()}>
+                        Retry Loading Profile
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )}
                 
                 <div className="grid gap-6">
                   <Card>
@@ -370,9 +471,9 @@ const SettingsPage: React.FC = () => {
                   </CardFooter>
                 </Card>
                 
-                {isRoleSuperAdmin() && <GoogleMapsApiKey />}
+                {hasSuperAdminRights() && <GoogleMapsApiKey />}
                 
-                {(isRoleSuperAdmin() || isRoleAdmin()) && (
+                {hasAdminRights() && (
                   <div className="grid gap-6">
                     <Card>
                       <CardHeader>
@@ -385,7 +486,7 @@ const SettingsPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {isRoleSuperAdmin() && (
+                          {hasSuperAdminRights() && (
                             <div className="flex justify-between items-center p-4 border rounded-md">
                               <div>
                                 <h3 className="font-medium flex items-center">
@@ -412,8 +513,8 @@ const SettingsPage: React.FC = () => {
                                 View and manage system users
                               </p>
                             </div>
-                            <Button variant={isRoleSuperAdmin() ? "default" : "outline"}>
-                              {isRoleSuperAdmin() ? 'Manage' : 'View'}
+                            <Button variant={hasSuperAdminRights() ? "default" : "outline"}>
+                              {hasSuperAdminRights() ? 'Manage' : 'View'}
                             </Button>
                           </div>
                         </div>

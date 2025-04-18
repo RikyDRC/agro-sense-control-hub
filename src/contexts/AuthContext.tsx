@@ -60,29 +60,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [fetchingProfile, setFetchingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
-  // Fixed functions to prevent recursion
+  // Direct DB access function to avoid recursion
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     if (!userId) return null;
     
     try {
       console.log("Fetching user profile for:", userId);
       
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Use a more direct approach with .single() and proper error handling
+      const { data, error } = await supabase.rpc(
+        'get_profile_by_id',
+        { user_id: userId }
+      );
 
       if (error) {
         console.error('Error fetching user profile:', error);
+        setProfileError(error.message);
         return null;
       }
 
       console.log("Profile data received:", data);
       return data as UserProfile;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in fetchUserProfile:', error);
+      setProfileError(error.message);
       return null;
     }
   };
@@ -117,38 +120,64 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Set up auth state listener and initial session
   useEffect(() => {
-    const handleAuthChange = (event: string, currentSession: Session | null) => {
+    setLoading(true);
+
+    // Safe handler for auth state changes to prevent recursion issues
+    const handleAuthChange = async (event: string, currentSession: Session | null) => {
       console.log("Auth state changed:", event, currentSession?.user?.id);
+      
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
-      if (currentSession?.user) {
-        // Use setTimeout to prevent potential recursion
-        setTimeout(async () => {
-          const userProfile = await fetchUserProfile(currentSession.user.id);
-          setProfile(userProfile);
-          
-          const userSubscription = await fetchUserSubscription(currentSession.user.id);
-          setSubscription(userSubscription);
-          setLoading(false);
-        }, 0);
-      } else {
+      if (!currentSession?.user) {
         setProfile(null);
         setSubscription(null);
+        setLoading(false);
+        return;
+      }
+
+      // For any auth events, we'll do a SINGLE attempt to load profile/subscription
+      try {
+        const userProfile = await fetchUserProfile(currentSession.user.id);
+        setProfile(userProfile);
+          
+        const userSubscription = await fetchUserSubscription(currentSession.user.id);
+        setSubscription(userSubscription);
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
         setLoading(false);
       }
     };
 
-    // First set up the auth state listener
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+    // Set up the auth state listener
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        // First sync the session/user state immediately (sync operations only)
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        // Then defer the async profile/subscription fetching
+        if (currentSession?.user) {
+          // Use setTimeout to break potential recursion cycles
+          setTimeout(() => {
+            handleAuthChange(event, currentSession);
+          }, 0);
+        } else {
+          setProfile(null);
+          setSubscription(null);
+          setLoading(false);
+        }
+      }
+    );
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id);
       
-      if (currentSession?.user && !profile) {
+      if (currentSession?.user) {
         handleAuthChange('INITIAL_SESSION', currentSession);
-      } else if (!currentSession) {
+      } else {
         setLoading(false);
       }
     });
@@ -163,11 +192,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (fetchingProfile) return;
     
     setFetchingProfile(true);
+    setProfileError(null);
+    
     try {
       const userProfile = await fetchUserProfile(user.id);
       setProfile(userProfile);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing profile:", error);
+      setProfileError(error.message);
     } finally {
       setFetchingProfile(false);
     }
@@ -187,8 +219,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        console.error("Sign in error:", error);
+        toast.error(error.message);
+      }
+      
       return { error };
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Sign in catch error:", error);
+      toast.error(error.message || "Failed to sign in");
       return { error };
     }
   };
@@ -208,12 +248,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Signup error:', error);
+        toast.error(error.message);
         return { error };
       }
-
+      
+      toast.success("Signup successful! Please check your email to confirm your account.");
       return { error: null };
     } catch (error: any) {
       console.error('Signup catch error:', error);
+      toast.error(error.message || "Failed to sign up");
       return { error };
     }
   };

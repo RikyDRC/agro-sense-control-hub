@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { UserRole } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/sonner';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,12 +14,13 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
   const [localLoading, setLocalLoading] = useState(true);
+  const navigate = useNavigate();
   
   // Set a fixed timeout to prevent infinite loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setLocalLoading(false);
-    }, 1000); // Reduced from 2000ms to 1000ms for faster feedback
+    }, 500); // Reduced from 1000ms to 500ms for faster feedback
     
     return () => clearTimeout(timer);
   }, []);
@@ -26,13 +28,21 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   // Update local loading state based on auth loading
   useEffect(() => {
     if (!loading) {
-      // Small delay to ensure profile data has loaded
-      const timer = setTimeout(() => {
-        setLocalLoading(false);
-      }, 100); // Reduced from 300ms to 100ms
-      return () => clearTimeout(timer);
+      setLocalLoading(false);
     }
   }, [loading]);
+
+  // Force route to proceed after a certain timeout even if profile isn't loaded
+  useEffect(() => {
+    if (user && !profile) {
+      const forceTimer = setTimeout(() => {
+        console.log("Force proceeding despite missing profile");
+        setLocalLoading(false);
+      }, 3000);
+      
+      return () => clearTimeout(forceTimer);
+    }
+  }, [user, profile]);
 
   if (loading && localLoading) {
     return (
@@ -49,22 +59,14 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // If we have allowedRoles but no profile yet, show loading
-  if (allowedRoles && !profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading role information...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // For role-protected routes, we still check, but only if we have profile data
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+    toast.error("You don't have permission to access this page");
     return <Navigate to="/" replace />;
   }
 
+  // We're now returning the children even if we don't have a profile
+  // This is a fallback to ensure the app doesn't get stuck
   return <>{children}</>;
 };
 

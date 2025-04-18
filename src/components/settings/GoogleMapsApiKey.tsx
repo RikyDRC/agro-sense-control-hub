@@ -15,6 +15,7 @@ const GoogleMapsApiKey: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -29,13 +30,19 @@ const GoogleMapsApiKey: React.FC = () => {
 
         if (error) {
           console.error('Error fetching Google Maps API key:', error);
-          if (isMounted) toast.error('Failed to load Google Maps API key');
+          if (isMounted) {
+            setLoadError(error.message);
+            toast.error('Failed to load Google Maps API key');
+          }
         } else if (data && isMounted) {
           setApiKey(data.value);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in fetchApiKey:', error);
-        if (isMounted) toast.error('Failed to load Google Maps API key');
+        if (isMounted) {
+          setLoadError(error.message);
+          toast.error('Failed to load Google Maps API key');
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -46,7 +53,7 @@ const GoogleMapsApiKey: React.FC = () => {
     // Safety timeout to prevent indefinite loading
     const safetyTimer = setTimeout(() => {
       if (isMounted) setIsLoading(false);
-    }, 1500); // Reduced from 2000ms to 1500ms
+    }, 1500);
     
     return () => {
       isMounted = false;
@@ -92,7 +99,7 @@ const GoogleMapsApiKey: React.FC = () => {
       }
       
       toast.success('Google Maps API key saved successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving Google Maps API key:', error);
       toast.error('Failed to save Google Maps API key');
     } finally {
@@ -115,6 +122,31 @@ const GoogleMapsApiKey: React.FC = () => {
         </CardContent>
         <CardFooter>
           <Skeleton className="h-10 w-32" />
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" /> Google Maps API Key
+          </CardTitle>
+          <CardDescription className="text-red-500">
+            Error loading configuration
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertDescription>
+              There was a problem loading the Google Maps API key: {loadError}. Please try again later or contact support.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
         </CardFooter>
       </Card>
     );

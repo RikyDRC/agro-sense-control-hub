@@ -258,6 +258,57 @@ const SubscriptionPlansPage: React.FC = () => {
     setShowPlanDialog(true);
   };
 
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isRoleSuperAdmin()) {
+      toast.error('Only super admins can manage plans');
+      return;
+    }
+
+    setSavingPlan(true);
+    
+    try {
+      const planData = {
+        name: planFormData.name,
+        description: planFormData.description,
+        price: parseFloat(planFormData.price),
+        billing_interval: planFormData.billing_interval,
+        features: planFormData.features
+      };
+      
+      let error;
+      
+      if (isEditing && planFormData.id) {
+        const { error: updateError } = await supabase
+          .from('subscription_plans')
+          .update(planData)
+          .eq('id', planFormData.id);
+          
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('subscription_plans')
+          .insert(planData);
+          
+        error = insertError;
+      }
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success(isEditing ? 'Plan updated successfully' : 'Plan created successfully');
+      setShowPlanDialog(false);
+      fetchPlans();
+    } catch (error: any) {
+      console.error('Error saving plan:', error);
+      toast.error(error.message || 'Failed to save plan');
+    } finally {
+      setSavingPlan(false);
+    }
+  };
+
   const handleDeletePlan = async (planId: string) => {
     if (!isRoleSuperAdmin()) {
       toast.error('Only super admins can delete plans');
@@ -284,57 +335,6 @@ const SubscriptionPlansPage: React.FC = () => {
       } finally {
         setDeletingPlan(null);
       }
-    }
-  };
-
-  const handleSavePlan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!isRoleSuperAdmin()) {
-      toast.error('Only super admins can manage plans');
-      return;
-    }
-
-    setSavingPlan(true);
-    
-    try {
-      const planData = {
-        name: planFormData.name,
-        description: planFormData.description,
-        price: parseFloat(planFormData.price),
-        billing_interval: planFormData.billing_interval,
-        features: planFormData.features
-      };
-      
-      let error;
-      
-      if (isEditing && planFormData.id) {
-        const response = await supabase
-          .from('subscription_plans')
-          .update(planData)
-          .eq('id', planFormData.id);
-          
-        error = response.error;
-      } else {
-        const response = await supabase
-          .from('subscription_plans')
-          .insert(planData);
-          
-        error = response.error;
-      }
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast.success(isEditing ? 'Plan updated successfully' : 'Plan created successfully');
-      setShowPlanDialog(false);
-      fetchPlans();
-    } catch (error: any) {
-      console.error('Error saving plan:', error);
-      toast.error(error.message || 'Failed to save plan');
-    } finally {
-      setSavingPlan(false);
     }
   };
 

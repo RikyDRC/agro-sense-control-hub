@@ -53,7 +53,44 @@ const SubscriptionPlansPage: React.FC = () => {
   const [deletingPlan, setDeletingPlan] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPlans();
+    const initializePlans = async () => {
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from('subscription_plans')
+          .select('*')
+          .order('price', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching plans:', error);
+          toast.error('Failed to load subscription plans');
+          return;
+        }
+        
+        if (!data || data.length === 0) {
+          // Automatically create default plans if none exist
+          await createDefaultPlans();
+          return;
+        }
+        
+        const formattedPlans = data?.map(plan => ({
+          ...plan,
+          features: typeof plan.features === 'string' 
+            ? JSON.parse(plan.features) 
+            : plan.features
+        })) as SubscriptionPlan[];
+        
+        setPlans(formattedPlans || []);
+      } catch (error) {
+        console.error('Error in fetchPlans:', error);
+        toast.error('Failed to load subscription plans');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializePlans();
   }, []);
 
   const fetchPlans = async () => {

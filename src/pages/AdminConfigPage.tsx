@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users } from 'lucide-react';
+import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, ShieldCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserRole } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ConfigItem {
   id: string;
@@ -33,7 +35,7 @@ interface UserProfile {
 }
 
 const AdminConfigPage: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, updateUserRole } = useAuth();
   const [configItems, setConfigItems] = useState<ConfigItem[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,20 +112,19 @@ const AdminConfigPage: React.FC = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, role: UserRole) => {
+  const handleUserRoleChange = async (userId: string, newRole: UserRole) => {
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ role })
-        .eq('id', userId);
-
-      if (error) throw error;
+      const { error } = await updateUserRole(userId, newRole);
+      
+      if (error) {
+        toast.error('Failed to update user role');
+        return;
+      }
       
       setUsers(users.map(user => 
-        user.id === userId ? { ...user, role } : user
+        user.id === userId ? { ...user, role: newRole } : user
       ));
       
-      toast.success('User role updated successfully');
     } catch (error) {
       console.error('Error updating user role:', error);
       toast.error('Failed to update user role');
@@ -142,7 +143,32 @@ const AdminConfigPage: React.FC = () => {
   }
 
   if (profile.role !== 'super_admin') {
-    return <Navigate to="/settings" />;
+    return (
+      <DashboardLayout>
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-red-500" /> Access Denied
+              </CardTitle>
+              <CardDescription>
+                You don't have permission to access this page
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Alert variant="destructive">
+                <AlertDescription>
+                  This area is restricted to super administrators only. Please contact your system administrator if you need access.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={() => window.history.back()}>Go Back</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -181,6 +207,9 @@ const AdminConfigPage: React.FC = () => {
                           {item.key.includes('google_maps') && <MapPin className="h-4 w-4 mr-2" />}
                           {item.key.includes('weather') && <CloudSun className="h-4 w-4 mr-2" />}
                           {item.key.includes('stripe') && <CreditCard className="h-4 w-4 mr-2" />}
+                          {!item.key.includes('google_maps') && !item.key.includes('weather') && !item.key.includes('stripe') && (
+                            <KeyRound className="h-4 w-4 mr-2" />
+                          )}
                           <Label htmlFor={item.id}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
                         </div>
                         <div className="flex">
@@ -277,19 +306,34 @@ const AdminConfigPage: React.FC = () => {
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.display_name || '-'}</TableCell>
                         <TableCell>
-                          <span className="capitalize">{user.role.replace('_', ' ')}</span>
+                          <span className={`capitalize inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                            user.role === 'super_admin' ? 'bg-red-100 text-red-800' : 
+                            user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {user.role.replace('_', ' ')}
+                          </span>
                         </TableCell>
                         <TableCell>
-                          <select
-                            className="border rounded px-2 py-1"
+                          <Select
                             value={user.role}
-                            onChange={e => updateUserRole(user.id, e.target.value as UserRole)}
+                            onValueChange={(value) => handleUserRoleChange(user.id, value as UserRole)}
                             disabled={user.id === profile.id} // Can't change own role
                           >
-                            <option value="super_admin">Super Admin</option>
-                            <option value="admin">Admin</option>
-                            <option value="farmer">Farmer</option>
-                          </select>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="super_admin">Super Admin</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="farmer">Farmer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {user.id === profile.id && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Cannot change your own role
+                            </p>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -298,7 +342,7 @@ const AdminConfigPage: React.FC = () => {
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button onClick={fetchUsers} variant="outline">
-                  <RotateCw className="mr-2 h-4 w-4" /> Refresh
+                  <RotateCw className="mr-2 h-4 w-4" /> Refresh User List
                 </Button>
               </CardFooter>
             </Card>

@@ -175,7 +175,7 @@ const GoogleMapsApiKey: React.FC = () => {
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              There was a problem loading the Google Maps API key: {loadError}. Please try again later or contact support.
+              There was a problem loading the Google Maps API key. Please try again in a few moments.
             </AlertDescription>
           </Alert>
         </CardContent>

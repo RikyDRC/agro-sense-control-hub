@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Check, AlertTriangle, Loader2, Plus, Edit, Trash, Settings } from 'lucide-react';
+import { Info, Check, AlertTriangle, Loader2, Plus, Edit, Trash, Settings, Save } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -61,7 +60,6 @@ const SubscriptionPlansPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch the subscription plans from the database
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
@@ -73,14 +71,12 @@ const SubscriptionPlansPage: React.FC = () => {
         return;
       }
       
-      // If no plans exist, create default ones
       if (!data || data.length === 0) {
         console.log('No subscription plans found, creating default plans');
         await createDefaultPlans();
         return;
       }
       
-      // Convert the features from JSON to Record<string, any>
       const formattedPlans = data?.map(plan => ({
         ...plan,
         features: typeof plan.features === 'string' 
@@ -99,7 +95,6 @@ const SubscriptionPlansPage: React.FC = () => {
 
   const createDefaultPlans = async () => {
     try {
-      // Define default subscription plans
       const defaultPlans = [
         {
           name: 'Basic',
@@ -149,7 +144,6 @@ const SubscriptionPlansPage: React.FC = () => {
         }
       ];
       
-      // Insert the default plans into the database
       for (const plan of defaultPlans) {
         const { error } = await supabase
           .from('subscription_plans')
@@ -160,7 +154,6 @@ const SubscriptionPlansPage: React.FC = () => {
         }
       }
       
-      // Fetch the plans again after creating default ones
       fetchPlans();
       toast.success('Default subscription plans created');
     } catch (error) {
@@ -279,7 +272,6 @@ const SubscriptionPlansPage: React.FC = () => {
       let error;
       
       if (isEditing && planFormData.id) {
-        // Update existing plan
         const response = await supabase
           .from('subscription_plans')
           .update(planData)
@@ -287,7 +279,6 @@ const SubscriptionPlansPage: React.FC = () => {
           
         error = response.error;
       } else {
-        // Create new plan
         const response = await supabase
           .from('subscription_plans')
           .insert(planData);
@@ -515,7 +506,6 @@ const SubscriptionPlansPage: React.FC = () => {
         )}
       </div>
 
-      {/* Plan Add/Edit Dialog */}
       <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>

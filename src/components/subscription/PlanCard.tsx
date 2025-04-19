@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Edit, Trash, Loader2 } from 'lucide-react';
+import { Edit, Trash, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';

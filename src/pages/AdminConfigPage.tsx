@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, ShieldCheck, Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { UserRole } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
 
 interface ConfigItem {
   id: string;
@@ -41,6 +42,12 @@ const AdminConfigPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  const [newConfigItem, setNewConfigItem] = useState({
+    key: '',
+    value: '',
+    description: ''
+  });
+  const [isAddingConfig, setIsAddingConfig] = useState(false);
   
   useEffect(() => {
     fetchConfigItems();
@@ -49,12 +56,14 @@ const AdminConfigPage: React.FC = () => {
 
   const fetchConfigItems = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('platform_config')
         .select('*')
         .order('key');
 
       if (error) throw error;
+      console.log('Config items loaded:', data);
       setConfigItems(data || []);
     } catch (error) {
       console.error('Error fetching config items:', error);
@@ -72,6 +81,7 @@ const AdminConfigPage: React.FC = () => {
         .order('email');
 
       if (error) throw error;
+      console.log('Users loaded:', data);
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -112,6 +122,39 @@ const AdminConfigPage: React.FC = () => {
     }
   };
 
+  const addNewConfigItem = async () => {
+    if (!newConfigItem.key || !newConfigItem.value) {
+      toast.error('Key and value are required');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const { data, error } = await supabase
+        .from('platform_config')
+        .insert({
+          key: newConfigItem.key,
+          value: newConfigItem.value,
+          description: newConfigItem.description || null,
+          updated_at: new Date().toISOString()
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      setConfigItems([...configItems, data]);
+      setNewConfigItem({ key: '', value: '', description: '' });
+      setIsAddingConfig(false);
+      toast.success('Configuration item added successfully');
+    } catch (error) {
+      console.error('Error adding config item:', error);
+      toast.error('Failed to add configuration item');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleUserRoleChange = async (userId: string, newRole: UserRole) => {
     try {
       const { error } = await updateUserRole(userId, newRole);
@@ -125,6 +168,7 @@ const AdminConfigPage: React.FC = () => {
         user.id === userId ? { ...user, role: newRole } : user
       ));
       
+      toast.success(`User role updated to ${newRole}`);
     } catch (error) {
       console.error('Error updating user role:', error);
       toast.error('Failed to update user role');
@@ -188,96 +232,184 @@ const AdminConfigPage: React.FC = () => {
           </TabsList>
 
           <TabsContent value="apikeys">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" /> System Configuration
-                </CardTitle>
-                <CardDescription>
-                  Manage API keys and system integration settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  {configItems
-                    .filter(item => item.key.includes('_api_key'))
-                    .map(item => (
-                      <div key={item.id} className="space-y-2">
-                        <div className="flex items-center">
-                          {item.key.includes('google_maps') && <MapPin className="h-4 w-4 mr-2" />}
-                          {item.key.includes('weather') && <CloudSun className="h-4 w-4 mr-2" />}
-                          {item.key.includes('stripe') && <CreditCard className="h-4 w-4 mr-2" />}
-                          {!item.key.includes('google_maps') && !item.key.includes('weather') && !item.key.includes('stripe') && (
-                            <KeyRound className="h-4 w-4 mr-2" />
-                          )}
-                          <Label htmlFor={item.id}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
-                        </div>
-                        <div className="flex">
-                          <Input
-                            id={item.id}
-                            type={showSecrets[item.id] ? 'text' : 'password'}
-                            value={item.value}
-                            onChange={e => handleConfigChange(item.id, e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => toggleShowSecret(item.id)}
-                            className="ml-2"
-                          >
-                            {showSecrets[item.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                        {item.description && (
-                          <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-                        )}
-                      </div>
-                    ))}
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  {configItems
-                    .filter(item => !item.key.includes('_api_key'))
-                    .map(item => (
-                      <div key={item.id} className="space-y-2">
-                        <Label htmlFor={`other-${item.id}`}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
-                        <Input
-                          id={`other-${item.id}`}
-                          value={item.value}
-                          onChange={e => handleConfigChange(item.id, e.target.value)}
-                        />
-                        {item.description && (
-                          <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button 
-                  onClick={fetchConfigItems} 
-                  variant="outline" 
-                  className="mr-2"
-                  disabled={saving}
-                >
-                  <RotateCw className="mr-2 h-4 w-4" /> Refresh
-                </Button>
-                <Button onClick={saveConfig} disabled={saving}>
-                  {saving ? (
-                    <>
-                      <RotateCw className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                    </>
+            <div className="space-y-4">
+              <GoogleMapsApiKey />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5" /> System Configuration
+                  </CardTitle>
+                  <CardDescription>
+                    Manage API keys and system integration settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-24">
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : configItems.length === 0 ? (
+                    <div className="text-center py-6">
+                      <p className="text-muted-foreground">No configuration items found</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setIsAddingConfig(true)}
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4" /> 
+                        Add Configuration Item
+                      </Button>
+                    </div>
                   ) : (
                     <>
-                      <Save className="mr-2 h-4 w-4" /> Save Changes
+                      <div className="space-y-4">
+                        {configItems
+                          .filter(item => item.key.includes('_api_key'))
+                          .map(item => (
+                            <div key={item.id} className="space-y-2">
+                              <div className="flex items-center">
+                                {item.key.includes('google_maps') && <MapPin className="h-4 w-4 mr-2" />}
+                                {item.key.includes('weather') && <CloudSun className="h-4 w-4 mr-2" />}
+                                {item.key.includes('stripe') && <CreditCard className="h-4 w-4 mr-2" />}
+                                {!item.key.includes('google_maps') && !item.key.includes('weather') && !item.key.includes('stripe') && (
+                                  <KeyRound className="h-4 w-4 mr-2" />
+                                )}
+                                <Label htmlFor={item.id}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
+                              </div>
+                              <div className="flex">
+                                <Input
+                                  id={item.id}
+                                  type={showSecrets[item.id] ? 'text' : 'password'}
+                                  value={item.value}
+                                  onChange={e => handleConfigChange(item.id, e.target.value)}
+                                  className="flex-1"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => toggleShowSecret(item.id)}
+                                  className="ml-2"
+                                >
+                                  {showSecrets[item.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                              {item.description && (
+                                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+
+                      {configItems.some(item => !item.key.includes('_api_key')) && (
+                        <Separator />
+                      )}
+
+                      <div className="space-y-4">
+                        {configItems
+                          .filter(item => !item.key.includes('_api_key'))
+                          .map(item => (
+                            <div key={item.id} className="space-y-2">
+                              <Label htmlFor={`other-${item.id}`}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
+                              <Input
+                                id={`other-${item.id}`}
+                                value={item.value}
+                                onChange={e => handleConfigChange(item.id, e.target.value)}
+                              />
+                              {item.description && (
+                                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setIsAddingConfig(true)}
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4" /> 
+                        Add Configuration Item
+                      </Button>
                     </>
                   )}
-                </Button>
-              </CardFooter>
-            </Card>
+
+                  {isAddingConfig && (
+                    <div className="border rounded-lg p-4 space-y-4 mt-4">
+                      <h3 className="font-medium">Add New Configuration Item</h3>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-key">Key</Label>
+                        <Input
+                          id="new-key"
+                          value={newConfigItem.key}
+                          onChange={e => setNewConfigItem({...newConfigItem, key: e.target.value})}
+                          placeholder="e.g., stripe_api_key"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-value">Value</Label>
+                        <Input
+                          id="new-value"
+                          value={newConfigItem.value}
+                          onChange={e => setNewConfigItem({...newConfigItem, value: e.target.value})}
+                          placeholder="Enter value"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-description">Description (Optional)</Label>
+                        <Input
+                          id="new-description"
+                          value={newConfigItem.description}
+                          onChange={e => setNewConfigItem({...newConfigItem, description: e.target.value})}
+                          placeholder="Brief description of this configuration"
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsAddingConfig(false);
+                            setNewConfigItem({key: '', value: '', description: ''});
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={addNewConfigItem} disabled={saving}>
+                          {saving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...
+                            </>
+                          ) : (
+                            <>Add Item</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button 
+                    onClick={fetchConfigItems} 
+                    variant="outline" 
+                    className="mr-2"
+                    disabled={saving || loading}
+                  >
+                    <RotateCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                  </Button>
+                  <Button onClick={saveConfig} disabled={saving || loading || configItems.length === 0}>
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" /> Save Changes
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="users">
@@ -291,58 +423,72 @@ const AdminConfigPage: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Display Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map(user => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.display_name || '-'}</TableCell>
-                        <TableCell>
-                          <span className={`capitalize inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            user.role === 'super_admin' ? 'bg-red-100 text-red-800' : 
-                            user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {user.role.replace('_', ' ')}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={user.role}
-                            onValueChange={(value) => handleUserRoleChange(user.id, value as UserRole)}
-                            disabled={user.id === profile.id} // Can't change own role
-                          >
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="super_admin">Super Admin</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="farmer">Farmer</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {user.id === profile.id && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Cannot change your own role
-                            </p>
-                          )}
-                        </TableCell>
+                {loading ? (
+                  <div className="flex justify-center items-center h-24">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-muted-foreground">No users found</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Display Name</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map(user => (
+                        <TableRow key={user.id}>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.display_name || '-'}</TableCell>
+                          <TableCell>
+                            <span className={`capitalize inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                              user.role === 'super_admin' ? 'bg-red-100 text-red-800' : 
+                              user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {user.role.replace('_', ' ')}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={user.role}
+                              onValueChange={(value) => handleUserRoleChange(user.id, value as UserRole)}
+                              disabled={user.id === profile.id} // Can't change own role
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="super_admin">Super Admin</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="farmer">Farmer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {user.id === profile.id && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Cannot change your own role
+                              </p>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={fetchUsers} variant="outline">
-                  <RotateCw className="mr-2 h-4 w-4" /> Refresh User List
+                <Button 
+                  onClick={fetchUsers} 
+                  variant="outline"
+                  disabled={loading}
+                >
+                  <RotateCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh User List
                 </Button>
               </CardFooter>
             </Card>

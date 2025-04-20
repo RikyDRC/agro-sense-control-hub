@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, Loader2, PlusCircle } from 'lucide-react';
+import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, Loader2, PlusCircle, ShieldCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';

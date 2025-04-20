@@ -48,10 +48,30 @@ const AdminConfigPage: React.FC = () => {
   });
   const [isAddingConfig, setIsAddingConfig] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   
   useEffect(() => {
-    fetchConfigItems();
-    fetchUsers();
+    const checkSuperAdmin = async () => {
+      try {
+        const { data, error } = await supabase.rpc('is_super_admin');
+        
+        if (error) {
+          console.error('Error checking super admin status:', error);
+          return;
+        }
+        
+        setIsSuperAdmin(data || false);
+        
+        if (data) {
+          fetchConfigItems();
+          fetchUsers();
+        }
+      } catch (error) {
+        console.error('Error in checkSuperAdmin:', error);
+      }
+    };
+    
+    checkSuperAdmin();
   }, []);
 
   const fetchConfigItems = async () => {
@@ -204,7 +224,7 @@ const AdminConfigPage: React.FC = () => {
     return <Navigate to="/auth" />;
   }
 
-  if (profile.role !== 'super_admin') {
+  if (!isSuperAdmin) {
     return (
       <DashboardLayout>
         <div className="mt-6">

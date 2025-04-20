@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 
 const GoogleMapsApiKey: React.FC = () => {
-  const { isRoleSuperAdmin } = useAuth();
+  const { profile } = useAuth();
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -24,8 +25,20 @@ const GoogleMapsApiKey: React.FC = () => {
     
     const fetchData = async () => {
       try {
-        // Check if user has super admin role
-        if (!isRoleSuperAdmin()) {
+        // First check if user is a super admin using the function
+        const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_super_admin');
+        
+        if (checkError) {
+          console.error('Error checking super admin status:', checkError);
+          if (isMounted) {
+            setLoadError(checkError.message);
+            toast.error('Failed to verify permissions: ' + checkError.message);
+            setIsLoading(false);
+          }
+          return;
+        }
+        
+        if (!isSuperAdmin) {
           if (isMounted) {
             setAccessDenied(true);
             setIsLoading(false);
@@ -47,7 +60,7 @@ const GoogleMapsApiKey: React.FC = () => {
             toast.error('Failed to load Google Maps API key: ' + error.message);
           }
         } else if (data && isMounted) {
-          setApiKey(data.value);
+          setApiKey(data.value || '');
         }
       } catch (error: any) {
         console.error('Error in fetchApiKey:', error);
@@ -71,7 +84,7 @@ const GoogleMapsApiKey: React.FC = () => {
       isMounted = false;
       clearTimeout(safetyTimer);
     };
-  }, [isRoleSuperAdmin]);
+  }, []);
 
   const saveApiKey = async () => {
     setSaving(true);

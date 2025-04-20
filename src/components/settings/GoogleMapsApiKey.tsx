@@ -34,6 +34,7 @@ const GoogleMapsApiKey: React.FC = () => {
           return;
         }
         
+        // Try to fetch the API key
         const { data, error } = await supabase
           .from('platform_config')
           .select('value')
@@ -44,7 +45,7 @@ const GoogleMapsApiKey: React.FC = () => {
           console.error('Error fetching Google Maps API key:', error);
           if (isMounted) {
             setLoadError(error.message);
-            toast.error('Failed to load Google Maps API key');
+            toast.error('Failed to load Google Maps API key: ' + error.message);
           }
         } else if (data && isMounted) {
           setApiKey(data.value);
@@ -53,7 +54,7 @@ const GoogleMapsApiKey: React.FC = () => {
         console.error('Error in fetchApiKey:', error);
         if (isMounted) {
           setLoadError(error.message);
-          toast.error('Failed to load Google Maps API key');
+          toast.error('Failed to load Google Maps API key: ' + error.message);
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -83,6 +84,7 @@ const GoogleMapsApiKey: React.FC = () => {
         .maybeSingle();
       
       if (checkError) {
+        console.error('Error checking for existing API key:', checkError);
         throw checkError;
       }
       
@@ -113,10 +115,19 @@ const GoogleMapsApiKey: React.FC = () => {
       toast.success('Google Maps API key saved successfully');
     } catch (error: any) {
       console.error('Error saving Google Maps API key:', error);
-      toast.error('Failed to save Google Maps API key');
+      toast.error('Failed to save Google Maps API key: ' + error.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    setLoadError(null);
+    // Re-mount the component to trigger the useEffect again
+    setTimeout(() => {
+      location.reload();
+    }, 100);
   };
 
   if (isLoading) {
@@ -175,12 +186,12 @@ const GoogleMapsApiKey: React.FC = () => {
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              There was a problem loading the Google Maps API key. Please try again in a few moments.
+              There was a problem loading the Google Maps API key: {loadError}
             </AlertDescription>
           </Alert>
         </CardContent>
         <CardFooter>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <Button onClick={handleRetry}>Retry</Button>
         </CardFooter>
       </Card>
     );

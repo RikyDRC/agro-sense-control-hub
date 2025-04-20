@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, ShieldCheck, Loader2, PlusCircle } from 'lucide-react';
+import { Eye, EyeOff, Save, RotateCw, Database, MapPin, CloudSun, CreditCard, Users, KeyRound, Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -48,6 +48,7 @@ const AdminConfigPage: React.FC = () => {
     description: ''
   });
   const [isAddingConfig, setIsAddingConfig] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   
   useEffect(() => {
     fetchConfigItems();
@@ -57,16 +58,25 @@ const AdminConfigPage: React.FC = () => {
   const fetchConfigItems = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
+      
       const { data, error } = await supabase
         .from('platform_config')
         .select('*')
         .order('key');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching config items:', error);
+        setFetchError(error.message);
+        toast.error('Failed to load configuration items: ' + error.message);
+        return;
+      }
+      
       console.log('Config items loaded:', data);
       setConfigItems(data || []);
-    } catch (error) {
-      console.error('Error fetching config items:', error);
+    } catch (error: any) {
+      console.error('Error in fetchConfigItems:', error);
+      setFetchError(error.message);
       toast.error('Failed to load configuration items');
     } finally {
       setLoading(false);
@@ -80,11 +90,16 @@ const AdminConfigPage: React.FC = () => {
         .select('*')
         .order('email');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Failed to load users: ' + error.message);
+        return;
+      }
+      
       console.log('Users loaded:', data);
       setUsers(data || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch (error: any) {
+      console.error('Error in fetchUsers:', error);
       toast.error('Failed to load users');
     }
   };
@@ -114,9 +129,9 @@ const AdminConfigPage: React.FC = () => {
       }
 
       toast.success('Configuration updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating configuration:', error);
-      toast.error('Failed to update configuration');
+      toast.error('Failed to update configuration: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -141,14 +156,18 @@ const AdminConfigPage: React.FC = () => {
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding config item:', error);
+        toast.error('Failed to add configuration item: ' + error.message);
+        return;
+      }
 
       setConfigItems([...configItems, data]);
       setNewConfigItem({ key: '', value: '', description: '' });
       setIsAddingConfig(false);
       toast.success('Configuration item added successfully');
-    } catch (error) {
-      console.error('Error adding config item:', error);
+    } catch (error: any) {
+      console.error('Error in addNewConfigItem:', error);
       toast.error('Failed to add configuration item');
     } finally {
       setSaving(false);
@@ -160,7 +179,7 @@ const AdminConfigPage: React.FC = () => {
       const { error } = await updateUserRole(userId, newRole);
       
       if (error) {
-        toast.error('Failed to update user role');
+        toast.error('Failed to update user role: ' + error.message);
         return;
       }
       
@@ -169,7 +188,7 @@ const AdminConfigPage: React.FC = () => {
       ));
       
       toast.success(`User role updated to ${newRole}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user role:', error);
       toast.error('Failed to update user role');
     }
@@ -249,6 +268,21 @@ const AdminConfigPage: React.FC = () => {
                     <div className="flex justify-center items-center h-24">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
+                  ) : fetchError ? (
+                    <Alert variant="destructive" className="mb-4">
+                      <AlertDescription>
+                        Error loading configuration: {fetchError}
+                        <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={fetchConfigItems}
+                          >
+                            <RotateCw className="mr-2 h-4 w-4" /> Try Again
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
                   ) : configItems.length === 0 ? (
                     <div className="text-center py-6">
                       <p className="text-muted-foreground">No configuration items found</p>
@@ -265,14 +299,13 @@ const AdminConfigPage: React.FC = () => {
                     <>
                       <div className="space-y-4">
                         {configItems
-                          .filter(item => item.key.includes('_api_key'))
+                          .filter(item => item.key !== 'google_maps_api_key' && item.key.includes('_api_key'))
                           .map(item => (
                             <div key={item.id} className="space-y-2">
                               <div className="flex items-center">
-                                {item.key.includes('google_maps') && <MapPin className="h-4 w-4 mr-2" />}
                                 {item.key.includes('weather') && <CloudSun className="h-4 w-4 mr-2" />}
                                 {item.key.includes('stripe') && <CreditCard className="h-4 w-4 mr-2" />}
-                                {!item.key.includes('google_maps') && !item.key.includes('weather') && !item.key.includes('stripe') && (
+                                {!item.key.includes('weather') && !item.key.includes('stripe') && (
                                   <KeyRound className="h-4 w-4 mr-2" />
                                 )}
                                 <Label htmlFor={item.id}>{item.key.replace(/_/g, ' ').toUpperCase()}</Label>
@@ -301,7 +334,7 @@ const AdminConfigPage: React.FC = () => {
                           ))}
                       </div>
 
-                      {configItems.some(item => !item.key.includes('_api_key')) && (
+                      {configItems.some(item => !item.key.includes('_api_key') || (configItems.filter(item => !item.key.includes('google_maps') && item.key.includes('_api_key')).length > 0 && configItems.some(item => !item.key.includes('_api_key')))) && (
                         <Separator />
                       )}
 
@@ -430,6 +463,13 @@ const AdminConfigPage: React.FC = () => {
                 ) : users.length === 0 ? (
                   <div className="text-center py-6">
                     <p className="text-muted-foreground">No users found</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={fetchUsers}
+                    >
+                      <RotateCw className="mr-2 h-4 w-4" /> Refresh
+                    </Button>
                   </div>
                 ) : (
                   <Table>

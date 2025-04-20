@@ -25,7 +25,7 @@ const GoogleMapsApiKey: React.FC = () => {
     
     const fetchData = async () => {
       try {
-        // First check if user is a super admin using the function
+        // First check if user is a super admin using the security definer function
         const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_super_admin');
         
         if (checkError) {

@@ -26,8 +26,8 @@ const GoogleMapsApiKey: React.FC = () => {
         setIsLoading(true);
         setLoadError(null);
         
-        // First check if user is a super admin using the security definer function
-        const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_super_admin');
+        // Check if user is a super admin using the new security definer function
+        const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_current_user_super_admin');
         
         if (checkError) {
           console.error('Error checking super admin status:', checkError);

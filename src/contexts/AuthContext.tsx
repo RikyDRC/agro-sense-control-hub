@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -264,7 +263,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUserRole = async (userId: string, newRole: UserRole) => {
     try {
-      if (!isRoleSuperAdmin()) {
+      const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_current_user_super_admin');
+      
+      if (checkError) {
+        console.error('Error checking super admin status:', checkError);
+        toast.error('Failed to verify permissions: ' + checkError.message);
+        return { error: checkError };
+      }
+      
+      if (!isSuperAdmin) {
         return { error: new Error('Only super admins can update user roles') };
       }
 

@@ -162,11 +162,19 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_user_role_by_id: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       is_admin_or_super: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_super_admin: {
+      is_current_user_admin_or_super: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

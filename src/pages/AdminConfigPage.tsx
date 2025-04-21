@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,7 +53,7 @@ const AdminConfigPage: React.FC = () => {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase.rpc('is_super_admin');
+        const { data, error } = await supabase.rpc('is_current_user_super_admin');
         
         if (error) {
           console.error('Error checking super admin status:', error);
@@ -312,18 +311,6 @@ const AdminConfigPage: React.FC = () => {
                         </div>
                       </AlertDescription>
                     </Alert>
-                  ) : configItems.length === 0 ? (
-                    <div className="text-center py-6">
-                      <p className="text-muted-foreground">No configuration items found</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => setIsAddingConfig(true)}
-                      >
-                        <PlusCircle className="mr-2 h-4 w-4" /> 
-                        Add Configuration Item
-                      </Button>
-                    </div>
                   ) : (
                     <>
                       <div className="space-y-4">
@@ -394,59 +381,6 @@ const AdminConfigPage: React.FC = () => {
                         Add Configuration Item
                       </Button>
                     </>
-                  )}
-
-                  {isAddingConfig && (
-                    <div className="border rounded-lg p-4 space-y-4 mt-4">
-                      <h3 className="font-medium">Add New Configuration Item</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="new-key">Key</Label>
-                        <Input
-                          id="new-key"
-                          value={newConfigItem.key}
-                          onChange={e => setNewConfigItem({...newConfigItem, key: e.target.value})}
-                          placeholder="e.g., stripe_api_key"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="new-value">Value</Label>
-                        <Input
-                          id="new-value"
-                          value={newConfigItem.value}
-                          onChange={e => setNewConfigItem({...newConfigItem, value: e.target.value})}
-                          placeholder="Enter value"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="new-description">Description (Optional)</Label>
-                        <Input
-                          id="new-description"
-                          value={newConfigItem.description}
-                          onChange={e => setNewConfigItem({...newConfigItem, description: e.target.value})}
-                          placeholder="Brief description of this configuration"
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-2 pt-2">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => {
-                            setIsAddingConfig(false);
-                            setNewConfigItem({key: '', value: '', description: ''});
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={addNewConfigItem} disabled={saving}>
-                          {saving ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...
-                            </>
-                          ) : (
-                            <>Add Item</>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-end">

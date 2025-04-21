@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,6 @@ interface UserProfile {
 }
 
 const AdminConfigPage: React.FC = () => {
-  const { profile, updateUserRole } = useAuth();
   const [configItems, setConfigItems] = useState<ConfigItem[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,14 +47,19 @@ const AdminConfigPage: React.FC = () => {
   const [isAddingConfig, setIsAddingConfig] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isAccessChecked, setIsAccessChecked] = useState(false);
   
   useEffect(() => {
     const checkSuperAdmin = async () => {
       try {
+        setLoading(true);
+        
         const { data, error } = await supabase.rpc('is_super_admin');
         
         if (error) {
           console.error('Error checking super admin status:', error);
+          setFetchError(error.message);
+          toast.error('Failed to verify permissions: ' + error.message);
           return;
         }
         
@@ -66,8 +69,13 @@ const AdminConfigPage: React.FC = () => {
           fetchConfigItems();
           fetchUsers();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in checkSuperAdmin:', error);
+        setFetchError(error.message);
+        toast.error('Failed to verify permissions: ' + error.message);
+      } finally {
+        setLoading(false);
+        setIsAccessChecked(true);
       }
     };
     
@@ -195,7 +203,13 @@ const AdminConfigPage: React.FC = () => {
 
   const handleUserRoleChange = async (userId: string, newRole: UserRole) => {
     try {
-      const { error } = await updateUserRole(userId, newRole);
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ 
+          role: newRole,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', userId);
       
       if (error) {
         toast.error('Failed to update user role: ' + error.message);
@@ -220,11 +234,7 @@ const AdminConfigPage: React.FC = () => {
     });
   };
 
-  if (!profile) {
-    return <Navigate to="/auth" />;
-  }
-
-  if (!isSuperAdmin) {
+  if (isAccessChecked && !isSuperAdmin) {
     return (
       <DashboardLayout>
         <div className="mt-6">
@@ -518,7 +528,6 @@ const AdminConfigPage: React.FC = () => {
                             <Select
                               value={user.role}
                               onValueChange={(value) => handleUserRoleChange(user.id, value as UserRole)}
-                              disabled={user.id === profile.id} // Can't change own role
                             >
                               <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select role" />
@@ -529,11 +538,6 @@ const AdminConfigPage: React.FC = () => {
                                 <SelectItem value="farmer">Farmer</SelectItem>
                               </SelectContent>
                             </Select>
-                            {user.id === profile.id && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Cannot change your own role
-                              </p>
-                            )}
                           </TableCell>
                         </TableRow>
                       ))}

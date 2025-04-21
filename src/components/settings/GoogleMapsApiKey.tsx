@@ -9,10 +9,8 @@ import { toast } from '@/components/ui/sonner';
 import { Eye, EyeOff, Save, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/contexts/AuthContext';
 
 const GoogleMapsApiKey: React.FC = () => {
-  const { profile } = useAuth();
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,6 +23,9 @@ const GoogleMapsApiKey: React.FC = () => {
     
     const fetchData = async () => {
       try {
+        setIsLoading(true);
+        setLoadError(null);
+        
         // First check if user is a super admin using the security definer function
         const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_super_admin');
         

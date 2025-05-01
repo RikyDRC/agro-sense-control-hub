@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,101 +17,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Pencil, Trash2, Check, X, Layers, MapPin, 
-  Droplet, ThermometerIcon, PlayCircle, PauseCircle, BarChart3, Map
+  Droplet, ThermometerIcon, PlayCircle, PauseCircle, BarChart3, Map, RotateCw
 } from 'lucide-react';
 import { Zone, Device, DeviceType, DeviceStatus, IrrigationStatus, GeoLocation } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/sonner';
-import { useNavigate } from 'react-router-dom';
-
-const initialZones: Zone[] = [
-  {
-    id: 'zone-a',
-    name: 'Field Zone A',
-    description: 'North field with corn',
-    boundaryCoordinates: [
-      { lat: 35.6885, lng: 139.6907 },
-      { lat: 35.6905, lng: 139.6927 },
-      { lat: 35.6885, lng: 139.6947 },
-      { lat: 35.6865, lng: 139.6927 },
-    ],
-    areaSize: 1000,
-    devices: ['1', '2'],
-    irrigationStatus: IrrigationStatus.ACTIVE,
-    soilMoistureThreshold: 30,
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'zone-b',
-    name: 'Field Zone B',
-    description: 'East field with soybeans',
-    boundaryCoordinates: [
-      { lat: 35.6845, lng: 139.6947 },
-      { lat: 35.6865, lng: 139.6967 },
-      { lat: 35.6845, lng: 139.6987 },
-      { lat: 35.6825, lng: 139.6967 },
-    ],
-    areaSize: 1200,
-    devices: ['3'],
-    irrigationStatus: IrrigationStatus.SCHEDULED,
-    soilMoistureThreshold: 35,
-    createdAt: new Date(Date.now() - 14400000).toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'zone-c',
-    name: 'Field Zone C',
-    description: 'South field with wheat',
-    boundaryCoordinates: [
-      { lat: 35.6805, lng: 139.6887 },
-      { lat: 35.6825, lng: 139.6907 },
-      { lat: 35.6805, lng: 139.6927 },
-      { lat: 35.6785, lng: 139.6907 },
-    ],
-    areaSize: 900,
-    devices: [],
-    irrigationStatus: IrrigationStatus.INACTIVE,
-    soilMoistureThreshold: 25,
-    createdAt: new Date(Date.now() - 21600000).toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
-const initialDevices: Device[] = [
-  {
-    id: '1',
-    name: 'Moisture Sensor A1',
-    type: DeviceType.MOISTURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 78,
-    lastReading: 32.5,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-a'
-  },
-  {
-    id: '2',
-    name: 'Temperature Sensor A2',
-    type: DeviceType.TEMPERATURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 92,
-    lastReading: 24.3,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-a'
-  },
-  {
-    id: '3',
-    name: 'Valve B1',
-    type: DeviceType.VALVE,
-    status: DeviceStatus.OFFLINE,
-    batteryLevel: 15,
-    lastUpdated: new Date(Date.now() - 86400000).toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-b'
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ZoneFormValues {
   id?: string;
@@ -172,8 +86,11 @@ const Clock = ({ className }: { className?: string }) => (
 
 const ZonesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [zones, setZones] = useState<Zone[]>(initialZones);
-  const [devices, setDevices] = useState<Device[]>(initialDevices);
+  const { user } = useAuth();
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [formValues, setFormValues] = useState<ZoneFormValues>({
     name: '',
     description: '',
@@ -183,6 +100,87 @@ const ZonesPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [zoneToDelete, setZoneToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Fetch zones and devices from the database
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch zones
+      const { data: zonesData, error: zonesError } = await supabase
+        .from('zones')
+        .select('*')
+        .order('name');
+      
+      if (zonesError) {
+        throw zonesError;
+      }
+      
+      // Fetch devices
+      const { data: devicesData, error: devicesError } = await supabase
+        .from('devices')
+        .select('*');
+      
+      if (devicesError) {
+        throw devicesError;
+      }
+      
+      // Transform data to match our types
+      const formattedZones: Zone[] = zonesData.map((zone: any) => ({
+        id: zone.id,
+        name: zone.name,
+        description: zone.description || '',
+        boundaryCoordinates: zone.boundary_coordinates || [],
+        areaSize: zone.area_size || 0,
+        devices: [],  // We'll populate this below
+        irrigationStatus: zone.irrigation_status as IrrigationStatus || IrrigationStatus.INACTIVE,
+        soilMoistureThreshold: zone.soil_moisture_threshold,
+        createdAt: zone.created_at,
+        updatedAt: zone.updated_at
+      }));
+      
+      const formattedDevices: Device[] = devicesData.map((device: any) => ({
+        id: device.id,
+        name: device.name,
+        type: device.type as DeviceType,
+        status: device.status as DeviceStatus,
+        batteryLevel: device.battery_level,
+        lastReading: device.last_reading,
+        lastUpdated: device.last_updated,
+        location: device.location,
+        zoneId: device.zone_id
+      }));
+      
+      // Update devices array in each zone
+      formattedDevices.forEach(device => {
+        if (device.zoneId) {
+          const zone = formattedZones.find(z => z.id === device.zoneId);
+          if (zone && !zone.devices.includes(device.id)) {
+            zone.devices.push(device.id);
+          }
+        }
+      });
+      
+      setZones(formattedZones);
+      setDevices(formattedDevices);
+    } catch (error: any) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load zones: ' + error.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
 
   const handleCreateZone = () => {
     navigate('/map', { 
@@ -225,22 +223,47 @@ const ZonesPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!zoneToDelete) return;
     
-    setZones(prev => prev.filter(zone => zone.id !== zoneToDelete));
-    
-    setDevices(prev => 
-      prev.map(device => 
+    try {
+      // Delete zone from database
+      const { error } = await supabase
+        .from('zones')
+        .delete()
+        .eq('id', zoneToDelete);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setZones(prev => prev.filter(zone => zone.id !== zoneToDelete));
+      
+      // Update devices that were assigned to this zone
+      const updatedDevices = devices.map(device => 
         device.zoneId === zoneToDelete 
           ? { ...device, zoneId: undefined } 
           : device
-      )
-    );
-    
-    setZoneToDelete(null);
-    setIsDeleteDialogOpen(false);
-    toast.success("Zone deleted successfully");
+      );
+      
+      // Update devices in database
+      const devicesToUpdate = updatedDevices.filter(device => device.zoneId === undefined);
+      
+      for (const device of devicesToUpdate) {
+        await supabase
+          .from('devices')
+          .update({ zone_id: null })
+          .eq('id', device.id);
+      }
+      
+      setDevices(updatedDevices);
+      toast.success("Zone deleted successfully");
+    } catch (error: any) {
+      console.error('Error deleting zone:', error);
+      toast.error('Failed to delete zone: ' + error.message);
+    } finally {
+      setZoneToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   const resetForm = () => {
@@ -261,27 +284,72 @@ const ZonesPage: React.FC = () => {
     ).length;
   };
 
-  const toggleIrrigationStatus = (zoneId: string) => {
-    setZones(prev => 
-      prev.map(zone => 
-        zone.id === zoneId 
-          ? { 
-              ...zone, 
-              irrigationStatus: zone.irrigationStatus === IrrigationStatus.ACTIVE ? 
-                                IrrigationStatus.INACTIVE : 
-                                IrrigationStatus.ACTIVE,
-              updatedAt: new Date().toISOString()
-            } 
-          : zone
-      )
-    );
-    
+  const toggleIrrigationStatus = async (zoneId: string) => {
     const zone = zones.find(z => z.id === zoneId);
-    if (zone) {
-      const action = zone.irrigationStatus === IrrigationStatus.ACTIVE ? 'deactivated' : 'activated';
+    if (!zone) return;
+    
+    const newStatus = zone.irrigationStatus === IrrigationStatus.ACTIVE 
+      ? IrrigationStatus.INACTIVE 
+      : IrrigationStatus.ACTIVE;
+      
+    try {
+      // Update in database
+      const { error } = await supabase
+        .from('zones')
+        .update({ 
+          irrigation_status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', zoneId);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setZones(prev => 
+        prev.map(zone => 
+          zone.id === zoneId 
+            ? { 
+                ...zone, 
+                irrigationStatus: newStatus,
+                updatedAt: new Date().toISOString()
+              } 
+            : zone
+        )
+      );
+      
+      const action = newStatus === IrrigationStatus.ACTIVE ? 'activated' : 'deactivated';
       toast.success(`Irrigation ${action} for ${zone.name}`);
+    } catch (error: any) {
+      console.error('Error toggling irrigation status:', error);
+      toast.error('Failed to update irrigation status: ' + error.message);
     }
   };
+
+  // If we're in a loading state, show skeletons
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96 mt-2" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <Skeleton className="h-[400px] w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -292,6 +360,15 @@ const ZonesPage: React.FC = () => {
             <p className="text-muted-foreground">Manage your field zones and irrigation settings</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RotateCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
             <Button 
               variant="outline"
               onClick={() => navigate('/map')}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,8 @@ import {
   Pencil, 
   Trash2, 
   Check, 
-  X 
+  X,
+  RotateCw
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { 
@@ -37,84 +39,9 @@ import {
   TableRow,
   TableCell
 } from '@/components/ui/table';
-
-const initialDevices: Device[] = [
-  {
-    id: '1',
-    name: 'Moisture Sensor A1',
-    type: DeviceType.MOISTURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 78,
-    lastReading: 32.5,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-a'
-  },
-  {
-    id: '2',
-    name: 'Temperature Sensor A2',
-    type: DeviceType.TEMPERATURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 92,
-    lastReading: 24.3,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-a'
-  },
-  {
-    id: '3',
-    name: 'Valve B1',
-    type: DeviceType.VALVE,
-    status: DeviceStatus.OFFLINE,
-    batteryLevel: 15,
-    lastUpdated: new Date(Date.now() - 86400000).toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 },
-    zoneId: 'zone-b'
-  },
-  {
-    id: '4',
-    name: 'Main Pump',
-    type: DeviceType.PUMP,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 65,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
-  {
-    id: '5',
-    name: 'Weather Station',
-    type: DeviceType.WEATHER_STATION,
-    status: DeviceStatus.MAINTENANCE,
-    batteryLevel: 42,
-    lastUpdated: new Date(Date.now() - 43200000).toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  }
-];
-
-const initialZones: Zone[] = [
-  {
-    id: 'zone-a',
-    name: 'Field Zone A',
-    description: 'North field with corn',
-    boundaryCoordinates: [],
-    areaSize: 1000,
-    devices: ['1', '2'],
-    irrigationStatus: IrrigationStatus.ACTIVE,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'zone-b',
-    name: 'Field Zone B',
-    description: 'East field with soybeans',
-    boundaryCoordinates: [],
-    areaSize: 1200,
-    devices: ['3'],
-    irrigationStatus: IrrigationStatus.INACTIVE,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DeviceFormValues {
   id?: string;
@@ -127,15 +54,18 @@ interface DeviceFormValues {
 }
 
 const DevicesPage: React.FC = () => {
-  const [devices, setDevices] = useState<Device[]>(initialDevices);
-  const [zones, setZones] = useState<Zone[]>(initialZones);
+  const { user } = useAuth();
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [formValues, setFormValues] = useState<DeviceFormValues>({
     name: '',
     type: DeviceType.MOISTURE_SENSOR,
     status: DeviceStatus.ONLINE,
     batteryLevel: 100,
-    location: { lat: 0, lng: 0 }
+    location: { lat: 35.6895, lng: 139.6917 }
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -147,47 +77,188 @@ const DevicesPage: React.FC = () => {
     ? devices 
     : devices.filter(device => device.type === activeTab);
 
-  const handleCreateDevice = () => {
-    const newDevice: Device = {
-      id: uuidv4(),
-      name: formValues.name,
-      type: formValues.type,
-      status: formValues.status,
-      batteryLevel: formValues.batteryLevel,
-      location: formValues.location,
-      zoneId: formValues.zoneId,
-      lastUpdated: new Date().toISOString()
-    };
+  // Fetch devices and zones from the database
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
-    setDevices(prev => [...prev, newDevice]);
-    resetForm();
-    setIsDialogOpen(false);
-    toast.success("Device added successfully");
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch zones
+      const { data: zonesData, error: zonesError } = await supabase
+        .from('zones')
+        .select('*')
+        .order('name');
+      
+      if (zonesError) {
+        throw zonesError;
+      }
+      
+      // Fetch devices
+      const { data: devicesData, error: devicesError } = await supabase
+        .from('devices')
+        .select('*')
+        .order('name');
+      
+      if (devicesError) {
+        throw devicesError;
+      }
+      
+      // Transform data to match our types
+      const formattedZones: Zone[] = zonesData.map((zone: any) => ({
+        id: zone.id,
+        name: zone.name,
+        description: zone.description || '',
+        boundaryCoordinates: zone.boundary_coordinates || [],
+        areaSize: zone.area_size || 0,
+        devices: [],  // We'll populate this below
+        irrigationStatus: zone.irrigation_status as IrrigationStatus || IrrigationStatus.INACTIVE,
+        soilMoistureThreshold: zone.soil_moisture_threshold,
+        createdAt: zone.created_at,
+        updatedAt: zone.updated_at
+      }));
+      
+      const formattedDevices: Device[] = devicesData.map((device: any) => ({
+        id: device.id,
+        name: device.name,
+        type: device.type as DeviceType,
+        status: device.status as DeviceStatus,
+        batteryLevel: device.battery_level,
+        lastReading: device.last_reading,
+        lastUpdated: device.last_updated,
+        location: device.location,
+        zoneId: device.zone_id
+      }));
+      
+      // Update devices array in each zone
+      formattedDevices.forEach(device => {
+        if (device.zoneId) {
+          const zone = formattedZones.find(z => z.id === device.zoneId);
+          if (zone && !zone.devices.includes(device.id)) {
+            zone.devices.push(device.id);
+          }
+        }
+      });
+      
+      setZones(formattedZones);
+      setDevices(formattedDevices);
+    } catch (error: any) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load devices: ' + error.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  const handleUpdateDevice = () => {
-    if (!formValues.id) return;
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
 
-    setDevices(prev => 
-      prev.map(device => 
-        device.id === formValues.id 
-          ? {
-              ...device,
-              name: formValues.name,
-              type: formValues.type,
-              status: formValues.status,
-              batteryLevel: formValues.batteryLevel,
-              zoneId: formValues.zoneId,
-              updatedAt: new Date().toISOString()
-            } 
-          : device
-      )
-    );
+  const handleCreateDevice = async () => {
+    if (!user) {
+      toast.error("You must be logged in to add a device");
+      return;
+    }
 
-    resetForm();
-    setIsDialogOpen(false);
-    setIsEditing(false);
-    toast.success("Device updated successfully");
+    try {
+      const newId = uuidv4();
+      const timestamp = new Date().toISOString();
+
+      const newDevice: Device = {
+        id: newId,
+        name: formValues.name,
+        type: formValues.type,
+        status: formValues.status,
+        batteryLevel: formValues.batteryLevel,
+        location: formValues.location,
+        zoneId: formValues.zoneId,
+        lastUpdated: timestamp
+      };
+
+      // Format for database
+      const deviceData = {
+        id: newDevice.id,
+        name: newDevice.name,
+        type: newDevice.type,
+        status: newDevice.status,
+        battery_level: newDevice.batteryLevel,
+        location: newDevice.location,
+        zone_id: newDevice.zoneId,
+        last_updated: timestamp,
+        user_id: user.id
+      };
+      
+      const { error } = await supabase
+        .from('devices')
+        .insert(deviceData);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setDevices(prev => [...prev, newDevice]);
+      resetForm();
+      setIsDialogOpen(false);
+      toast.success("Device added successfully");
+    } catch (error: any) {
+      console.error("Error creating device:", error);
+      toast.error('Failed to add device: ' + error.message);
+    }
+  };
+
+  const handleUpdateDevice = async () => {
+    if (!formValues.id || !user) return;
+
+    try {
+      const timestamp = new Date().toISOString();
+
+      // Format for database
+      const deviceData = {
+        name: formValues.name,
+        type: formValues.type,
+        status: formValues.status,
+        battery_level: formValues.batteryLevel,
+        zone_id: formValues.zoneId,
+        updated_at: timestamp,
+        last_updated: timestamp
+      };
+      
+      const { error } = await supabase
+        .from('devices')
+        .update(deviceData)
+        .eq('id', formValues.id);
+        
+      if (error) throw error;
+
+      // Update local state
+      setDevices(prev => 
+        prev.map(device => 
+          device.id === formValues.id 
+            ? {
+                ...device,
+                name: formValues.name,
+                type: formValues.type,
+                status: formValues.status,
+                batteryLevel: formValues.batteryLevel,
+                zoneId: formValues.zoneId,
+                lastUpdated: timestamp
+              } 
+            : device
+        )
+      );
+
+      resetForm();
+      setIsDialogOpen(false);
+      setIsEditing(false);
+      toast.success("Device updated successfully");
+    } catch (error: any) {
+      console.error("Error updating device:", error);
+      toast.error('Failed to update device: ' + error.message);
+    }
   };
 
   const handleEditDevice = (device: Device) => {
@@ -204,23 +275,58 @@ const DevicesPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deviceToDelete) return;
     
-    setDevices(prev => prev.filter(device => device.id !== deviceToDelete));
-    setDeviceToDelete(null);
-    setIsDeleteDialogOpen(false);
-    toast.success("Device deleted successfully");
+    try {
+      const { error } = await supabase
+        .from('devices')
+        .delete()
+        .eq('id', deviceToDelete);
+      
+      if (error) throw error;
+      
+      setDevices(prev => prev.filter(device => device.id !== deviceToDelete));
+      setDeviceToDelete(null);
+      setIsDeleteDialogOpen(false);
+      toast.success("Device deleted successfully");
+    } catch (error: any) {
+      console.error('Error deleting device:', error);
+      toast.error('Failed to delete device: ' + error.message);
+    }
   };
 
-  const handleStatusChange = (deviceId: string, status: DeviceStatus) => {
-    setDevices(prev => 
-      prev.map(device => 
-        device.id === deviceId 
-          ? { ...device, status, lastUpdated: new Date().toISOString() } 
-          : device
-      )
-    );
+  const handleStatusChange = async (deviceId: string, status: DeviceStatus) => {
+    try {
+      const timestamp = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('devices')
+        .update({ 
+          status: status,
+          last_updated: timestamp
+        })
+        .eq('id', deviceId);
+      
+      if (error) throw error;
+      
+      setDevices(prev => 
+        prev.map(device => 
+          device.id === deviceId 
+            ? { 
+                ...device, 
+                status, 
+                lastUpdated: timestamp 
+              } 
+            : device
+        )
+      );
+      
+      toast.success(`Device status updated to ${status}`);
+    } catch (error: any) {
+      console.error('Error updating device status:', error);
+      toast.error('Failed to update device status: ' + error.message);
+    }
   };
 
   const resetForm = () => {
@@ -229,7 +335,7 @@ const DevicesPage: React.FC = () => {
       type: DeviceType.MOISTURE_SENSOR,
       status: DeviceStatus.ONLINE,
       batteryLevel: 100,
-      location: { lat: 0, lng: 0 }
+      location: { lat: 35.6895, lng: 139.6917 }
     });
   };
 
@@ -278,6 +384,41 @@ const DevicesPage: React.FC = () => {
     }
   };
 
+  // If we're in a loading state, show skeletons
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96 mt-2" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full" /> {/* Tabs */}
+          
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -287,6 +428,15 @@ const DevicesPage: React.FC = () => {
             <p className="text-muted-foreground">Manage your field sensors and irrigation equipment</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RotateCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
             <div className="flex rounded-md overflow-hidden border">
               <Button
                 variant={viewMode === 'table' ? 'default' : 'outline'}
@@ -348,6 +498,11 @@ const DevicesPage: React.FC = () => {
                     key={device.id} 
                     device={device} 
                     onStatusChange={handleStatusChange}
+                    onEditClick={() => handleEditDevice(device)}
+                    onDeleteClick={() => {
+                      setDeviceToDelete(device.id);
+                      setIsDeleteDialogOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -556,6 +711,19 @@ const DevicesPage: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {!isEditing && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">
+                  Location
+                </Label>
+                <div className="col-span-3">
+                  <p className="text-sm text-muted-foreground">
+                    Default position will be used. You can drag the device on the map to set its exact location later.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

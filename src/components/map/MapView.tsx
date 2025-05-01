@@ -13,15 +13,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 const containerStyle = {
   width: '100%',
   height: '600px'
-};
-
-const center = {
-  lat: 35.6895,
-  lng: 139.6917
 };
 
 const libraries: ("drawing" | "places" | "geometry" | "visualization")[] = ["drawing", "places", "geometry"];
@@ -32,6 +28,12 @@ interface MapViewProps {
   onDeviceAdd?: (device: Device) => void;
   onZoneAdd?: (zone: Zone) => void;
   onDeviceMove?: (deviceId: string, newLocation: GeoLocation) => void;
+  editZoneId?: string;
+  createZone?: {
+    name: string;
+    description?: string;
+    soilMoistureThreshold?: number;
+  };
 }
 
 const MapView: React.FC<MapViewProps> = ({ 
@@ -39,8 +41,11 @@ const MapView: React.FC<MapViewProps> = ({
   zones = [], 
   onDeviceAdd, 
   onZoneAdd,
-  onDeviceMove 
+  onDeviceMove,
+  editZoneId,
+  createZone
 }) => {
+  const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [newDeviceType, setNewDeviceType] = useState<DeviceType>(DeviceType.MOISTURE_SENSOR);
   const [newDeviceName, setNewDeviceName] = useState('');
@@ -52,13 +57,74 @@ const MapView: React.FC<MapViewProps> = ({
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>("");
   const [apiKeyLoading, setApiKeyLoading] = useState<boolean>(true);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 35.6895, lng: 139.6917 });
   
   const polygonRefs = useRef<{[key: string]: google.maps.Polygon | null}>({});
   const markerRefs = useRef<{[key: string]: google.maps.Marker | null}>({});
   
   const [createdPolygon, setCreatedPolygon] = useState<google.maps.Polygon | null>(null);
   const [newZoneName, setNewZoneName] = useState('');
+  const [newZoneDescription, setNewZoneDescription] = useState('');
+  const [soilMoistureThreshold, setSoilMoistureThreshold] = useState(30);
   const [isNamingZone, setIsNamingZone] = useState(false);
+
+  // Handle edit zone from route state
+  useEffect(() => {
+    if (editZoneId) {
+      const zoneToEdit = zones.find(zone => zone.id === editZoneId);
+      if (zoneToEdit) {
+        setSelectedZone(editZoneId);
+        
+        // Fit map to zone boundaries
+        if (mapInstance && zoneToEdit.boundaryCoordinates.length > 0) {
+          const bounds = new google.maps.LatLngBounds();
+          zoneToEdit.boundaryCoordinates.forEach(coord => {
+            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+          });
+          mapInstance.fitBounds(bounds);
+        }
+      }
+    }
+  }, [editZoneId, zones, mapInstance]);
+
+  // Handle create zone from route state
+  useEffect(() => {
+    if (createZone && drawingManager && isScriptLoaded) {
+      setNewZoneName(createZone.name || '');
+      setNewZoneDescription(createZone.description || '');
+      setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
+      
+      // Enable drawing mode
+      drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+      toast.info('Draw the zone boundaries on the map');
+    }
+  }, [createZone, drawingManager, isScriptLoaded]);
+
+  // Set initial map center based on device/zone locations
+  useEffect(() => {
+    if (devices.length > 0 || zones.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      let hasLocations = false;
+      
+      devices.forEach(device => {
+        bounds.extend(new google.maps.LatLng(device.location.lat, device.location.lng));
+        hasLocations = true;
+      });
+      
+      zones.forEach(zone => {
+        if (zone.boundaryCoordinates && zone.boundaryCoordinates.length > 0) {
+          zone.boundaryCoordinates.forEach(coord => {
+            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+          });
+          hasLocations = true;
+        }
+      });
+      
+      if (hasLocations && mapInstance) {
+        mapInstance.fitBounds(bounds);
+      }
+    }
+  }, [devices, zones, mapInstance]);
 
   // Fetch the Google Maps API key from platform_config
   useEffect(() => {
@@ -152,10 +218,12 @@ const MapView: React.FC<MapViewProps> = ({
     const newZone: Zone = {
       id: uuidv4(),
       name: newZoneName,
+      description: newZoneDescription,
       boundaryCoordinates: coordinates,
       areaSize: area,
       devices: [],
       irrigationStatus: IrrigationStatus.INACTIVE,
+      soilMoistureThreshold,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -166,6 +234,7 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Clean up after zone creation
     setNewZoneName('');
+    setNewZoneDescription('');
     setIsNamingZone(false);
     createdPolygon.setMap(null);
     setCreatedPolygon(null);
@@ -176,7 +245,12 @@ const MapView: React.FC<MapViewProps> = ({
         drawingControl: true
       });
     }
-  }, [createdPolygon, newZoneName, onZoneAdd, drawingManager]);
+    
+    // If we came from the zones page, navigate back to it
+    if (createZone) {
+      navigate('/zones');
+    }
+  }, [createdPolygon, newZoneName, newZoneDescription, soilMoistureThreshold, onZoneAdd, drawingManager, createZone, navigate]);
 
   const cancelZoneCreation = useCallback(() => {
     if (createdPolygon) {
@@ -185,6 +259,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     setNewZoneName('');
+    setNewZoneDescription('');
     setIsNamingZone(false);
     
     // Re-enable drawing manager
@@ -193,7 +268,12 @@ const MapView: React.FC<MapViewProps> = ({
         drawingControl: true
       });
     }
-  }, [createdPolygon, drawingManager]);
+    
+    // If we came from the zones page, navigate back to it
+    if (createZone) {
+      navigate('/zones');
+    }
+  }, [createdPolygon, drawingManager, createZone, navigate]);
 
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (isAddingDevice && e.latLng) {
@@ -326,7 +406,7 @@ const MapView: React.FC<MapViewProps> = ({
             >
               <GoogleMap
                 mapContainerStyle={containerStyle}
-                center={center}
+                center={mapCenter}
                 zoom={14}
                 onLoad={onMapLoad}
                 onClick={handleMapClick}
@@ -490,14 +570,38 @@ const MapView: React.FC<MapViewProps> = ({
                 <CardDescription>Give the drawn area a name</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="zoneName">Zone Name</Label>
-                  <Input
-                    id="zoneName"
-                    value={newZoneName}
-                    onChange={(e) => setNewZoneName(e.target.value)}
-                    placeholder="Field Zone A"
-                  />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="zoneName">Zone Name</Label>
+                    <Input
+                      id="zoneName"
+                      value={newZoneName}
+                      onChange={(e) => setNewZoneName(e.target.value)}
+                      placeholder="Field Zone A"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="zoneDescription">Description (Optional)</Label>
+                    <Input
+                      id="zoneDescription"
+                      value={newZoneDescription}
+                      onChange={(e) => setNewZoneDescription(e.target.value)}
+                      placeholder="North field with corn"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="moistureThreshold">Soil Moisture Threshold (%)</Label>
+                    <Input
+                      id="moistureThreshold"
+                      type="number"
+                      value={soilMoistureThreshold}
+                      onChange={(e) => setSoilMoistureThreshold(parseInt(e.target.value) || 30)}
+                      min="0"
+                      max="100"
+                    />
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">

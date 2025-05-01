@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, UserPlus, AlertTriangle, ShieldCheck, AlertCircle } from 'lucide-react';
+import { LogIn, UserPlus, AlertTriangle, ShieldCheck, AlertCircle, Phone } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(''); // New state for phone number
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'admin' | 'super_admin'>('farmer');
@@ -96,11 +97,19 @@ const AuthPage = () => {
         return;
       }
       
+      // Validate phone number
+      if (phoneNumber && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(phoneNumber)) {
+        setError('Please enter a valid phone number');
+        setIsProcessing(false);
+        return;
+      }
+      
       const { error } = await signUp(
         email, 
         password, 
         displayName, 
-        selectedRole
+        selectedRole,
+        phoneNumber // Pass the phone number to signUp
       );
       
       if (error) {
@@ -126,6 +135,7 @@ const AuthPage = () => {
     setEmail('super@agrosense.com');
     setPassword('SuperAdmin123!');
     setDisplayName('Super Administrator');
+    setPhoneNumber('+12345678900');
     setSelectedRole('super_admin');
     setActiveTab('signup');
   };
@@ -134,6 +144,7 @@ const AuthPage = () => {
     setEmail('admin@agrosense.com');
     setPassword('Admin123!');
     setDisplayName('Admin User');
+    setPhoneNumber('+12345678901');
     setSelectedRole('admin');
     setActiveTab('signup');
   };
@@ -142,6 +153,7 @@ const AuthPage = () => {
     setEmail('farmer@agrosense.com');
     setPassword('Farmer123!');
     setDisplayName('Farmer User');
+    setPhoneNumber('+12345678902');
     setSelectedRole('farmer');
     setActiveTab('signup');
   };
@@ -301,6 +313,19 @@ const AuthPage = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Include country code (e.g., +1 for US)
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>

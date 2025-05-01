@@ -118,7 +118,7 @@ const MapPage: React.FC = () => {
     }
 
     try {
-      // Format for database
+      // Convert GeoLocation to JSON compatible format
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
@@ -127,7 +127,7 @@ const MapPage: React.FC = () => {
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: newDevice.location,
+        location: JSON.parse(JSON.stringify(newDevice.location)), // Convert to JSON compatible format
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
@@ -154,12 +154,12 @@ const MapPage: React.FC = () => {
     }
 
     try {
-      // Format for database
+      // Convert boundaryCoordinates to JSON compatible format
       const zoneData = {
         id: newZone.id,
         name: newZone.name,
         description: newZone.description || '',
-        boundary_coordinates: newZone.boundaryCoordinates,
+        boundary_coordinates: JSON.parse(JSON.stringify(newZone.boundaryCoordinates)),
         area_size: newZone.areaSize,
         irrigation_status: newZone.irrigationStatus,
         soil_moisture_threshold: newZone.soilMoistureThreshold,
@@ -183,10 +183,10 @@ const MapPage: React.FC = () => {
 
   const handleDeviceMove = async (deviceId: string, newLocation: GeoLocation) => {
     try {
-      // Update in database
+      // Convert GeoLocation to JSON compatible format
       const { error } = await supabase
         .from('devices')
-        .update({ location: newLocation })
+        .update({ location: JSON.parse(JSON.stringify(newLocation)) })
         .eq('id', deviceId);
       
       if (error) throw error;

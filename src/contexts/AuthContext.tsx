@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,7 @@ export interface UserProfile {
   profile_image: string | null;
   created_at: string;
   updated_at: string;
+  phone_number: string | null; // Added phone_number field
 }
 
 export interface SubscriptionPlan {
@@ -40,7 +42,7 @@ interface AuthContextProps {
   subscription: UserSubscription | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string, displayName?: string, role?: UserRole) => Promise<{ error: any | null }>;
+  signUp: (email: string, password: string, displayName?: string, role?: UserRole, phoneNumber?: string) => Promise<{ error: any | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
@@ -227,7 +229,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string, role: UserRole = 'farmer') => {
+  const signUp = async (email: string, password: string, displayName?: string, role: UserRole = 'farmer', phoneNumber?: string) => {
     try {
       const { error } = await supabase.auth.signUp({
         email, 
@@ -235,7 +237,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         options: {
           data: {
             display_name: displayName || email.split('@')[0],
-            role: role
+            role: role,
+            phone_number: phoneNumber || null
           }
         }
       });

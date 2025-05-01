@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserProfile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { Save, UserIcon, Camera, Loader2 } from 'lucide-react';
+import { Save, UserIcon, Camera, Loader2, Phone } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -26,7 +27,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     farmName: 'Green Valley Farm',
     location: 'California, USA',
     language: 'en-US',
-    profileImage: ''
+    profileImage: '',
+    phoneNumber: '' // Added for phone number
   });
   
   useEffect(() => {
@@ -35,6 +37,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
         ...prev,
         displayName: profile.display_name || '',
         profileImage: profile.profile_image || '',
+        phoneNumber: profile.phone_number || '', // Set phone number from profile
       }));
     }
   }, [profile]);
@@ -59,10 +62,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     setLoading(true);
     
     try {
+      // Validate phone number
+      if (formData.phoneNumber && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(formData.phoneNumber)) {
+        toast.error('Please enter a valid phone number');
+        setLoading(false);
+        return;
+      }
+      
       const { error } = await supabase
         .from('user_profiles')
         .update({
           display_name: formData.displayName,
+          phone_number: formData.phoneNumber, // Update phone number
           updated_at: new Date().toISOString()
         })
         .eq('id', profile.id);
@@ -226,13 +237,20 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="farmName">Farm Name</Label>
-                <Input 
-                  id="farmName" 
-                  value={formData.farmName} 
-                  onChange={handleInputChange('farmName')} 
-                  placeholder="Enter farm name"
-                />
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <div className="flex items-center space-x-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="phoneNumber" 
+                    type="tel"
+                    value={formData.phoneNumber} 
+                    onChange={handleInputChange('phoneNumber')} 
+                    placeholder="+1234567890"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Include country code (e.g., +1 for US)
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>

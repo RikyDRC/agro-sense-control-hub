@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +10,9 @@ import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus }
 import { v4 as uuidv4 } from 'uuid';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-// You would typically store this in an environment variable
-const GOOGLE_MAPS_API_KEY = "REPLACE_WITH_YOUR_API_KEY";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const containerStyle = {
   width: '100%',
@@ -50,6 +49,9 @@ const MapView: React.FC<MapViewProps> = ({
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [scriptLoadError, setScriptLoadError] = useState<Error | null>(null);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>("");
+  const [apiKeyLoading, setApiKeyLoading] = useState<boolean>(true);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   
   const polygonRefs = useRef<{[key: string]: google.maps.Polygon | null}>({});
   const markerRefs = useRef<{[key: string]: google.maps.Marker | null}>({});
@@ -57,6 +59,36 @@ const MapView: React.FC<MapViewProps> = ({
   const [createdPolygon, setCreatedPolygon] = useState<google.maps.Polygon | null>(null);
   const [newZoneName, setNewZoneName] = useState('');
   const [isNamingZone, setIsNamingZone] = useState(false);
+
+  // Fetch the Google Maps API key from platform_config
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        setApiKeyLoading(true);
+        const { data, error } = await supabase
+          .from('platform_config')
+          .select('value')
+          .eq('key', 'google_maps_api_key')
+          .maybeSingle();
+          
+        if (error) {
+          console.error("Error fetching Google Maps API key:", error);
+          setApiKeyError(error.message);
+          toast.error("Failed to load Google Maps API key");
+        } else if (data) {
+          console.log("Google Maps API key loaded successfully");
+          setGoogleMapsApiKey(data.value);
+        }
+      } catch (err: any) {
+        console.error("Exception fetching Google Maps API key:", err);
+        setApiKeyError(err.message);
+      } finally {
+        setApiKeyLoading(false);
+      }
+    };
+    
+    fetchApiKey();
+  }, []);
 
   const onScriptLoad = useCallback(() => {
     console.log("Google Maps script loaded successfully");
@@ -226,6 +258,33 @@ const MapView: React.FC<MapViewProps> = ({
     }
   };
 
+  // If API key is loading, show loading skeleton
+  if (apiKeyLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-4 w-full mt-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[600px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // If there was an error fetching the API key, show error message
+  if (apiKeyError) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load Google Maps API key: {apiKeyError}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   // If script failed to load, show error message
   if (scriptLoadError) {
     return (
@@ -233,6 +292,18 @@ const MapView: React.FC<MapViewProps> = ({
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Failed to load Google Maps API. Please check your API key and try again.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // If no API key is set, show a message
+  if (!googleMapsApiKey || googleMapsApiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+    return (
+      <Alert variant="warning" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Google Maps API key is not configured. Please go to Settings and add your Google Maps API key.
         </AlertDescription>
       </Alert>
     );
@@ -248,7 +319,7 @@ const MapView: React.FC<MapViewProps> = ({
           </CardHeader>
           <CardContent>
             <LoadScript 
-              googleMapsApiKey={GOOGLE_MAPS_API_KEY} 
+              googleMapsApiKey={googleMapsApiKey} 
               libraries={libraries}
               onLoad={onScriptLoad}
               onError={onScriptError}

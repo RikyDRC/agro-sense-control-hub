@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,64 +69,6 @@ const MapView: React.FC<MapViewProps> = ({
   const [soilMoistureThreshold, setSoilMoistureThreshold] = useState(30);
   const [isNamingZone, setIsNamingZone] = useState(false);
 
-  // Handle edit zone from route state
-  useEffect(() => {
-    if (editZoneId) {
-      const zoneToEdit = zones.find(zone => zone.id === editZoneId);
-      if (zoneToEdit) {
-        setSelectedZone(editZoneId);
-        
-        // Fit map to zone boundaries
-        if (mapInstance && zoneToEdit.boundaryCoordinates.length > 0) {
-          const bounds = new google.maps.LatLngBounds();
-          zoneToEdit.boundaryCoordinates.forEach(coord => {
-            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
-          });
-          mapInstance.fitBounds(bounds);
-        }
-      }
-    }
-  }, [editZoneId, zones, mapInstance]);
-
-  // Handle create zone from route state
-  useEffect(() => {
-    if (createZone && drawingManager && isScriptLoaded) {
-      setNewZoneName(createZone.name || '');
-      setNewZoneDescription(createZone.description || '');
-      setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
-      
-      // Enable drawing mode
-      drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
-      toast.info('Draw the zone boundaries on the map');
-    }
-  }, [createZone, drawingManager, isScriptLoaded]);
-
-  // Set initial map center based on device/zone locations
-  useEffect(() => {
-    if (devices.length > 0 || zones.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
-      let hasLocations = false;
-      
-      devices.forEach(device => {
-        bounds.extend(new google.maps.LatLng(device.location.lat, device.location.lng));
-        hasLocations = true;
-      });
-      
-      zones.forEach(zone => {
-        if (zone.boundaryCoordinates && zone.boundaryCoordinates.length > 0) {
-          zone.boundaryCoordinates.forEach(coord => {
-            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
-          });
-          hasLocations = true;
-        }
-      });
-      
-      if (hasLocations && mapInstance) {
-        mapInstance.fitBounds(bounds);
-      }
-    }
-  }, [devices, zones, mapInstance]);
-
   // Fetch the Google Maps API key from platform_config
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -175,6 +118,66 @@ const MapView: React.FC<MapViewProps> = ({
     console.log("Drawing manager loaded successfully");
     setDrawingManager(drawingManager);
   }, []);
+
+  // Handle edit zone from route state
+  useEffect(() => {
+    if (editZoneId && isScriptLoaded && mapInstance) {
+      const zoneToEdit = zones.find(zone => zone.id === editZoneId);
+      if (zoneToEdit) {
+        setSelectedZone(editZoneId);
+        
+        // Fit map to zone boundaries
+        if (zoneToEdit.boundaryCoordinates.length > 0) {
+          const bounds = new google.maps.LatLngBounds();
+          zoneToEdit.boundaryCoordinates.forEach(coord => {
+            bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+          });
+          mapInstance.fitBounds(bounds);
+        }
+      }
+    }
+  }, [editZoneId, zones, mapInstance, isScriptLoaded]);
+
+  // Handle create zone from route state
+  useEffect(() => {
+    if (createZone && drawingManager && isScriptLoaded) {
+      setNewZoneName(createZone.name || '');
+      setNewZoneDescription(createZone.description || '');
+      setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
+      
+      // Enable drawing mode
+      drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+      toast.info('Draw the zone boundaries on the map');
+    }
+  }, [createZone, drawingManager, isScriptLoaded]);
+
+  // Set initial map center based on device/zone locations
+  useEffect(() => {
+    if (devices.length > 0 || zones.length > 0) {
+      if (isScriptLoaded && mapInstance) {
+        const bounds = new google.maps.LatLngBounds();
+        let hasLocations = false;
+        
+        devices.forEach(device => {
+          bounds.extend(new google.maps.LatLng(device.location.lat, device.location.lng));
+          hasLocations = true;
+        });
+        
+        zones.forEach(zone => {
+          if (zone.boundaryCoordinates && zone.boundaryCoordinates.length > 0) {
+            zone.boundaryCoordinates.forEach(coord => {
+              bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+            });
+            hasLocations = true;
+          }
+        });
+        
+        if (hasLocations) {
+          mapInstance.fitBounds(bounds);
+        }
+      }
+    }
+  }, [devices, zones, mapInstance, isScriptLoaded]);
 
   const onPolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     console.log("Polygon drawing completed");
@@ -380,7 +383,7 @@ const MapView: React.FC<MapViewProps> = ({
   // If no API key is set, show a message
   if (!googleMapsApiKey || googleMapsApiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
     return (
-      <Alert variant="warning" className="mb-4">
+      <Alert variant="default" className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Google Maps API key is not configured. Please go to Settings and add your Google Maps API key.

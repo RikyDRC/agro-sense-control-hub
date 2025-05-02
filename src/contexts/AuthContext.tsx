@@ -7,6 +7,21 @@ import { useToast } from '@/hooks/use-toast';
 // Define the UserRole type that is used in ProtectedRoute
 export type UserRole = 'farmer' | 'admin' | 'super_admin';
 
+// Define the Subscription type
+export interface Subscription {
+  id: string;
+  user_id: string;
+  status: string;
+  plan?: {
+    id: string;
+    name: string;
+    price: number;
+    billing_interval: string;
+  };
+  start_date: string;
+  end_date?: string;
+}
+
 interface AuthContextProps {
   user: User | null;
   session: Session | null;
@@ -18,6 +33,9 @@ interface AuthContextProps {
   updateProfile: (data: any) => Promise<any>;
   refreshUser: () => Promise<void>;
   isAdmin: boolean;
+  subscription: Subscription | null;
+  refreshSubscription: () => Promise<void>;
+  isRoleSuperAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -28,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const { toast } = useToast();
 
   // Function to refresh user data
@@ -38,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(user);
         // Also fetch profile data if needed
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('*')
           .eq('id', user.id)
           .single();
@@ -51,6 +70,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Error refreshing user data:', error);
     }
   }, []);
+
+  // Function to refresh subscription data
+  const refreshSubscription = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          id, user_id, status, start_date, end_date,
+          plan:plan_id (
+            id, name, price, billing_interval
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching subscription:', error);
+        setSubscription(null);
+      } else if (data) {
+        setSubscription(data as Subscription);
+      } else {
+        setSubscription(null);
+      }
+    } catch (error) {
+      console.error('Error refreshing subscription data:', error);
+    }
+  }, [user]);
 
   // Initialize auth state
   useEffect(() => {
@@ -70,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           // Get user profile
           const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('*')
             .eq('id', sessionData.session.user.id)
             .single();
@@ -108,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Get user profile
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
@@ -127,6 +176,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       authListener.subscription.unsubscribe();
     };
   }, [toast]);
+
+  // Also fetch subscription data when user changes
+  useEffect(() => {
+    if (user) {
+      refreshSubscription();
+    } else {
+      setSubscription(null);
+    }
+  }, [user, refreshSubscription]);
   
   // Sign in function
   const signIn = async (email: string, password: string) => {
@@ -201,14 +259,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .upsert({ id: user.id, ...updates });
         
       if (profileError) throw profileError;
       
       // Refresh profile data
       const { data: updatedProfile, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .single();
@@ -222,6 +280,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   };
+
+  // Function to check if current user is a super admin
+  const isRoleSuperAdmin = () => {
+    return profile?.role === 'super_admin';
+  };
   
   // Expose auth context values
   const contextValue = {
@@ -234,7 +297,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
     updateProfile,
     refreshUser,
-    isAdmin
+    isAdmin,
+    subscription,
+    refreshSubscription,
+    isRoleSuperAdmin
   };
   
   return (

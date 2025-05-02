@@ -292,6 +292,7 @@ const DevicesPage: React.FC = () => {
     { value: DeviceType.MOISTURE_SENSOR, label: 'Moisture Sensor' },
     { value: DeviceType.WEATHER_STATION, label: 'Weather Station' },
     { value: DeviceType.VALVE, label: 'Irrigation Controller' },
+    // Fix the CAMERA type by using the correct enum value
     { value: DeviceType.CAMERA, label: 'Camera' },
   ];
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import PlanList from '@/components/subscription/PlanList';
 
 interface SubscriptionPlan {
   id: string;
@@ -389,159 +390,15 @@ const SubscriptionPlansPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Subscription Plans</h1>
-            <p className="text-muted-foreground">
-              Choose the plan that best fits your farming needs
-            </p>
-          </div>
-          
-          {isRoleSuperAdmin() && (
-            <Button onClick={handleAddPlan}>
-              <Plus className="mr-2 h-4 w-4" /> Add New Plan
-            </Button>
-          )}
-        </div>
-
-        {subscription && (
-          <Alert className="bg-agro-green-light/20 border-agro-green">
-            <Info className="h-4 w-4 text-agro-green" />
-            <AlertTitle>Current Subscription</AlertTitle>
-            <AlertDescription>
-              You are currently on the {subscription.plan?.name} plan. 
-              {subscription.end_date && (
-                <span> Your subscription renews on {new Date(subscription.end_date).toLocaleDateString()}.</span>
-              )}
-            </AlertDescription>
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={async () => {
-                try {
-                  const { data, error } = await supabase.functions.invoke('customer-portal');
-                  if (error) throw error;
-                  if (data?.url) {
-                    window.location.href = data.url;
-                  }
-                } catch (error) {
-                  console.error('Error opening customer portal:', error);
-                  toast.error('Failed to open subscription management');
-                }
-              }}
-            >
-              Manage Subscription
-            </Button>
-          </Alert>
-        )}
-
-        {profile?.role !== 'farmer' && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Admin Notice</AlertTitle>
-            <AlertDescription>
-              As an {profile?.role.replace('_', ' ')}, you don't need a subscription plan to access all features.
-              {isRoleSuperAdmin() && " You can manage all plans and assign them to users."}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {plans.length === 0 ? (
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertTitle>No Subscription Plans Available</AlertTitle>
-            <AlertDescription>
-              There are currently no subscription plans available. Please check back later or contact support.
-              <Button 
-                variant="link" 
-                className="p-0 h-auto ml-2"
-                onClick={createDefaultPlans}
-              >
-                Create default plans
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.id} 
-                className={`
-                  relative overflow-hidden
-                  ${isPlanActive(plan.id) ? 'border-agro-green border-2' : ''}
-                `}
-              >
-                {isPlanActive(plan.id) && (
-                  <div className="absolute top-0 right-0">
-                    <Badge className="m-2 bg-agro-green">Current Plan</Badge>
-                  </div>
-                )}
-                
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                  <div className="mt-2">
-                    <span className="text-3xl font-bold">{formatPrice(plan.price, plan.billing_interval)}</span>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <Separator className="mb-4" />
-                  <div className="space-y-2">
-                    {renderFeaturesList(plan.features)}
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="flex justify-between">
-                  <div>
-                    {isRoleSuperAdmin() && (
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditPlan(plan)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDeletePlan(plan.id)}
-                          disabled={deletingPlan === plan.id}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          {deletingPlan === plan.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  <Button 
-                    variant={isPlanActive(plan.id) ? "outline" : "default"}
-                    disabled={subscribing || (profile?.role !== 'farmer') || isPlanActive(plan.id)}
-                    onClick={() => handleSubscribe(plan.id)}
-                  >
-                    {subscribing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : isPlanActive(plan.id) ? (
-                      'Current Plan'
-                    ) : (
-                      'Subscribe'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+      <PlanList 
+        plans={plans}
+        subscribing={subscribing}
+        deletingPlan={deletingPlan}
+        onAddPlan={handleAddPlan}
+        onSubscribe={handleSubscribe}
+        onEditPlan={handleEditPlan}
+        onDeletePlan={handleDeletePlan}
+      />
 
       <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
         <DialogContent className="max-w-md">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -18,6 +17,9 @@ const MapPage: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [showDeviceDialog, setShowDeviceDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
 
@@ -202,6 +204,85 @@ const MapPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error moving device:', error);
       toast.error('Failed to update device location: ' + error.message);
+    }
+  };
+
+  // Fix the device mappings to correctly handle strings for devices
+  const getDevicesForZone = (zoneId: string) => {
+    if (!devices) return [];
+    
+    return devices.filter(device => {
+      if (typeof device === 'string') {
+        // Find the actual device object by ID if it's a string reference
+        const actualDevice = devices.find(d => typeof d !== 'string' && d.id === device);
+        return actualDevice?.zoneId === zoneId;
+      }
+      return device.zoneId === zoneId;
+    });
+  };
+
+  // Improved handling of device saving to match database requirements
+  const handleSaveDevice = async (device: Partial<Device>) => {
+    setIsSubmitting(true);
+    try {
+      if (!user) return;
+
+      const deviceData = {
+        id: device.id || uuidv4(),
+        name: device.name || '',
+        type: device.type?.toString() || DeviceType.MOISTURE_SENSOR.toString(), // Convert enum to string
+        status: device.status?.toString() || DeviceStatus.OFFLINE.toString(), // Convert enum to string
+        battery_level: device.batteryLevel || 100,
+        last_reading: device.lastReading || null,
+        last_updated: new Date().toISOString(),
+        location: device.location || { lat: 0, lng: 0 },
+        zone_id: device.zoneId || null,
+        user_id: user.id
+      };
+      
+      // Handle local state update before or instead of database operations
+      setDevices(prev => {
+        if (device.id) {
+          return prev.map(d => {
+            if (typeof d !== 'string' && d.id === device.id) {
+              return {
+                ...d,
+                name: device.name || d.name,
+                type: device.type || d.type,
+                status: device.status || d.status,
+                batteryLevel: device.batteryLevel || d.batteryLevel,
+                lastReading: device.lastReading || d.lastReading,
+                lastUpdated: new Date().toISOString(),
+                location: device.location || d.location,
+                zoneId: device.zoneId || d.zoneId
+              };
+            }
+            return d;
+          });
+        } else {
+          const newDevice: Device = {
+            id: deviceData.id,
+            name: deviceData.name,
+            type: device.type || DeviceType.MOISTURE_SENSOR,
+            status: device.status || DeviceStatus.OFFLINE,
+            batteryLevel: device.batteryLevel || 100,
+            lastReading: device.lastReading || null,
+            lastUpdated: new Date().toISOString(),
+            location: device.location || { lat: 0, lng: 0 },
+            zoneId: device.zoneId || null
+          };
+          return [...prev, newDevice];
+        }
+      });
+      
+      toast.success(`Device ${device.id ? 'updated' : 'added'} successfully`);
+      setSelectedDevice(null);
+      setShowDeviceDialog(false);
+    } catch (error) {
+      console.error('Error saving device:', error);
+      toast.error('Failed to save device');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

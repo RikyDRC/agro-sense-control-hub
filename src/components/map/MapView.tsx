@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -391,6 +390,19 @@ const MapView: React.FC<MapViewProps> = ({
       </Alert>
     );
   }
+
+  // Modify the device object to include lastReading property
+  const demoDevice = {
+    id: 'device-demo',
+    name: 'Demo Device',
+    type: DeviceType.MOISTURE_SENSOR,
+    status: DeviceStatus.ONLINE,
+    batteryLevel: 85,
+    lastUpdated: new Date().toISOString(),
+    lastReading: 65, // Add missing lastReading property
+    location: { lat: 37.7749, lng: -122.4194 },
+    zoneId: 'zone1'
+  };
 
   return (
     <div className="space-y-4">

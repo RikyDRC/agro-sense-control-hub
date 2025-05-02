@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -83,6 +82,21 @@ const Clock = ({ className }: { className?: string }) => (
     <polyline points="12 6 12 12 16 14" />
   </svg>
 );
+
+const getStatusDisplay = (status: IrrigationStatus) => {
+  switch (status) {
+    case IrrigationStatus.ACTIVE:
+      return { label: 'Active', color: 'bg-green-500' };
+    case IrrigationStatus.SCHEDULED:
+      return { label: 'Scheduled', color: 'bg-blue-500' };
+    case IrrigationStatus.INACTIVE:
+      return { label: 'Inactive', color: 'bg-slate-500' };
+    case IrrigationStatus.PAUSED:
+      return { label: 'Paused', color: 'bg-yellow-500' };
+    default:
+      return { label: 'Unknown', color: 'bg-gray-500' };
+  }
+};
 
 const ZonesPage: React.FC = () => {
   const navigate = useNavigate();

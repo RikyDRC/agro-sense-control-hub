@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle 
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/sonner';
-import { Crop, GrowthStage, IrrigationStatus, Zone } from '@/types';
+import { Crop, CropGrowthStage, IrrigationStatus, Zone } from '@/types';
 import CropForm from '@/components/crops/CropForm';
 
 const initialCrops: Crop[] = [
@@ -20,7 +21,7 @@ const initialCrops: Crop[] = [
     variety: 'Roma',
     plantingDate: '2023-04-15',
     harvestDate: '2023-07-20',
-    growthStage: GrowthStage.VEGETATIVE,
+    growthStage: CropGrowthStage.VEGETATIVE,
     idealMoisture: {
       min: 60,
       max: 80
@@ -37,7 +38,7 @@ const initialCrops: Crop[] = [
     variety: 'Butterhead',
     plantingDate: '2023-05-01',
     harvestDate: '2023-06-15',
-    growthStage: GrowthStage.FLOWERING,
+    growthStage: CropGrowthStage.FLOWERING,
     idealMoisture: {
       min: 70,
       max: 90
@@ -88,7 +89,7 @@ const CropsPage: React.FC = () => {
     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
   };
 
-  const getGrowthStageDisplay = (stage: GrowthStage) => {
+  const getGrowthStageDisplay = (stage: CropGrowthStage) => {
     return stage.charAt(0).toUpperCase() + stage.slice(1);
   };
 

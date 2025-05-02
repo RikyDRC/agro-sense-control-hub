@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,12 +18,13 @@ import {
 
 // Mock data
 const currentDate = new Date();
-const mockCurrentWeather: WeatherForecast = {
-  date: currentDate.toISOString(),
+const currentWeather = {
+  id: 'current-forecast', // Add missing id property
+  date: new Date().toISOString(),
   temperature: {
     min: 18,
-    max: 26,
-    current: 24
+    max: 24,
+    current: 22
   },
   humidity: 65,
   precipitation: {
@@ -32,37 +32,38 @@ const mockCurrentWeather: WeatherForecast = {
     amount: 0
   },
   windSpeed: 12,
-  condition: WeatherCondition.PARTLY_CLOUDY
+  condition: 'partly_cloudy' as WeatherCondition
 };
 
-const generateMockForecast = () => {
-  const forecast: WeatherForecast[] = [];
-  const conditions = Object.values(WeatherCondition);
-  
+const generateForecast = () => {
+  const forecasts = [];
+  const conditions: WeatherCondition[] = ['sunny', 'cloudy', 'rainy', 'stormy', 'snowy', 'foggy', 'partly_cloudy'];
+
   for (let i = 0; i < 7; i++) {
     const date = new Date();
-    date.setDate(date.getDate() + i);
-    
-    forecast.push({
+    date.setDate(date.getDate() + i + 1);
+
+    forecasts.push({
+      id: `forecast-${i}`, // Add missing id property
       date: date.toISOString(),
       temperature: {
-        min: 16 + Math.floor(Math.random() * 4),
-        max: 24 + Math.floor(Math.random() * 6)
+        min: Math.round(15 + Math.random() * 5),
+        max: Math.round(22 + Math.random() * 8)
       },
-      humidity: 50 + Math.floor(Math.random() * 30),
+      humidity: Math.round(50 + Math.random() * 40),
       precipitation: {
-        probability: Math.floor(Math.random() * 100),
-        amount: Math.random() * 10
+        probability: Math.round(Math.random() * 100),
+        amount: Math.round(Math.random() * 10)
       },
-      windSpeed: 5 + Math.floor(Math.random() * 15),
+      windSpeed: Math.round(5 + Math.random() * 15),
       condition: conditions[Math.floor(Math.random() * conditions.length)]
     });
   }
-  
-  return forecast;
+
+  return forecasts;
 };
 
-const mockForecast = generateMockForecast();
+const mockForecast = generateForecast();
 
 // Mock historical data for charts
 const generateHistoricalData = (days: number) => {
@@ -153,7 +154,7 @@ const getSeverityColor = (severity: string) => {
 };
 
 const WeatherPage: React.FC = () => {
-  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(mockCurrentWeather);
+  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(currentWeather);
   const [forecast, setForecast] = useState<WeatherForecast[]>(mockForecast);
   const [historicalTab, setHistoricalTab] = useState<'week' | 'month' | 'year'>('week');
   const [historicalData, setHistoricalData] = useState(mockHistoricalData);
@@ -166,14 +167,14 @@ const WeatherPage: React.FC = () => {
     // Simulate API call
     setTimeout(() => {
       setCurrentWeather({
-        ...mockCurrentWeather,
+        ...currentWeather,
         temperature: {
-          ...mockCurrentWeather.temperature,
+          ...currentWeather.temperature,
           current: Math.floor(Math.random() * 10) + 20
         },
         humidity: Math.floor(Math.random() * 30) + 50
       });
-      setForecast(generateMockForecast());
+      setForecast(generateForecast());
       setIsLoading(false);
     }, 1500);
   };

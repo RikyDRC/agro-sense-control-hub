@@ -6,7 +6,8 @@ export enum DeviceType {
   CAMERA = 'camera',
   TEMPERATURE_SENSOR = 'temperature_sensor',
   PUMP = 'pump',
-  PH_SENSOR = 'ph_sensor'
+  PH_SENSOR = 'ph_sensor',
+  LIGHT_SENSOR = 'light_sensor'
 }
 
 export enum DeviceStatus {
@@ -22,7 +23,7 @@ export interface Device {
   type: DeviceType;
   status: DeviceStatus;
   batteryLevel?: number;
-  lastReading: any;
+  lastReading?: any;
   lastUpdated: string;
   location: { lat: number; lng: number };
   zoneId?: string | null;
@@ -46,6 +47,8 @@ export enum CropGrowthStage {
   GERMINATION = 'germination',
   VEGETATIVE = 'vegetative',
   REPRODUCTIVE = 'reproductive',
+  FLOWERING = 'flowering',
+  FRUITING = 'fruiting',
   RIPENING = 'ripening',
   HARVEST = 'harvest'
 }
@@ -84,24 +87,28 @@ export interface WeatherForecast {
 
 export enum ActionType {
   TOGGLE_DEVICE = 'toggle_device',
-  SEND_NOTIFICATION = 'send_notification'
+  SEND_NOTIFICATION = 'send_notification',
+  SET_VALUE = 'set_value'
 }
 
 export enum ConditionType {
   SENSOR_READING = 'sensor_reading',
-  TIME_BASED = 'time_based'
+  TIME_BASED = 'time_based',
+  WEATHER_FORECAST = 'weather_forecast'
 }
 
 export enum ComparisonOperator {
   LESS_THAN = 'less_than',
   GREATER_THAN = 'greater_than',
-  EQUAL_TO = 'equal_to'
+  EQUAL_TO = 'equal_to',
+  NOT_EQUAL_TO = 'not_equal_to'
 }
 
 export enum IrrigationStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
-  SCHEDULED = 'scheduled'
+  SCHEDULED = 'scheduled',
+  PAUSED = 'paused'
 }
 
 export interface AutomationRule {
@@ -116,6 +123,7 @@ export interface AutomationRule {
     operator?: ComparisonOperator;
     timeOfDay?: string;
     daysOfWeek?: number[];
+    value?: any;
   };
   action: {
     type: ActionType;
@@ -150,4 +158,22 @@ export interface Alert {
 export interface GeoLocation {
   lat: number;
   lng: number;
+}
+
+export interface Crop {
+  id: string;
+  name: string;
+  variety?: string;
+  plantingDate: string;
+  harvestDate?: string;
+  growthStage: CropGrowthStage;
+  idealMoisture: {
+    min: number;
+    max: number;
+  };
+  idealTemperature: {
+    min: number;
+    max: number;
+  };
+  zoneId: string;
 }

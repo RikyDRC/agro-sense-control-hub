@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Crop, GrowthStage, Zone } from '@/types';
+import { Crop, CropGrowthStage, Zone } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 interface CropFormProps {
@@ -29,8 +29,8 @@ const CropForm: React.FC<CropFormProps> = ({
   const [harvestDate, setHarvestDate] = useState<Date | undefined>(
     initialValues?.harvestDate ? new Date(initialValues.harvestDate) : undefined
   );
-  const [growthStage, setGrowthStage] = useState<GrowthStage>(
-    initialValues?.growthStage || GrowthStage.PLANTING
+  const [growthStage, setGrowthStage] = useState<CropGrowthStage>(
+    initialValues?.growthStage || CropGrowthStage.PLANTING
   );
   const [idealMoistureMin, setIdealMoistureMin] = useState<number>(
     initialValues?.idealMoisture?.min || 60
@@ -124,13 +124,13 @@ const CropForm: React.FC<CropFormProps> = ({
         <Label htmlFor="growthStage">Growth Stage</Label>
         <Select 
           value={growthStage} 
-          onValueChange={(value) => setGrowthStage(value as GrowthStage)}
+          onValueChange={(value) => setGrowthStage(value as CropGrowthStage)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select growth stage" />
           </SelectTrigger>
           <SelectContent>
-            {Object.values(GrowthStage).map((stage) => (
+            {Object.values(CropGrowthStage).map((stage) => (
               <SelectItem key={stage} value={stage}>
                 {stage.charAt(0).toUpperCase() + stage.slice(1)}
               </SelectItem>

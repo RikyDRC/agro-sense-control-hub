@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -176,6 +175,29 @@ const zones: Zone[] = [
   }
 ];
 
+// Fix the device objects to ensure they have lastReading property
+const valveDevice1 = {
+  id: 'valve1',
+  name: 'Field Valve 1',
+  type: DeviceType.VALVE,
+  status: DeviceStatus.ONLINE,
+  batteryLevel: 85,
+  lastUpdated: new Date().toISOString(),
+  lastReading: null, // Add missing lastReading property
+  location: { lat: 37.7749, lng: -122.4194 }
+};
+
+const valveDevice2 = {
+  id: 'valve2',
+  name: 'Field Valve 2',
+  type: DeviceType.VALVE,
+  status: DeviceStatus.ONLINE,
+  batteryLevel: 78,
+  lastUpdated: new Date().toISOString(),
+  lastReading: null, // Add missing lastReading property
+  location: { lat: 37.7749, lng: -122.4194 }
+};
+
 const devices: Device[] = [
   {
     id: '1',
@@ -187,15 +209,8 @@ const devices: Device[] = [
     lastUpdated: new Date().toISOString(),
     location: { lat: 35.6895, lng: 139.6917 }
   },
-  {
-    id: '2',
-    name: 'Valve A1',
-    type: DeviceType.VALVE,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 78,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
+  valveDevice1,
+  valveDevice2,
   {
     id: '3',
     name: 'Temperature Sensor A1',

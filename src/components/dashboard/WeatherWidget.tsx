@@ -14,16 +14,21 @@ interface WeatherWidgetProps {
 const getWeatherIcon = (condition: WeatherCondition, className?: string) => {
   switch (condition) {
     case WeatherCondition.SUNNY:
+    case WeatherCondition.CLEAR:
       return <Sun className={cn("text-yellow-500", className)} />;
     case WeatherCondition.CLOUDY:
       return <Cloud className={cn("text-gray-500", className)} />;
     case WeatherCondition.RAINY:
+    case WeatherCondition.RAIN:
       return <CloudRain className={cn("text-blue-500", className)} />;
     case WeatherCondition.STORMY:
+    case WeatherCondition.STORM:
       return <CloudLightning className={cn("text-purple-500", className)} />;
     case WeatherCondition.SNOWY:
+    case WeatherCondition.SNOW:
       return <Snowflake className={cn("text-blue-300", className)} />;
     case WeatherCondition.FOGGY:
+    case WeatherCondition.FOG:
       return <Cloud className={cn("text-gray-400", className)} />;
     case WeatherCondition.PARTLY_CLOUDY:
       return <CloudSun className={cn("text-yellow-400", className)} />;
@@ -48,7 +53,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ currentWeather, forecast,
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">
               {getWeatherIcon(currentWeather.condition, "h-16 w-16 mx-auto mb-2")}
-              <h3 className="text-2xl font-bold">{currentWeather.temperature.current}°C</h3>
+              <h3 className="text-2xl font-bold">{currentWeather.temperature.current ?? currentWeather.temperature.max}°{currentWeather.temperature.unit || 'C'}</h3>
               <p className="text-muted-foreground capitalize">{currentWeather.condition.replace(/_/g, ' ')}</p>
               <div className="flex justify-center gap-4 mt-2 text-sm">
                 <span>Humidity: {currentWeather.humidity}%</span>

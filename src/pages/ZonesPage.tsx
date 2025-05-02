@@ -109,6 +109,20 @@ const Clock = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const zoneFormSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Zone name is required"),
+  description: z.string().optional(),
+  soilMoistureThreshold: z.number().min(0).max(100).optional(),
+  soilType: z.string().optional(),
+  cropType: z.string().optional(),
+  irrigationMethod: z.string().optional(),
+  notes: z.string().optional(),
+  boundaryCoordinates: z.array(
+    z.object({ lat: z.number(), lng: z.number() })
+  ).optional()
+});
+
 const ZonesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();

@@ -108,6 +108,23 @@ export enum GrowthStage {
   HARVESTED = 'harvested'
 }
 
+// Added missing enums for automation rules
+export enum ConditionType {
+  SENSOR_READING = 'sensor_reading',
+  TIME_BASED = 'time_based'
+}
+
+export enum ComparisonOperator {
+  LESS_THAN = 'less_than',
+  GREATER_THAN = 'greater_than',
+  EQUAL_TO = 'equal_to'
+}
+
+export enum ActionType {
+  TOGGLE_DEVICE = 'toggle_device',
+  SEND_NOTIFICATION = 'send_notification'
+}
+
 export interface AutomationRule {
   id: string;
   name: string;
@@ -120,18 +137,27 @@ export interface AutomationRule {
   updatedAt: string;
 }
 
+// Updated RuleCondition to include the needed properties
 export interface RuleCondition {
   type: string;
-  parameter: string;
-  operator: string;
-  value: string | number;
+  parameter?: string;
+  operator?: string;
+  value?: string | number;
+  // Adding properties used in the codebase
+  sensorId?: string;
+  threshold?: number;
+  timeOfDay?: string;
+  daysOfWeek?: number[];
 }
 
+// Updated RuleAction to include the needed properties
 export interface RuleAction {
   type: string;
-  target: string;
+  target: string; // Required property
   value?: string | number;
   duration?: number;
+  // Adding property used in the codebase
+  deviceId?: string;
 }
 
 export interface WeatherForecast {
@@ -142,6 +168,7 @@ export interface WeatherForecast {
     min: number;
     max: number;
     unit: string;
+    current?: number; // Added current property
   };
   precipitation: {
     probability: number;
@@ -152,6 +179,7 @@ export interface WeatherForecast {
   windSpeed: number;
 }
 
+// Fixed WeatherCondition enum to match the used values in the code
 export enum WeatherCondition {
   CLEAR = 'clear',
   PARTLY_CLOUDY = 'partly_cloudy',
@@ -159,7 +187,13 @@ export enum WeatherCondition {
   RAIN = 'rain',
   STORM = 'storm',
   SNOW = 'snow',
-  FOG = 'fog'
+  FOG = 'fog',
+  // Adding the values used in the code
+  SUNNY = 'sunny',
+  RAINY = 'rainy',
+  STORMY = 'stormy',
+  SNOWY = 'snowy',
+  FOGGY = 'foggy'
 }
 
 export interface Alert {

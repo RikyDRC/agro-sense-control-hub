@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,18 +34,18 @@ const AutomationRuleForm: React.FC<AutomationRuleFormProps> = ({
   const [description, setDescription] = useState(initialValues?.description || '');
   const [zoneId, setZoneId] = useState(initialValues?.zoneId || '');
   const [conditionType, setConditionType] = useState<ConditionType>(
-    initialValues?.condition?.type || ConditionType.SENSOR_READING
+    (initialValues?.condition?.type as ConditionType) || ConditionType.SENSOR_READING
   );
   const [sensorId, setSensorId] = useState(initialValues?.condition?.sensorId || '');
   const [operator, setOperator] = useState<ComparisonOperator>(
-    initialValues?.condition?.operator || ComparisonOperator.LESS_THAN
+    (initialValues?.condition?.operator as ComparisonOperator) || ComparisonOperator.LESS_THAN
   );
   const [threshold, setThreshold] = useState<number>(
     initialValues?.condition?.threshold || 30
   );
   const [timeOfDay, setTimeOfDay] = useState(initialValues?.condition?.timeOfDay || '06:00');
   const [actionType, setActionType] = useState<ActionType>(
-    initialValues?.action?.type || ActionType.TOGGLE_DEVICE
+    (initialValues?.action?.type as ActionType) || ActionType.TOGGLE_DEVICE
   );
   const [actionDeviceId, setActionDeviceId] = useState(initialValues?.action?.deviceId || '');
   const [duration, setDuration] = useState<number>(
@@ -87,7 +86,8 @@ const AutomationRuleForm: React.FC<AutomationRuleFormProps> = ({
     const action = {
       type: actionType,
       deviceId: actionDeviceId,
-      duration
+      duration,
+      target: actionDeviceId // Add the required target field
     };
     
     const rule: AutomationRule = {

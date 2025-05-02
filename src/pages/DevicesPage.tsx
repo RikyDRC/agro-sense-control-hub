@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -180,14 +179,14 @@ const DevicesPage: React.FC = () => {
         lastUpdated: timestamp
       };
 
-      // Format for database
+      // Format for database - convert the type to ensure it's compatible with the database schema
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type,
-        status: newDevice.status,
+        type: newDevice.type.toString(), // Convert enum to string
+        status: newDevice.status.toString(), // Convert enum to string
         battery_level: newDevice.batteryLevel,
-        location: newDevice.location,
+        location: newDevice.location as any, // Cast to any to avoid type errors with JSON
         zone_id: newDevice.zoneId,
         last_updated: timestamp,
         user_id: user.id
@@ -216,11 +215,11 @@ const DevicesPage: React.FC = () => {
     try {
       const timestamp = new Date().toISOString();
 
-      // Format for database
+      // Format for database - ensuring types are compatible with the database schema
       const deviceData = {
         name: formValues.name,
-        type: formValues.type,
-        status: formValues.status,
+        type: formValues.type.toString(), // Convert enum to string
+        status: formValues.status.toString(), // Convert enum to string
         battery_level: formValues.batteryLevel,
         zone_id: formValues.zoneId,
         updated_at: timestamp,
@@ -498,8 +497,8 @@ const DevicesPage: React.FC = () => {
                     key={device.id} 
                     device={device} 
                     onStatusChange={handleStatusChange}
-                    onEditClick={() => handleEditDevice(device)}
-                    onDeleteClick={() => {
+                    onEdit={() => handleEditDevice(device)}
+                    onDelete={() => {
                       setDeviceToDelete(device.id);
                       setIsDeleteDialogOpen(true);
                     }}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,7 +70,8 @@ const initialRules: AutomationRule[] = [
     action: {
       type: ActionType.TOGGLE_DEVICE,
       deviceId: '2',
-      duration: 30
+      duration: 30,
+      target: '2' // Added required target field
     },
     zoneId: 'zone-a',
     isActive: true,
@@ -90,7 +90,8 @@ const initialRules: AutomationRule[] = [
     action: {
       type: ActionType.TOGGLE_DEVICE,
       deviceId: '2',
-      duration: 15
+      duration: 15,
+      target: '2' // Added required target field
     },
     zoneId: 'zone-a',
     isActive: true,

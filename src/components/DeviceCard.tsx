@@ -1,64 +1,42 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Battery, 
-  Power, 
-  Settings, 
-  Droplet, 
-  Thermometer, 
-  Activity,
-  Zap,
-  Eye,
-  FlaskConical,
-  Clock
-} from 'lucide-react';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { 
-  Dialog, 
-  DialogClose, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { toast } from '@/components/ui/sonner';
+import { Button } from '@/components/ui/button';
+import { Pencil, Trash2, Battery, ArrowUpDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { Device, DeviceStatus, DeviceType } from '@/types';
 
-interface DeviceCardProps {
+export interface DeviceCardProps {
   device: Device;
-  onStatusChange?: (deviceId: string, status: DeviceStatus) => void;
+  onStatusChange: (deviceId: string, status: DeviceStatus) => Promise<void>;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-const DeviceCard: React.FC<DeviceCardProps> = ({ device, onStatusChange }) => {
-  const [configOpen, setConfigOpen] = useState(false);
-  const [isControlling, setIsControlling] = useState(false);
-
-  const getDeviceIcon = (type: DeviceType) => {
-    switch (type) {
+const DeviceCard: React.FC<DeviceCardProps> = ({
+  device,
+  onStatusChange,
+  onEdit,
+  onDelete
+}) => {
+  const getDeviceIcon = () => {
+    switch (device.type) {
       case DeviceType.MOISTURE_SENSOR:
-        return <Droplet className="h-6 w-6" />;
+        return <Droplet className="h-4 w-4" />;
       case DeviceType.TEMPERATURE_SENSOR:
-        return <Thermometer className="h-6 w-6" />;
+        return <Thermometer className="h-4 w-4" />;
       case DeviceType.VALVE:
-        return <Activity className="h-6 w-6" />;
+        return <Eye className="h-4 w-4" />;
       case DeviceType.PUMP:
-        return <Zap className="h-6 w-6" />;
-      case DeviceType.WEATHER_STATION:
-        return <Eye className="h-6 w-6" />;
-      case DeviceType.PH_SENSOR:
-        return <FlaskConical className="h-6 w-6" />;
+        return <FlaskConical className="h-4 w-4" />;
       default:
-        return <Activity className="h-6 w-6" />;
+        return <Eye className="h-4 w-4" />;
     }
   };
 
@@ -92,164 +70,86 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, onStatusChange }) => {
     }
   };
 
-  const handleStart = () => {
-    setIsControlling(true);
-    setTimeout(() => {
-      if (onStatusChange) {
-        onStatusChange(device.id, DeviceStatus.ONLINE);
-      }
-      toast.success(`Started ${device.name}`);
-      setIsControlling(false);
-    }, 1000);
-  };
-
-  const handleStop = () => {
-    setIsControlling(true);
-    setTimeout(() => {
-      if (onStatusChange) {
-        onStatusChange(device.id, DeviceStatus.OFFLINE);
-      }
-      toast.success(`Stopped ${device.name}`);
-      setIsControlling(false);
-    }, 1000);
-  };
-
-  const getBatteryColor = () => {
-    if (device.batteryLevel < 20) return "text-red-500";
-    if (device.batteryLevel < 50) return "text-yellow-500";
-    return "text-green-500";
-  };
-
   return (
-    <Card className="overflow-hidden h-full flex flex-col transition-all hover:shadow-md">
-      <CardHeader className="pb-2 pt-4">
+    <Card>
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-full bg-primary/10 ${device.status === DeviceStatus.ONLINE ? 'text-green-500' : 'text-gray-400'}`}>
-              {getDeviceIcon(device.type)}
+            <div className="p-2 rounded-md bg-primary/10">
+              {getDeviceIcon()}
             </div>
-            <div>
-              <CardTitle className="text-lg">{device.name}</CardTitle>
-              <p className="text-xs text-muted-foreground">
-                {device.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-              </p>
-            </div>
+            <CardTitle className="text-lg">{device.name}</CardTitle>
           </div>
           <Badge className={`${getStatusColor(device.status)} text-white`}>
             {getStatusText(device.status)}
           </Badge>
         </div>
       </CardHeader>
-      
-      <CardContent className="pb-2 flex-grow">
-        <div className="space-y-2 text-sm">
-          {device.lastReading !== undefined && (
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Reading:</span>
-              <span className="font-medium">
-                {device.type === DeviceType.TEMPERATURE_SENSOR ? 
-                  `${device.lastReading}°C` : 
-                  device.type === DeviceType.MOISTURE_SENSOR ? 
-                  `${device.lastReading}%` : 
-                  `${device.lastReading}`
-                }
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Type:</span>
+            <span>{device.type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+          
+          {device.batteryLevel !== undefined && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Battery:</span>
+              <span className="flex items-center">
+                <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span className={
+                  device.batteryLevel < 20 ? "text-red-500" : 
+                  device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
+                }>
+                  {device.batteryLevel}%
+                </span>
               </span>
             </div>
           )}
           
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground flex items-center">
-              <Battery className="mr-1 h-3 w-3" /> Battery:
-            </span>
-            <span className={`font-medium ${getBatteryColor()}`}>
-              {device.batteryLevel}%
-            </span>
-          </div>
+          {device.lastReading !== undefined && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Last Reading:</span>
+              <span>
+                {device.lastReading} {device.type === DeviceType.TEMPERATURE_SENSOR ? "°C" : "%"}
+              </span>
+            </div>
+          )}
           
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground flex items-center">
-              <Clock className="mr-1 h-3 w-3" /> Last updated:
-            </span>
-            <span className="text-xs">
-              {new Date(device.lastUpdated).toLocaleString()}
-            </span>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Last Updated:</span>
+            <span>{new Date(device.lastUpdated).toLocaleString()}</span>
           </div>
         </div>
+        
+        <div className="flex justify-end gap-2 mt-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <ArrowUpDown className="mr-1 h-3 w-3" /> Status
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {Object.values(DeviceStatus).map(status => (
+                <DropdownMenuItem 
+                  key={status} 
+                  onClick={() => onStatusChange(device.id, status)}
+                  disabled={status === device.status}
+                >
+                  Set to {status.charAt(0).toUpperCase() + status.slice(1)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button size="sm" variant="outline" onClick={onEdit}>
+            <Pencil className="mr-1 h-3 w-3" /> Edit
+          </Button>
+          <Button size="sm" variant="outline" className="text-red-500 hover:bg-red-50" onClick={onDelete}>
+            <Trash2 className="mr-1 h-3 w-3" /> Delete
+          </Button>
+        </div>
       </CardContent>
-      
-      <CardFooter className="pt-0 pb-4 gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={handleStart}
-                disabled={isControlling || device.status === DeviceStatus.ONLINE}
-              >
-                <Power className="h-4 w-4 mr-1" /> Start
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Start device</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={handleStop}
-                disabled={isControlling || device.status === DeviceStatus.OFFLINE}
-              >
-                <Power className="h-4 w-4 mr-1" /> Stop
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Stop device</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <Dialog open={configOpen} onOpenChange={setConfigOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Settings className="h-4 w-4 mr-1" /> Configure
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Configure {device.name}</DialogTitle>
-              <DialogDescription>
-                Adjust settings and parameters for this device.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="py-4">
-              <p className="text-center text-muted-foreground">
-                Device configuration options will appear here.
-              </p>
-            </div>
-            
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button onClick={() => {
-                toast.success("Configuration saved");
-                setConfigOpen(false);
-              }}>
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </CardFooter>
     </Card>
   );
 };

@@ -7,6 +7,7 @@ import DeviceStatusList from '@/components/dashboard/DeviceStatusList';
 import WeatherWidget from '@/components/dashboard/WeatherWidget';
 import QuickActions from '@/components/dashboard/QuickActions';
 import { Device, DeviceStatus, DeviceType, WeatherCondition, WeatherForecast } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock Data
 const mockDevices: Device[] = [
@@ -64,16 +65,19 @@ const mockDevices: Device[] = [
 
 const currentDate = new Date();
 const mockCurrentWeather: WeatherForecast = {
+  id: uuidv4(),
   date: currentDate.toISOString(),
   temperature: {
     min: 18,
     max: 26,
+    unit: 'C',
     current: 24
   },
   humidity: 65,
   precipitation: {
     probability: 20,
-    amount: 0
+    amount: 0,
+    unit: 'mm'
   },
   windSpeed: 12,
   condition: WeatherCondition.PARTLY_CLOUDY
@@ -87,20 +91,23 @@ const mockForecast: WeatherForecast[] = Array.from({ length: 5 }).map((_, index)
     WeatherCondition.SUNNY, 
     WeatherCondition.PARTLY_CLOUDY, 
     WeatherCondition.CLOUDY, 
-    WeatherCondition.RAINY, 
-    WeatherCondition.STORMY
+    WeatherCondition.RAIN, 
+    WeatherCondition.STORM
   ];
   
   return {
+    id: uuidv4(),
     date: date.toISOString(),
     temperature: {
       min: 16 + Math.floor(Math.random() * 4),
-      max: 24 + Math.floor(Math.random() * 6)
+      max: 24 + Math.floor(Math.random() * 6),
+      unit: 'C'
     },
     humidity: 50 + Math.floor(Math.random() * 30),
     precipitation: {
       probability: Math.floor(Math.random() * 100),
-      amount: Math.random() * 10
+      amount: Math.random() * 10,
+      unit: 'mm'
     },
     windSpeed: 5 + Math.floor(Math.random() * 15),
     condition: conditions[index % conditions.length]

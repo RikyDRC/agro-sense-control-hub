@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -130,12 +129,12 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type.toString() as any, // Convert enum to string for database
-        status: newDevice.status.toString() as any, // Convert enum to string for database
+        type: newDevice.type.toString(), // Convert enum to string for database
+        status: newDevice.status.toString(), // Convert enum to string for database
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: newDevice.location as any, // Type assertion to avoid Json type issues
+        location: newDevice.location as any, // Type assertion for Json compatibility
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
@@ -175,7 +174,7 @@ const MapPage: React.FC = () => {
         description: newZone.description || '',
         boundary_coordinates: newZone.boundaryCoordinates as any, // Type assertion for Json compatibility
         area_size: newZone.areaSize,
-        irrigation_status: newZone.irrigationStatus.toString() as any, // Convert enum to string for database
+        irrigation_status: newZone.irrigationStatus.toString(), // Convert enum to string for database
         soil_moisture_threshold: newZone.soilMoistureThreshold,
         soil_type: soilType,
         crop_type: cropType, 

@@ -20,16 +20,19 @@ import {
 // Mock data
 const currentDate = new Date();
 const mockCurrentWeather: WeatherForecast = {
+  id: '1',
   date: currentDate.toISOString(),
   temperature: {
     min: 18,
     max: 26,
-    current: 24
+    current: 24,
+    unit: '°C'
   },
   humidity: 65,
   precipitation: {
     probability: 20,
-    amount: 0
+    amount: 0,
+    unit: 'mm'
   },
   windSpeed: 12,
   condition: WeatherCondition.PARTLY_CLOUDY
@@ -44,15 +47,18 @@ const generateMockForecast = () => {
     date.setDate(date.getDate() + i);
     
     forecast.push({
+      id: `forecast-${i}`,
       date: date.toISOString(),
       temperature: {
         min: 16 + Math.floor(Math.random() * 4),
-        max: 24 + Math.floor(Math.random() * 6)
+        max: 24 + Math.floor(Math.random() * 6),
+        unit: '°C'
       },
       humidity: 50 + Math.floor(Math.random() * 30),
       precipitation: {
         probability: Math.floor(Math.random() * 100),
-        amount: Math.random() * 10
+        amount: Math.random() * 10,
+        unit: 'mm'
       },
       windSpeed: 5 + Math.floor(Math.random() * 15),
       condition: conditions[Math.floor(Math.random() * conditions.length)]

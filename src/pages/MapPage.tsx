@@ -5,13 +5,19 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import MapView from '@/components/map/MapView';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon, RotateCw } from 'lucide-react';
-import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus, GeoLocation } from '@/types';
+import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+
+// Define GeoLocation interface to fix the error
+interface GeoLocation {
+  lat: number;
+  lng: number;
+}
 
 const MapPage: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -133,8 +139,7 @@ const MapPage: React.FC = () => {
         user_id: user.id
       };
       
-      // Filter out 'camera' if it's not accepted by the database
-      // Here we make sure we only use valid types
+      // List of valid device types for the database
       const validDeviceTypes = [
         'moisture_sensor', 'weather_station', 'valve', 
         'temperature_sensor', 'pump', 'ph_sensor', 'light_sensor'
@@ -244,8 +249,8 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: device.id || uuidv4(),
         name: device.name || '',
-        type: device.type?.toString() || DeviceType.MOISTURE_SENSOR.toString(), // Convert enum to string
-        status: device.status?.toString() || DeviceStatus.OFFLINE.toString(), // Convert enum to string
+        type: device.type?.toString() || DeviceType.MOISTURE_SENSOR.toString(),
+        status: device.status?.toString() || DeviceStatus.OFFLINE.toString(),
         battery_level: device.batteryLevel || 100,
         last_reading: device.lastReading || null,
         last_updated: new Date().toISOString(),
@@ -254,11 +259,11 @@ const MapPage: React.FC = () => {
         user_id: user.id
       };
       
-      // Handle local state update before or instead of database operations
+      // Handle local state update
       setDevices(prev => {
         if (device.id) {
           return prev.map(d => {
-            if (typeof d !== 'string' && d.id === device.id) {
+            if (d.id === device.id) {
               return {
                 ...d,
                 name: device.name || d.name,

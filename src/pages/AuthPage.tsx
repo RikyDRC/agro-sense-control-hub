@@ -112,7 +112,7 @@ const AuthPage: React.FC = () => {
           <div className="mb-4">
             <AspectRatio ratio={5/1} className="bg-background">
               <div className="flex items-center justify-center h-full">
-                <h1 className="text-2xl font-bold text-agro-green">AgroSense Hub</h1>
+                <h1 className="text-2xl font-bold text-primary">AgroSense Hub</h1>
               </div>
             </AspectRatio>
           </div>

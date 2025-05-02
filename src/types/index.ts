@@ -1,8 +1,9 @@
+
 export enum DeviceType {
   MOISTURE_SENSOR = 'moisture_sensor',
   WEATHER_STATION = 'weather_station',
   VALVE = 'valve',
-  CAMERA = 'camera',
+  CAMERA = 'camera',  // Keep this but handle it specially for database interactions
   TEMPERATURE_SENSOR = 'temperature_sensor',
   PUMP = 'pump',
   PH_SENSOR = 'ph_sensor',
@@ -34,7 +35,7 @@ export interface Zone {
   description?: string;
   boundaryCoordinates: Array<{ lat: number; lng: number }>;
   areaSize: number;
-  devices: (Device | string)[]; // Allow both Device objects and string IDs
+  devices: string[]; // Store only device IDs as strings
   irrigationStatus: IrrigationStatus;
   soilMoistureThreshold?: number;
   createdAt: string;

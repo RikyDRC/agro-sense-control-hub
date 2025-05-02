@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowUpRight, X, GripVertical } from 'lucide-react';
+import { Plus, ArrowUpRight, X, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import {
 import { toast } from '@/components/ui/sonner';
 import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import DeviceCard from '@/components/DeviceCard';
 
 const initialDevices: Device[] = [
   {
@@ -91,12 +92,15 @@ const DevicesPage: React.FC = () => {
   const [location, setLocation] = useState({ lat: 0, lng: 0 });
   const [zoneId, setZoneId] = useState('zone-a');
   const user = { id: 'user-123' }; // Mock user object
-
-  useEffect(() => {
-    // Simulate fetching zones from a database
-    // In a real application, you would use a useEffect hook to fetch the zones from your database
-    // and update the zones state.
-  }, []);
+  
+  const handleStatusChange = (deviceId: string, newStatus: DeviceStatus) => {
+    setDevices(prev => 
+      prev.map(device => 
+        device.id === deviceId ? { ...device, status: newStatus } : device
+      )
+    );
+    toast.success(`Device status updated to ${newStatus}`);
+  };
 
   const handleCreateDevice = async (device: Partial<Device>) => {
     setIsLoading(true);
@@ -106,27 +110,17 @@ const DevicesPage: React.FC = () => {
       const newDevice = {
         id: device.id || uuidv4(),
         name: device.name || '',
-        type: device.type?.toString() || DeviceType.MOISTURE_SENSOR.toString(), // Convert enum to string
-        status: device.status?.toString() || DeviceStatus.OFFLINE.toString(), // Convert enum to string
-        battery_level: device.batteryLevel || 100,
-        location: device.location || { lat: 0, lng: 0 },
-        zone_id: device.zoneId || null,
-        last_updated: new Date().toISOString(),
-        user_id: user.id
-      };
-      
-      // Optional: Add simulated data handling instead of Supabase insert
-      setDevices(prevDevices => [...prevDevices, {
-        id: newDevice.id,
-        name: newDevice.name,
         type: device.type || DeviceType.MOISTURE_SENSOR,
         status: device.status || DeviceStatus.OFFLINE,
         batteryLevel: device.batteryLevel || 100,
         location: device.location || { lat: 0, lng: 0 },
+        zoneId: device.zoneId || null,
         lastReading: null,
-        lastUpdated: newDevice.last_updated,
-        zoneId: device.zoneId || null
-      } as Device]);
+        lastUpdated: new Date().toISOString(),
+      };
+      
+      // Optional: Add simulated data handling instead of Supabase insert
+      setDevices(prevDevices => [...prevDevices, newDevice as Device]);
       
       toast.success('Device created successfully!');
     } catch (error) {
@@ -135,6 +129,12 @@ const DevicesPage: React.FC = () => {
     } finally {
       setIsLoading(false);
       setCreateDialogOpen(false);
+      // Clear form fields
+      setName('');
+      setType(DeviceType.MOISTURE_SENSOR);
+      setStatus(DeviceStatus.OFFLINE);
+      setBatteryLevel(100);
+      setLocation({ lat: 0, lng: 0 });
     }
   };
 
@@ -198,7 +198,7 @@ const DevicesPage: React.FC = () => {
         </div>
 
         <Card>
-          <CardHeader className="flex items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Registered Devices</CardTitle>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> Add Device
@@ -215,33 +215,11 @@ const DevicesPage: React.FC = () => {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {devices.map((device) => (
-                  <Card key={device.id} className="shadow-sm">
-                    <CardHeader className="flex items-center justify-between">
-                      <CardTitle>{device.name}</CardTitle>
-                      <Badge variant="secondary">{device.type}</Badge>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          Status: <Badge className="ml-1">{device.status}</Badge>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Battery: {device.batteryLevel}%
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Zone: {zones.find(zone => zone.id === device.zoneId)?.name}
-                        </p>
-                      </div>
-                    </CardContent>
-                    <CardContent className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEditDevice(device)}>
-                        <ArrowUpRight className="h-3 w-3 mr-1" /> Manage
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDeleteDevice(device.id)}>
-                        <X className="h-3 w-3 mr-1" /> Remove
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <DeviceCard 
+                    key={device.id} 
+                    device={device} 
+                    onStatusChange={handleStatusChange} 
+                  />
                 ))}
               </div>
             )}
@@ -272,13 +250,13 @@ const DevicesPage: React.FC = () => {
               <Label htmlFor="type" className="text-right">
                 Type
               </Label>
-              <Select onValueChange={(value) => setType(value as DeviceType)}>
+              <Select onValueChange={(value) => setType(value as DeviceType)} value={type}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a type" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(DeviceType).map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>{type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -287,13 +265,13 @@ const DevicesPage: React.FC = () => {
               <Label htmlFor="status" className="text-right">
                 Status
               </Label>
-              <Select onValueChange={(value) => setStatus(value as DeviceStatus)}>
+              <Select onValueChange={(value) => setStatus(value as DeviceStatus)} value={status}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a status" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(DeviceStatus).map((status) => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                    <SelectItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -305,7 +283,7 @@ const DevicesPage: React.FC = () => {
               <Input
                 type="number"
                 id="battery"
-                defaultValue="100"
+                value={batteryLevel}
                 onChange={(e) => setBatteryLevel(Number(e.target.value))}
                 className="col-span-3"
               />
@@ -314,7 +292,7 @@ const DevicesPage: React.FC = () => {
               <Label htmlFor="zone" className="text-right">
                 Zone
               </Label>
-              <Select onValueChange={(value) => setZoneId(value)}>
+              <Select onValueChange={(value) => setZoneId(value)} value={zoneId}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a zone" />
                 </SelectTrigger>
@@ -337,7 +315,7 @@ const DevicesPage: React.FC = () => {
             })}>
               {isLoading ? (
                 <>
-                  Creating <GripVertical className="ml-2 h-4 w-4 animate-spin" />
+                  Creating <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                 </>
               ) : (
                 'Create Device'
@@ -349,9 +327,6 @@ const DevicesPage: React.FC = () => {
 
       {/* Edit Device Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogTrigger asChild>
-          {/* This trigger is hidden, the button in the card content is used instead */}
-        </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Device</DialogTitle>
@@ -361,13 +336,13 @@ const DevicesPage: React.FC = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+              <Label htmlFor="edit-name" className="text-right">
                 Name
               </Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+              <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
+              <Label htmlFor="edit-type" className="text-right">
                 Type
               </Label>
               <Select value={type} onValueChange={(value) => setType(value as DeviceType)}>
@@ -376,13 +351,13 @@ const DevicesPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(DeviceType).map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>{type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
+              <Label htmlFor="edit-status" className="text-right">
                 Status
               </Label>
               <Select value={status} onValueChange={(value) => setStatus(value as DeviceStatus)}>
@@ -391,25 +366,25 @@ const DevicesPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(DeviceStatus).map((status) => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                    <SelectItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="battery" className="text-right">
+              <Label htmlFor="edit-battery" className="text-right">
                 Battery Level
               </Label>
               <Input
                 type="number"
-                id="battery"
+                id="edit-battery"
                 value={batteryLevel}
                 onChange={(e) => setBatteryLevel(Number(e.target.value))}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="zone" className="text-right">
+              <Label htmlFor="edit-zone" className="text-right">
                 Zone
               </Label>
               <Select value={zoneId} onValueChange={(value) => setZoneId(value)}>
@@ -428,7 +403,7 @@ const DevicesPage: React.FC = () => {
             <Button type="submit" disabled={isSubmitting} onClick={handleUpdateDevice}>
               {isSubmitting ? (
                 <>
-                  Updating <GripVertical className="ml-2 h-4 w-4 animate-spin" />
+                  Updating <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                 </>
               ) : (
                 'Update Device'

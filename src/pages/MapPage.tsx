@@ -125,8 +125,6 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type.toString(),
-        status: newDevice.status.toString(),
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
@@ -136,23 +134,29 @@ const MapPage: React.FC = () => {
       };
       
       // Filter out 'camera' if it's not accepted by the database
-      // The error suggests that 'camera' is not a valid type in the database
       // Here we make sure we only use valid types
       const validDeviceTypes = [
         'moisture_sensor', 'weather_station', 'valve', 
         'temperature_sensor', 'pump', 'ph_sensor', 'light_sensor'
       ];
       
-      const deviceType = validDeviceTypes.includes(deviceData.type) 
-        ? deviceData.type 
-        : 'moisture_sensor'; // Default to moisture_sensor if camera isn't supported
+      // Extract the string value from the DeviceType enum
+      const deviceTypeStr = newDevice.type.toString();
+      
+      // Check if it's a valid type for the database
+      const isValidType = validDeviceTypes.includes(deviceTypeStr);
+      const finalType = isValidType ? deviceTypeStr : 'moisture_sensor'; // Default if not valid
+      
+      // Extract the string value from the DeviceStatus enum
+      const deviceStatusStr = newDevice.status.toString();
       
       const { error } = await supabase
         .from('devices')
         .insert({
           ...deviceData,
-          type: deviceType,
-          status: deviceData.status as "online" | "offline" | "maintenance" | "alert"
+          // Use the validated string values explicitly typed to match what the database expects
+          status: deviceStatusStr as "online" | "offline" | "maintenance" | "alert",
+          type: finalType as "moisture_sensor" | "weather_station" | "valve" | "temperature_sensor" | "pump" | "ph_sensor" | "light_sensor"
         });
       
       if (error) throw error;

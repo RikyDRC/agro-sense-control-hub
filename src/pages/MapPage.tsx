@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import MapView from '@/components/map/MapView';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon, RotateCw } from 'lucide-react';
-import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
+import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,20 +13,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
-// Define GeoLocation interface to fix the error
-interface GeoLocation {
-  lat: number;
-  lng: number;
-}
-
 const MapPage: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-  const [showDeviceDialog, setShowDeviceDialog] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
 
@@ -98,8 +89,8 @@ const MapPage: React.FC = () => {
       formattedDevices.forEach(device => {
         if (device.zoneId) {
           const zone = formattedZones.find(z => z.id === device.zoneId);
-          if (zone) {
-            zone.devices.push(device.id); // Push the device ID instead of the device object
+          if (zone && !zone.devices.includes(device.id)) {
+            zone.devices.push(device.id);
           }
         }
       });
@@ -127,42 +118,23 @@ const MapPage: React.FC = () => {
     }
 
     try {
-      // Convert to database format
+      // Format for database
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
+        type: newDevice.type,
+        status: newDevice.status,
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: JSON.parse(JSON.stringify(newDevice.location)),
+        location: newDevice.location,
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
       
-      // List of valid device types for the database
-      const validDeviceTypes = [
-        'moisture_sensor', 'weather_station', 'valve', 
-        'temperature_sensor', 'pump', 'ph_sensor', 'light_sensor'
-      ];
-      
-      // Extract the string value from the DeviceType enum
-      const deviceTypeStr = newDevice.type.toString();
-      
-      // Check if it's a valid type for the database
-      const isValidType = validDeviceTypes.includes(deviceTypeStr);
-      const finalType = isValidType ? deviceTypeStr : 'moisture_sensor'; // Default if not valid
-      
-      // Extract the string value from the DeviceStatus enum
-      const deviceStatusStr = newDevice.status.toString();
-      
       const { error } = await supabase
         .from('devices')
-        .insert({
-          ...deviceData,
-          // Use the validated string values explicitly typed to match what the database expects
-          status: deviceStatusStr as "online" | "offline" | "maintenance" | "alert",
-          type: finalType as "moisture_sensor" | "weather_station" | "valve" | "temperature_sensor" | "pump" | "ph_sensor" | "light_sensor"
-        });
+        .insert(deviceData);
       
       if (error) throw error;
       
@@ -182,12 +154,12 @@ const MapPage: React.FC = () => {
     }
 
     try {
-      // Convert boundaryCoordinates to JSON compatible format
+      // Format for database
       const zoneData = {
         id: newZone.id,
         name: newZone.name,
         description: newZone.description || '',
-        boundary_coordinates: JSON.parse(JSON.stringify(newZone.boundaryCoordinates)),
+        boundary_coordinates: newZone.boundaryCoordinates,
         area_size: newZone.areaSize,
         irrigation_status: newZone.irrigationStatus,
         soil_moisture_threshold: newZone.soilMoistureThreshold,
@@ -211,10 +183,10 @@ const MapPage: React.FC = () => {
 
   const handleDeviceMove = async (deviceId: string, newLocation: GeoLocation) => {
     try {
-      // Convert GeoLocation to JSON compatible format
+      // Update in database
       const { error } = await supabase
         .from('devices')
-        .update({ location: JSON.parse(JSON.stringify(newLocation)) })
+        .update({ location: newLocation })
         .eq('id', deviceId);
       
       if (error) throw error;
@@ -230,78 +202,6 @@ const MapPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error moving device:', error);
       toast.error('Failed to update device location: ' + error.message);
-    }
-  };
-
-  // Fix the device mappings to correctly handle strings for devices
-  const getDevicesForZone = (zoneId: string) => {
-    if (!devices) return [];
-    
-    return devices.filter(device => device.zoneId === zoneId);
-  };
-
-  // Improved handling of device saving to match database requirements
-  const handleSaveDevice = async (device: Partial<Device>) => {
-    setIsSubmitting(true);
-    try {
-      if (!user) return;
-
-      const deviceData = {
-        id: device.id || uuidv4(),
-        name: device.name || '',
-        type: device.type?.toString() || DeviceType.MOISTURE_SENSOR.toString(),
-        status: device.status?.toString() || DeviceStatus.OFFLINE.toString(),
-        battery_level: device.batteryLevel || 100,
-        last_reading: device.lastReading || null,
-        last_updated: new Date().toISOString(),
-        location: device.location || { lat: 0, lng: 0 },
-        zone_id: device.zoneId || null,
-        user_id: user.id
-      };
-      
-      // Handle local state update
-      setDevices(prev => {
-        if (device.id) {
-          return prev.map(d => {
-            if (d.id === device.id) {
-              return {
-                ...d,
-                name: device.name || d.name,
-                type: device.type || d.type,
-                status: device.status || d.status,
-                batteryLevel: device.batteryLevel || d.batteryLevel,
-                lastReading: device.lastReading || d.lastReading,
-                lastUpdated: new Date().toISOString(),
-                location: device.location || d.location,
-                zoneId: device.zoneId || d.zoneId
-              };
-            }
-            return d;
-          });
-        } else {
-          const newDevice: Device = {
-            id: deviceData.id,
-            name: deviceData.name,
-            type: device.type || DeviceType.MOISTURE_SENSOR,
-            status: device.status || DeviceStatus.OFFLINE,
-            batteryLevel: device.batteryLevel || 100,
-            lastReading: device.lastReading || null,
-            lastUpdated: new Date().toISOString(),
-            location: device.location || { lat: 0, lng: 0 },
-            zoneId: device.zoneId || null
-          };
-          return [...prev, newDevice];
-        }
-      });
-      
-      toast.success(`Device ${device.id ? 'updated' : 'added'} successfully`);
-      setSelectedDevice(null);
-      setShowDeviceDialog(false);
-    } catch (error) {
-      console.error('Error saving device:', error);
-      toast.error('Failed to save device');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

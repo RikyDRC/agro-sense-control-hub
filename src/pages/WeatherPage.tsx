@@ -19,13 +19,12 @@ import {
 
 // Mock data
 const currentDate = new Date();
-const initialCurrentWeather: WeatherForecast = {
-  id: 'current-forecast',
-  date: new Date().toISOString(),
+const mockCurrentWeather: WeatherForecast = {
+  date: currentDate.toISOString(),
   temperature: {
     min: 18,
-    max: 24,
-    current: 22
+    max: 26,
+    current: 24
   },
   humidity: 65,
   precipitation: {
@@ -33,38 +32,37 @@ const initialCurrentWeather: WeatherForecast = {
     amount: 0
   },
   windSpeed: 12,
-  condition: 'partly_cloudy' as WeatherCondition
+  condition: WeatherCondition.PARTLY_CLOUDY
 };
 
-const generateForecast = () => {
-  const forecasts = [];
-  const conditions: WeatherCondition[] = ['sunny', 'cloudy', 'rainy', 'stormy', 'snowy', 'foggy', 'partly_cloudy'];
-
+const generateMockForecast = () => {
+  const forecast: WeatherForecast[] = [];
+  const conditions = Object.values(WeatherCondition);
+  
   for (let i = 0; i < 7; i++) {
     const date = new Date();
-    date.setDate(date.getDate() + i + 1);
-
-    forecasts.push({
-      id: `forecast-${i}`, // Add missing id property
+    date.setDate(date.getDate() + i);
+    
+    forecast.push({
       date: date.toISOString(),
       temperature: {
-        min: Math.round(15 + Math.random() * 5),
-        max: Math.round(22 + Math.random() * 8)
+        min: 16 + Math.floor(Math.random() * 4),
+        max: 24 + Math.floor(Math.random() * 6)
       },
-      humidity: Math.round(50 + Math.random() * 40),
+      humidity: 50 + Math.floor(Math.random() * 30),
       precipitation: {
-        probability: Math.round(Math.random() * 100),
-        amount: Math.round(Math.random() * 10)
+        probability: Math.floor(Math.random() * 100),
+        amount: Math.random() * 10
       },
-      windSpeed: Math.round(5 + Math.random() * 15),
+      windSpeed: 5 + Math.floor(Math.random() * 15),
       condition: conditions[Math.floor(Math.random() * conditions.length)]
     });
   }
-
-  return forecasts;
+  
+  return forecast;
 };
 
-const mockForecast = generateForecast();
+const mockForecast = generateMockForecast();
 
 // Mock historical data for charts
 const generateHistoricalData = (days: number) => {
@@ -155,7 +153,7 @@ const getSeverityColor = (severity: string) => {
 };
 
 const WeatherPage: React.FC = () => {
-  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(initialCurrentWeather);
+  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(mockCurrentWeather);
   const [forecast, setForecast] = useState<WeatherForecast[]>(mockForecast);
   const [historicalTab, setHistoricalTab] = useState<'week' | 'month' | 'year'>('week');
   const [historicalData, setHistoricalData] = useState(mockHistoricalData);
@@ -168,14 +166,14 @@ const WeatherPage: React.FC = () => {
     // Simulate API call
     setTimeout(() => {
       setCurrentWeather({
-        ...currentWeather,
+        ...mockCurrentWeather,
         temperature: {
-          ...currentWeather.temperature,
+          ...mockCurrentWeather.temperature,
           current: Math.floor(Math.random() * 10) + 20
         },
         humidity: Math.floor(Math.random() * 30) + 50
       });
-      setForecast(generateForecast());
+      setForecast(generateMockForecast());
       setIsLoading(false);
     }, 1500);
   };

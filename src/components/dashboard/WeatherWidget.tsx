@@ -13,20 +13,20 @@ interface WeatherWidgetProps {
 
 const getWeatherIcon = (condition: WeatherCondition, className?: string) => {
   switch (condition) {
-    case 'sunny':
+    case WeatherCondition.SUNNY:
       return <Sun className={cn("text-yellow-500", className)} />;
-    case 'partly_cloudy':
-      return <CloudSun className={cn("text-yellow-400", className)} />;
-    case 'cloudy':
+    case WeatherCondition.CLOUDY:
       return <Cloud className={cn("text-gray-500", className)} />;
-    case 'rainy':
+    case WeatherCondition.RAINY:
       return <CloudRain className={cn("text-blue-500", className)} />;
-    case 'stormy':
+    case WeatherCondition.STORMY:
       return <CloudLightning className={cn("text-purple-500", className)} />;
-    case 'snowy':
+    case WeatherCondition.SNOWY:
       return <Snowflake className={cn("text-blue-300", className)} />;
-    case 'foggy':
+    case WeatherCondition.FOGGY:
       return <Cloud className={cn("text-gray-400", className)} />;
+    case WeatherCondition.PARTLY_CLOUDY:
+      return <CloudSun className={cn("text-yellow-400", className)} />;
     default:
       return <CloudSun className={cn("text-yellow-400", className)} />;
   }

@@ -115,7 +115,6 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, onStatusChange }) => {
   };
 
   const getBatteryColor = () => {
-    if (!device.batteryLevel) return "text-gray-500";
     if (device.batteryLevel < 20) return "text-red-500";
     if (device.batteryLevel < 50) return "text-yellow-500";
     return "text-green-500";
@@ -144,7 +143,7 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, onStatusChange }) => {
       
       <CardContent className="pb-2 flex-grow">
         <div className="space-y-2 text-sm">
-          {device.lastReading !== undefined && device.lastReading !== null && (
+          {device.lastReading !== undefined && (
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Reading:</span>
               <span className="font-medium">
@@ -158,16 +157,14 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, onStatusChange }) => {
             </div>
           )}
           
-          {device.batteryLevel !== undefined && (
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground flex items-center">
-                <Battery className="mr-1 h-3 w-3" /> Battery:
-              </span>
-              <span className={`font-medium ${getBatteryColor()}`}>
-                {device.batteryLevel}%
-              </span>
-            </div>
-          )}
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground flex items-center">
+              <Battery className="mr-1 h-3 w-3" /> Battery:
+            </span>
+            <span className={`font-medium ${getBatteryColor()}`}>
+              {device.batteryLevel}%
+            </span>
+          </div>
           
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground flex items-center">

@@ -1,11 +1,23 @@
 
+// Device Types
+export interface Device {
+  id: string;
+  name: string;
+  type: DeviceType;
+  status: DeviceStatus;
+  batteryLevel: number;
+  lastReading?: number;
+  lastUpdated: string;
+  location: GeoLocation;
+  zoneId?: string;
+}
+
 export enum DeviceType {
   MOISTURE_SENSOR = 'moisture_sensor',
-  WEATHER_STATION = 'weather_station',
-  VALVE = 'valve',
-  CAMERA = 'camera',  // Keep this but handle it specially for database interactions
   TEMPERATURE_SENSOR = 'temperature_sensor',
+  VALVE = 'valve',
   PUMP = 'pump',
+  WEATHER_STATION = 'weather_station',
   PH_SENSOR = 'ph_sensor',
   LIGHT_SENSOR = 'light_sensor'
 }
@@ -17,83 +29,81 @@ export enum DeviceStatus {
   ALERT = 'alert'
 }
 
-export interface Device {
-  id: string;
-  name: string;
-  type: DeviceType;
-  status: DeviceStatus;
-  batteryLevel?: number;
-  lastReading?: any;
-  lastUpdated: string;
-  location: { lat: number; lng: number };
-  zoneId?: string | null;
-}
-
+// Zone Types
 export interface Zone {
   id: string;
   name: string;
   description?: string;
-  boundaryCoordinates: Array<{ lat: number; lng: number }>;
-  areaSize: number;
-  devices: string[]; // Store only device IDs as strings
+  boundaryCoordinates: GeoLocation[];
+  areaSize: number; // in square meters
+  cropId?: string;
+  devices: string[]; // Array of device IDs
   irrigationStatus: IrrigationStatus;
   soilMoistureThreshold?: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface GeoLocation {
-  lat: number;
-  lng: number;
+export enum IrrigationStatus {
+  INACTIVE = 'inactive',
+  ACTIVE = 'active',
+  SCHEDULED = 'scheduled',
+  PAUSED = 'paused'
 }
 
-export enum CropGrowthStage {
+export interface IrrigationStatusInfo {
+  isActive: boolean;
+  nextScheduled: string | null;
+}
+
+// Crop Types
+export interface Crop {
+  id: string;
+  name: string;
+  variety?: string;
+  plantingDate: string;
+  harvestDate?: string;
+  growthStage: GrowthStage;
+  idealMoisture: {
+    min: number;
+    max: number;
+  };
+  idealTemperature: {
+    min: number;
+    max: number;
+  };
+  zoneId: string;
+}
+
+export enum GrowthStage {
   PLANTING = 'planting',
   GERMINATION = 'germination',
   VEGETATIVE = 'vegetative',
-  REPRODUCTIVE = 'reproductive',
   FLOWERING = 'flowering',
   FRUITING = 'fruiting',
-  RIPENING = 'ripening',
   HARVEST = 'harvest'
 }
 
-// Alias for backward compatibility
-export const GrowthStage = CropGrowthStage;
-
-export const WeatherCondition = {
-  SUNNY: 'sunny',
-  CLOUDY: 'cloudy',
-  RAINY: 'rainy',
-  STORMY: 'stormy',
-  SNOWY: 'snowy',
-  FOGGY: 'foggy',
-  PARTLY_CLOUDY: 'partly_cloudy'
-} as const;
-
-export type WeatherCondition = typeof WeatherCondition[keyof typeof WeatherCondition];
-
-export interface WeatherForecast {
+// Automation Types
+export interface AutomationRule {
   id: string;
-  date: string;
-  condition: WeatherCondition;
-  temperature: {
-    min: number;
-    max: number;
-    current?: number;
-  };
-  humidity: number;
-  windSpeed: number;
-  precipitation: {
-    probability: number;
-    amount?: number;
-  };
+  name: string;
+  description?: string;
+  condition: Condition;
+  action: Action;
+  zoneId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export enum ActionType {
-  TOGGLE_DEVICE = 'toggle_device',
-  SEND_NOTIFICATION = 'send_notification',
-  SET_VALUE = 'set_value'
+export interface Condition {
+  type: ConditionType;
+  sensorId?: string;
+  threshold?: number;
+  operator?: ComparisonOperator;
+  timeOfDay?: string;
+  daysOfWeek?: number[];
 }
 
 export enum ConditionType {
@@ -109,71 +119,90 @@ export enum ComparisonOperator {
   NOT_EQUAL_TO = 'not_equal_to'
 }
 
-export enum IrrigationStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SCHEDULED = 'scheduled',
-  PAUSED = 'paused'
+export interface Action {
+  type: ActionType;
+  deviceId?: string;
+  duration?: number; // in minutes
+  value?: any;
 }
 
-export interface AutomationRule {
+export enum ActionType {
+  TOGGLE_DEVICE = 'toggle_device',
+  SET_VALUE = 'set_value',
+  SEND_NOTIFICATION = 'send_notification'
+}
+
+// Weather Types
+export interface WeatherForecast {
+  date: string;
+  temperature: {
+    min: number;
+    max: number;
+    current?: number;
+  };
+  humidity: number;
+  precipitation: {
+    probability: number;
+    amount?: number;
+  };
+  windSpeed: number;
+  condition: WeatherCondition;
+}
+
+export enum WeatherCondition {
+  SUNNY = 'sunny',
+  CLOUDY = 'cloudy',
+  RAINY = 'rainy',
+  STORMY = 'stormy',
+  SNOWY = 'snowy',
+  FOGGY = 'foggy',
+  PARTLY_CLOUDY = 'partly_cloudy'
+}
+
+// User Types
+export interface User {
   id: string;
-  name: string;
-  description?: string;
-  zoneId: string;
-  condition: {
-    type: ConditionType;
-    sensorId?: string;
-    threshold?: number;
-    operator?: ComparisonOperator;
-    timeOfDay?: string;
-    daysOfWeek?: number[];
-    value?: any;
-  };
-  action: {
-    type: ActionType;
-    deviceId?: string;
-    duration?: number;
-    value?: any;
-  };
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  createdAt: string;
+  farmId?: string;
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  FARM_MANAGER = 'farm_manager',
+  TECHNICIAN = 'technician',
+  VIEWER = 'viewer'
+}
+
+// Utility Types
+export interface GeoLocation {
+  lat: number;
+  lng: number;
 }
 
 export interface SensorReading {
-  id: string;
   deviceId: string;
+  timestamp: string;
   value: number;
   unit: string;
-  timestamp: string;
 }
 
 export interface Alert {
   id: string;
   title: string;
   message: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
+  severity: AlertSeverity;
   timestamp: string;
   isRead: boolean;
   deviceId?: string;
   zoneId?: string;
 }
 
-export interface Crop {
-  id: string;
-  name: string;
-  variety?: string;
-  plantingDate: string;
-  harvestDate?: string;
-  growthStage: CropGrowthStage;
-  idealMoisture: {
-    min: number;
-    max: number;
-  };
-  idealTemperature: {
-    min: number;
-    max: number;
-  };
-  zoneId: string;
+export enum AlertSeverity {
+  INFO = 'info',
+  WARNING = 'warning',
+  ERROR = 'error',
+  CRITICAL = 'critical'
 }

@@ -6,7 +6,7 @@ import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
 import DeviceStatusList from '@/components/dashboard/DeviceStatusList';
 import WeatherWidget from '@/components/dashboard/WeatherWidget';
 import QuickActions from '@/components/dashboard/QuickActions';
-import { Device, DeviceStatus, DeviceType, WeatherForecast } from '@/types';
+import { Device, DeviceStatus, DeviceType, WeatherCondition, WeatherForecast } from '@/types';
 
 // Mock Data
 const mockDevices: Device[] = [
@@ -38,7 +38,6 @@ const mockDevices: Device[] = [
     type: DeviceType.VALVE,
     status: DeviceStatus.OFFLINE,
     batteryLevel: 15,
-    lastReading: null,
     lastUpdated: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     location: { lat: 35.6895, lng: 139.6917 },
     zoneId: 'zone-b'
@@ -49,7 +48,6 @@ const mockDevices: Device[] = [
     type: DeviceType.PUMP,
     status: DeviceStatus.ONLINE,
     batteryLevel: 65,
-    lastReading: null,
     lastUpdated: new Date().toISOString(),
     location: { lat: 35.6895, lng: 139.6917 }
   },
@@ -59,7 +57,6 @@ const mockDevices: Device[] = [
     type: DeviceType.WEATHER_STATION,
     status: DeviceStatus.MAINTENANCE,
     batteryLevel: 42,
-    lastReading: null,
     lastUpdated: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
     location: { lat: 35.6895, lng: 139.6917 }
   }
@@ -67,7 +64,6 @@ const mockDevices: Device[] = [
 
 const currentDate = new Date();
 const mockCurrentWeather: WeatherForecast = {
-  id: 'current',
   date: currentDate.toISOString(),
   temperature: {
     min: 18,
@@ -80,7 +76,7 @@ const mockCurrentWeather: WeatherForecast = {
     amount: 0
   },
   windSpeed: 12,
-  condition: 'partly_cloudy'
+  condition: WeatherCondition.PARTLY_CLOUDY
 };
 
 const mockForecast: WeatherForecast[] = Array.from({ length: 5 }).map((_, index) => {
@@ -88,15 +84,14 @@ const mockForecast: WeatherForecast[] = Array.from({ length: 5 }).map((_, index)
   date.setDate(date.getDate() + index + 1);
   
   const conditions = [
-    'sunny', 
-    'partly_cloudy', 
-    'cloudy', 
-    'rainy', 
-    'stormy'
-  ] as const;
+    WeatherCondition.SUNNY, 
+    WeatherCondition.PARTLY_CLOUDY, 
+    WeatherCondition.CLOUDY, 
+    WeatherCondition.RAINY, 
+    WeatherCondition.STORMY
+  ];
   
   return {
-    id: `forecast-${index}`,
     date: date.toISOString(),
     temperature: {
       min: 16 + Math.floor(Math.random() * 4),

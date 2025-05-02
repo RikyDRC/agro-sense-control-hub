@@ -14,5 +14,57 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     storageKey: 'agrosense-auth-token',
+    flowType: 'pkce',
+    detectSessionInUrl: true,
   }
 });
+
+/**
+ * Helper function to create and store a new user
+ */
+export const createUser = async (email: string, password: string, metadata: any = {}) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: metadata,
+      emailRedirectTo: window.location.origin
+    }
+  });
+  
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * Helper function to sign in a user
+ */
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+  
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * Helper function to sign out a user
+ */
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+};
+
+/**
+ * Helper function to update user metadata
+ */
+export const updateUserMetadata = async (metadata: Record<string, any>) => {
+  const { data, error } = await supabase.auth.updateUser({
+    data: metadata
+  });
+  
+  if (error) throw error;
+  return data;
+};

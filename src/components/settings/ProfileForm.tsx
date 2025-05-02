@@ -1,320 +1,156 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserProfile } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { Save, UserIcon, Camera, Loader2, Phone } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
+import { supabase, updateUserMetadata } from '@/integrations/supabase/client';
 
-interface ProfileFormProps {
-  profile: UserProfile;
-  refreshProfile: () => Promise<void>;
-}
+const formSchema = z.object({
+  displayName: z.string().min(2, {
+    message: 'Display name must be at least 2 characters.',
+  }).max(50),
+  email: z.string().email({
+    message: 'Please enter a valid email address.',
+  }),
+  phoneNumber: z.string().min(10, {
+    message: 'Phone number must be at least 10 digits.',
+  }).max(15).optional(),
+});
 
-const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) => {
-  const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [formData, setFormData] = useState({
-    displayName: '',
-    farmName: 'Green Valley Farm',
-    location: 'California, USA',
-    language: 'en-US',
-    profileImage: '',
-    phoneNumber: '' // Added for phone number
+export function ProfileForm() {
+  const { user, profile, refreshUser } = useAuth();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      displayName: profile?.display_name || '',
+      email: profile?.email || user?.email || '',
+      phoneNumber: profile?.phone_number || '',
+    },
   });
-  
-  useEffect(() => {
-    if (profile) {
-      setFormData(prev => ({
-        ...prev,
-        displayName: profile.display_name || '',
-        profileImage: profile.profile_image || '',
-        phoneNumber: profile.phone_number || '', // Set phone number from profile
-      }));
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+      toast.error('You must be logged in to update your profile.');
+      return;
     }
-  }, [profile]);
-  
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [field]: e.target.value
-    });
-  };
-  
-  const handleSelectChange = (field: string) => (value: string) => {
-    setFormData({
-      ...formData,
-      [field]: value
-    });
-  };
-  
-  const handleUpdateProfile = async () => {
-    if (!profile) return;
-    
-    setLoading(true);
-    
+
+    setIsSubmitting(true);
     try {
-      // Validate phone number
-      if (formData.phoneNumber && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(formData.phoneNumber)) {
-        toast.error('Please enter a valid phone number');
-        setLoading(false);
-        return;
-      }
-      
+      // Update user metadata (will be stored in auth.users.raw_user_meta_data)
+      await updateUserMetadata({
+        display_name: values.displayName,
+        phone_number: values.phoneNumber,
+      });
+
+      // Also update the user profile in the profiles table
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          display_name: formData.displayName,
-          phone_number: formData.phoneNumber, // Update phone number
-          updated_at: new Date().toISOString()
+          display_name: values.displayName,
+          phone_number: values.phoneNumber,
         })
-        .eq('id', profile.id);
+        .eq('id', user.id);
 
       if (error) throw error;
-      
-      await refreshProfile();
+
       toast.success('Profile updated successfully');
-    } catch (error) {
+      refreshUser(); // Refresh the user data
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(`Failed to update profile: ${error.message}`);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
-  };
+  }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!profile) return;
-    
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-    
-    setUploadingImage(true);
-    
-    try {
-      // For this demo, we'll use a simple base64 encoding
-      const reader = new FileReader();
-      
-      reader.onload = async (event) => {
-        if (!event.target?.result) return;
-        
-        const base64Image = event.target.result as string;
-        
-        // Save profile image URL to user profile
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({
-            profile_image: base64Image,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', profile.id);
-          
-        if (error) throw error;
-        
-        setFormData(prev => ({
-          ...prev,
-          profileImage: base64Image
-        }));
-        
-        await refreshProfile();
-        toast.success('Profile image updated successfully');
-      };
-      
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error uploading profile image:', error);
-      toast.error('Failed to upload profile image');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  if (!profile) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>User Profile</CardTitle>
-          <CardDescription>
-            Loading profile information...
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
+  // If user isn't loaded yet, don't render the form
+  if (!user) {
+    return <div>Loading profile...</div>;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserIcon className="h-5 w-5" /> User Profile
-          <Badge 
-            className={
-              profile.role === 'super_admin' ? 'bg-red-500' :
-              profile.role === 'admin' ? 'bg-blue-500' : 
-              'bg-green-500'
-            }
-          >
-            {profile.role.replace('_', ' ')}
-          </Badge>
-        </CardTitle>
-        <CardDescription>
-          Manage your personal information and preferences
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
-          <div className="relative">
-            <Avatar className="h-24 w-24">
-              {formData.profileImage ? (
-                <AvatarImage src={formData.profileImage} alt={formData.displayName || "User"} />
-              ) : (
-                <AvatarFallback className="bg-primary text-white text-xl">
-                  {formData.displayName ? formData.displayName.charAt(0).toUpperCase() : "U"}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <label 
-              htmlFor="profile-image-upload" 
-              className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90"
-            >
-              {uploadingImage ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Camera className="h-4 w-4" />
-              )}
-            </label>
-            <input 
-              id="profile-image-upload" 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={handleImageUpload}
-              disabled={uploadingImage}
-            />
-          </div>
-          
-          <div className="space-y-4 flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input 
-                  id="displayName" 
-                  value={formData.displayName} 
-                  onChange={handleInputChange('displayName')} 
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={profile.email} 
-                  disabled
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <div className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="phoneNumber" 
-                    type="tel"
-                    value={formData.phoneNumber} 
-                    onChange={handleInputChange('phoneNumber')} 
-                    placeholder="+1234567890"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Include country code (e.g., +1 for US)
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input 
-                  id="location" 
-                  value={formData.location} 
-                  onChange={handleInputChange('location')} 
-                  placeholder="Enter location"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-          
-        <Separator />
-          
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="role">User Role</Label>
-            <Input
-              id="role"
-              value={profile.role.replace('_', ' ')}
-              disabled
-              className="capitalize"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {profile.role === 'super_admin' ? 
-                'You have full system administration privileges' : 
-                'Contact a super admin to change roles'}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
-            <Select 
-              value={formData.language} 
-              onValueChange={handleSelectChange('language')}
-            >
-              <SelectTrigger id="language">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en-US">English (US)</SelectItem>
-                <SelectItem value="es-ES">Español</SelectItem>
-                <SelectItem value="fr-FR">Français</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleUpdateProfile} disabled={loading}>
-          {loading ? (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="displayName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Display Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Your name" {...field} />
+              </FormControl>
+              <FormDescription>
+                This is the name that will be shown to other users.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="email@example.com" {...field} disabled />
+              </FormControl>
+              <FormDescription>
+                Your email address cannot be changed.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input placeholder="+1 (555) 123-4567" {...field} />
+              </FormControl>
+              <FormDescription>
+                Your phone number will be used for important notifications and two-factor authentication.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
             </>
           ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" /> Save Changes
-            </>
+            'Save Changes'
           )}
         </Button>
-      </CardFooter>
-    </Card>
+      </form>
+    </Form>
   );
-};
+}
 
 export default ProfileForm;

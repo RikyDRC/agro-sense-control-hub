@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -382,182 +383,183 @@ const DevicesPage: React.FC = () => {
           </div>
         </div>
       
-      {/* Device Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {filteredDevices.length === 0 ? (
-          <div className="col-span-full">
-            <Alert>
-              <AlertDescription>
-                No devices found matching your criteria
-              </AlertDescription>
-            </Alert>
-          </div>
-        ) : (
-          filteredDevices.map(device => (
-            <DeviceCard 
-              key={device.id} 
-              device={device}
-              onStatusChange={handleDeviceStatusChange}
-            />
-          ))
-        )}
-      </div>
+        {/* Device Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {filteredDevices.length === 0 ? (
+            <div className="col-span-full">
+              <Alert>
+                <AlertDescription>
+                  No devices found matching your criteria
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : (
+            filteredDevices.map(device => (
+              <DeviceCard 
+                key={device.id} 
+                device={device}
+                onStatusChange={handleDeviceStatusChange}
+              />
+            ))
+          )}
+        </div>
       
-      {/* Add Device Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add New Device</DialogTitle>
-            <DialogDescription>
-              Create a new device to connect to your farm.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={newDeviceName}
-                onChange={(e) => setNewDeviceName(e.target.value)}
-                className="col-span-3"
-              />
+        {/* Add Device Dialog */}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Device</DialogTitle>
+              <DialogDescription>
+                Create a new device to connect to your farm.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={newDeviceName}
+                  onChange={(e) => setNewDeviceName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
+                  <SelectTrigger id="type" className="col-span-3">
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deviceTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="zone" className="text-right">
+                  Zone
+                </Label>
+                <Select value={newDeviceZone} onValueChange={setNewDeviceZone}>
+                  <SelectTrigger id="zone" className="col-span-3">
+                    <SelectValue placeholder="Select a zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Zone</SelectItem>
+                    {zones.map(zone => (
+                      <SelectItem key={zone.id} value={zone.id}>
+                        {zone.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Type
-              </Label>
-              <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
-                <SelectTrigger id="type" className="col-span-3">
-                  <SelectValue placeholder="Select a type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {deviceTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="zone" className="text-right">
-                Zone
-              </Label>
-              <Select value={newDeviceZone} onValueChange={setNewDeviceZone}>
-                <SelectTrigger id="zone" className="col-span-3">
-                  <SelectValue placeholder="Select a zone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No Zone</SelectItem>
-                  {zones.map(zone => (
-                    <SelectItem key={zone.id} value={zone.id}>
-                      {zone.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowAddDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleAddDevice} disabled={isProcessing}>
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <PlusSquare className="mr-2 h-4 w-4" />
-                  Add Device
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleAddDevice} disabled={isProcessing}>
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <PlusSquare className="mr-2 h-4 w-4" />
+                    Add Device
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Edit Device Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Device</DialogTitle>
-            <DialogDescription>
-              Edit device details and settings.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="edit-name"
-                value={newDeviceName}
-                onChange={(e) => setNewDeviceName(e.target.value)}
-                className="col-span-3"
-              />
+        {/* Edit Device Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Device</DialogTitle>
+              <DialogDescription>
+                Edit device details and settings.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={newDeviceName}
+                  onChange={(e) => setNewDeviceName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-type" className="text-right">
+                  Type
+                </Label>
+                <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
+                  <SelectTrigger id="edit-type" className="col-span-3">
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deviceTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-zone" className="text-right">
+                  Zone
+                </Label>
+                <Select value={newDeviceZone} onValueChange={setNewDeviceZone}>
+                  <SelectTrigger id="edit-zone" className="col-span-3">
+                    <SelectValue placeholder="Select a zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Zone</SelectItem>
+                    {zones.map(zone => (
+                      <SelectItem key={zone.id} value={zone.id}>
+                        {zone.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-type" className="text-right">
-                Type
-              </Label>
-              <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
-                <SelectTrigger id="edit-type" className="col-span-3">
-                  <SelectValue placeholder="Select a type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {deviceTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-zone" className="text-right">
-                Zone
-              </Label>
-              <Select value={newDeviceZone} onValueChange={setNewDeviceZone}>
-                <SelectTrigger id="edit-zone" className="col-span-3">
-                  <SelectValue placeholder="Select a zone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No Zone</SelectItem>
-                  {zones.map(zone => (
-                    <SelectItem key={zone.id} value={zone.id}>
-                      {zone.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowEditDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleUpdateDevice} disabled={isProcessing}>
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                <>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Update Device
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleUpdateDevice} disabled={isProcessing}>
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Update Device
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </DashboardLayout>
   );
 };

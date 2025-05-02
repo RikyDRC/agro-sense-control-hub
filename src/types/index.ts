@@ -3,7 +3,10 @@ export enum DeviceType {
   MOISTURE_SENSOR = 'moisture_sensor',
   WEATHER_STATION = 'weather_station',
   VALVE = 'valve',
-  CAMERA = 'camera'
+  CAMERA = 'camera',
+  TEMPERATURE_SENSOR = 'temperature_sensor',
+  PUMP = 'pump',
+  PH_SENSOR = 'ph_sensor'
 }
 
 export enum DeviceStatus {
@@ -31,8 +34,8 @@ export interface Zone {
   description?: string;
   boundaryCoordinates: Array<{ lat: number; lng: number }>;
   areaSize: number;
-  devices: Device[];
-  irrigationStatus: 'active' | 'inactive' | 'scheduled';
+  devices: Device[] | string[];
+  irrigationStatus: IrrigationStatus;
   soilMoistureThreshold?: number;
   createdAt: string;
   updatedAt: string;
@@ -47,33 +50,25 @@ export enum CropGrowthStage {
   HARVEST = 'harvest'
 }
 
-export interface WeatherCondition {
-  description: string;
-  icon: string;
-}
+// Alias for backward compatibility
+export const GrowthStage = CropGrowthStage;
 
-export interface Crop {
-  id: string;
-  name: string;
-  variety?: string;
-  plantingDate: string;
-  harvestDate?: string;
-  growthStage: CropGrowthStage;
-  zoneId: string;
-  idealTemperature: {
-    min: number;
-    max: number;
-  };
-  idealMoisture: {
-    min: number;
-    max: number;
-  };
-}
+export const WeatherCondition = {
+  SUNNY: 'sunny',
+  CLOUDY: 'cloudy',
+  RAINY: 'rainy',
+  STORMY: 'stormy',
+  SNOWY: 'snowy',
+  FOGGY: 'foggy',
+  PARTLY_CLOUDY: 'partly_cloudy'
+} as const;
+
+export type WeatherCondition = typeof WeatherCondition[keyof typeof WeatherCondition];
 
 export interface WeatherForecast {
   id: string;
   date: string;
-  condition: 'sunny' | 'cloudy' | 'rainy' | 'stormy' | 'snowy';
+  condition: WeatherCondition;
   temperature: {
     min: number;
     max: number;
@@ -87,21 +82,50 @@ export interface WeatherForecast {
   };
 }
 
+export enum ActionType {
+  TOGGLE_DEVICE = 'toggle_device',
+  SEND_NOTIFICATION = 'send_notification'
+}
+
+export enum ConditionType {
+  SENSOR_READING = 'sensor_reading',
+  TIME_BASED = 'time_based'
+}
+
+export enum ComparisonOperator {
+  LESS_THAN = 'less_than',
+  GREATER_THAN = 'greater_than',
+  EQUAL_TO = 'equal_to'
+}
+
+export enum IrrigationStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SCHEDULED = 'scheduled'
+}
+
 export interface AutomationRule {
   id: string;
   name: string;
   description?: string;
   zoneId: string;
   condition: {
-    type: string;
-    value: any;
-    operator: string;
+    type: ConditionType;
+    sensorId?: string;
+    threshold?: number;
+    operator?: ComparisonOperator;
+    timeOfDay?: string;
+    daysOfWeek?: number[];
   };
   action: {
-    type: string;
-    value: any;
+    type: ActionType;
+    deviceId?: string;
+    duration?: number;
+    value?: any;
   };
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SensorReading {
@@ -121,4 +145,9 @@ export interface Alert {
   isRead: boolean;
   deviceId?: string;
   zoneId?: string;
+}
+
+export interface GeoLocation {
+  lat: number;
+  lng: number;
 }

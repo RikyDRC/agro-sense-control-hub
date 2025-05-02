@@ -33,13 +33,13 @@ const getDeviceIcon = (type: DeviceType) => {
 const getStatusColor = (status: DeviceStatus) => {
   switch (status) {
     case DeviceStatus.ONLINE:
-      return "bg-agro-status-success";
+      return "bg-green-500";
     case DeviceStatus.OFFLINE:
       return "bg-slate-400";
     case DeviceStatus.MAINTENANCE:
-      return "bg-agro-status-warning";
+      return "bg-yellow-500";
     case DeviceStatus.ALERT:
-      return "bg-agro-status-danger";
+      return "bg-red-500";
     default:
       return "bg-slate-400";
   }

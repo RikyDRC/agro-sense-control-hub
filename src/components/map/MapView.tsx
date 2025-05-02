@@ -304,6 +304,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [isAddingDevice, newDeviceType, newDeviceName, selectedZone, onDeviceAdd]);
 
+  // Updated getDeviceIcon function to handle all device types including camera
   const getDeviceIcon = (type: DeviceType, status: DeviceStatus) => {
     const baseUrl = 'https://maps.google.com/mapfiles/ms/icons/';
     

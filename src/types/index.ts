@@ -1,4 +1,3 @@
-
 export enum DeviceType {
   MOISTURE_SENSOR = 'moisture_sensor',
   WEATHER_STATION = 'weather_station',
@@ -40,6 +39,11 @@ export interface Zone {
   soilMoistureThreshold?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GeoLocation {
+  lat: number;
+  lng: number;
 }
 
 export enum CropGrowthStage {
@@ -153,11 +157,6 @@ export interface Alert {
   isRead: boolean;
   deviceId?: string;
   zoneId?: string;
-}
-
-export interface GeoLocation {
-  lat: number;
-  lng: number;
 }
 
 export interface Crop {

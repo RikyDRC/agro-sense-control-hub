@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import MapView from '@/components/map/MapView';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon, RotateCw } from 'lucide-react';
-import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
+import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus, GeoLocation } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -135,16 +135,25 @@ const MapPage: React.FC = () => {
         user_id: user.id
       };
       
-      // Explicit casting for status and type to match database enum literals
-      const dbDeviceData = {
-        ...deviceData,
-        status: deviceData.status as "online" | "offline" | "maintenance" | "alert",
-        type: deviceData.type as "moisture_sensor" | "weather_station" | "valve" | "camera" | "temperature_sensor" | "pump" | "ph_sensor" | "light_sensor"
-      };
+      // Filter out 'camera' if it's not accepted by the database
+      // The error suggests that 'camera' is not a valid type in the database
+      // Here we make sure we only use valid types
+      const validDeviceTypes = [
+        'moisture_sensor', 'weather_station', 'valve', 
+        'temperature_sensor', 'pump', 'ph_sensor', 'light_sensor'
+      ];
+      
+      const deviceType = validDeviceTypes.includes(deviceData.type) 
+        ? deviceData.type 
+        : 'moisture_sensor'; // Default to moisture_sensor if camera isn't supported
       
       const { error } = await supabase
         .from('devices')
-        .insert(dbDeviceData);
+        .insert({
+          ...deviceData,
+          type: deviceType,
+          status: deviceData.status as "online" | "offline" | "maintenance" | "alert"
+        });
       
       if (error) throw error;
       

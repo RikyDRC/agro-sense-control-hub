@@ -183,8 +183,8 @@ const DevicesPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type.toString(), // Convert enum to string for database
-        status: newDevice.status.toString(), // Convert enum to string for database
+        type: newDevice.type.toString(),
+        status: newDevice.status.toString(),
         battery_level: newDevice.batteryLevel,
         location: newDevice.location as any, // Type assertion to avoid Json type issues
         zone_id: newDevice.zoneId,
@@ -194,7 +194,7 @@ const DevicesPage: React.FC = () => {
       
       const { error } = await supabase
         .from('devices')
-        .insert(deviceData);
+        .insert(deviceData as any); // Type assertion for Supabase compatibility
       
       if (error) throw error;
       
@@ -218,8 +218,8 @@ const DevicesPage: React.FC = () => {
       // Format for database - ensuring types are compatible with the database schema
       const deviceData = {
         name: formValues.name,
-        type: formValues.type.toString(), // Convert enum to string for database
-        status: formValues.status.toString(), // Convert enum to string for database
+        type: formValues.type.toString(),
+        status: formValues.status.toString(),
         battery_level: formValues.batteryLevel,
         zone_id: formValues.zoneId,
         updated_at: timestamp,
@@ -228,7 +228,7 @@ const DevicesPage: React.FC = () => {
       
       const { error } = await supabase
         .from('devices')
-        .update(deviceData)
+        .update(deviceData as any) // Type assertion for Supabase compatibility
         .eq('id', formValues.id);
         
       if (error) throw error;

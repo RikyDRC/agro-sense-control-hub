@@ -141,7 +141,7 @@ const MapPage: React.FC = () => {
       
       const { error } = await supabase
         .from('devices')
-        .insert(deviceData);
+        .insert(deviceData as any); // Type assertion for Supabase compatibility
       
       if (error) throw error;
       
@@ -185,7 +185,7 @@ const MapPage: React.FC = () => {
       
       const { error } = await supabase
         .from('zones')
-        .insert(zoneData);
+        .insert(zoneData as any); // Type assertion for Supabase compatibility
       
       if (error) throw error;
       

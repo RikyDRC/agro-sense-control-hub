@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
+import { Textarea } from '@/components/ui/textarea';
 
 const containerStyle = {
   width: '100%',
@@ -34,6 +34,10 @@ interface MapViewProps {
     name: string;
     description?: string;
     soilMoistureThreshold?: number;
+    soilType?: string;
+    cropType?: string;
+    irrigationMethod?: string;
+    notes?: string;
   };
 }
 
@@ -67,6 +71,10 @@ const MapView: React.FC<MapViewProps> = ({
   const [newZoneName, setNewZoneName] = useState('');
   const [newZoneDescription, setNewZoneDescription] = useState('');
   const [soilMoistureThreshold, setSoilMoistureThreshold] = useState(30);
+  const [soilType, setSoilType] = useState('');
+  const [cropType, setCropType] = useState('');
+  const [irrigationMethod, setIrrigationMethod] = useState('');
+  const [notes, setNotes] = useState('');
   const [isNamingZone, setIsNamingZone] = useState(false);
 
   // Fetch the Google Maps API key from platform_config
@@ -144,6 +152,10 @@ const MapView: React.FC<MapViewProps> = ({
       setNewZoneName(createZone.name || '');
       setNewZoneDescription(createZone.description || '');
       setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
+      setSoilType(createZone.soilType || '');
+      setCropType(createZone.cropType || '');
+      setIrrigationMethod(createZone.irrigationMethod || '');
+      setNotes(createZone.notes || '');
       
       // Enable drawing mode
       drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
@@ -227,6 +239,10 @@ const MapView: React.FC<MapViewProps> = ({
       devices: [],
       irrigationStatus: IrrigationStatus.INACTIVE,
       soilMoistureThreshold,
+      soilType,
+      cropType,
+      irrigationMethod,
+      notes,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -238,6 +254,10 @@ const MapView: React.FC<MapViewProps> = ({
     // Clean up after zone creation
     setNewZoneName('');
     setNewZoneDescription('');
+    setSoilType('');
+    setCropType('');
+    setIrrigationMethod('');
+    setNotes('');
     setIsNamingZone(false);
     createdPolygon.setMap(null);
     setCreatedPolygon(null);
@@ -253,7 +273,7 @@ const MapView: React.FC<MapViewProps> = ({
     if (createZone) {
       navigate('/zones');
     }
-  }, [createdPolygon, newZoneName, newZoneDescription, soilMoistureThreshold, onZoneAdd, drawingManager, createZone, navigate]);
+  }, [createdPolygon, newZoneName, newZoneDescription, soilMoistureThreshold, soilType, cropType, irrigationMethod, notes, onZoneAdd, drawingManager, createZone, navigate]);
 
   const cancelZoneCreation = useCallback(() => {
     if (createdPolygon) {
@@ -263,6 +283,10 @@ const MapView: React.FC<MapViewProps> = ({
     
     setNewZoneName('');
     setNewZoneDescription('');
+    setSoilType('');
+    setCropType('');
+    setIrrigationMethod('');
+    setNotes('');
     setIsNamingZone(false);
     
     // Re-enable drawing manager
@@ -391,6 +415,23 @@ const MapView: React.FC<MapViewProps> = ({
       </Alert>
     );
   }
+
+  const soilTypes = [
+    { value: 'clay', label: 'Clay' },
+    { value: 'silt', label: 'Silt' },
+    { value: 'sand', label: 'Sandy' },
+    { value: 'loam', label: 'Loam' },
+    { value: 'peat', label: 'Peat' },
+    { value: 'chalk', label: 'Chalky' },
+  ];
+
+  const irrigationMethods = [
+    { value: 'drip', label: 'Drip Irrigation' },
+    { value: 'sprinkler', label: 'Sprinkler System' },
+    { value: 'flood', label: 'Flood Irrigation' },
+    { value: 'manual', label: 'Manual Watering' },
+    { value: 'subsurface', label: 'Subsurface Irrigation' },
+  ];
 
   return (
     <div className="space-y-4">
@@ -565,12 +606,12 @@ const MapView: React.FC<MapViewProps> = ({
             </CardContent>
           </Card>
           
-          {/* Zone Naming Dialog */}
+          {/* Zone Naming Dialog - Enhanced with all fields */}
           {isNamingZone && (
             <Card>
               <CardHeader>
-                <CardTitle>Name Your Zone</CardTitle>
-                <CardDescription>Give the drawn area a name</CardDescription>
+                <CardTitle>Zone Details</CardTitle>
+                <CardDescription>Provide information about your zone</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -603,6 +644,59 @@ const MapView: React.FC<MapViewProps> = ({
                       onChange={(e) => setSoilMoistureThreshold(parseInt(e.target.value) || 30)}
                       min="0"
                       max="100"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="soilType">Soil Type</Label>
+                    <Select value={soilType} onValueChange={setSoilType}>
+                      <SelectTrigger id="soilType">
+                        <SelectValue placeholder="Select soil type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {soilTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cropType">Primary Crop Type</Label>
+                    <Input
+                      id="cropType"
+                      value={cropType}
+                      onChange={(e) => setCropType(e.target.value)}
+                      placeholder="e.g. Wheat, Corn, Soybeans"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="irrigationMethod">Irrigation Method</Label>
+                    <Select value={irrigationMethod} onValueChange={setIrrigationMethod}>
+                      <SelectTrigger id="irrigationMethod">
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {irrigationMethods.map((method) => (
+                          <SelectItem key={method.value} value={method.value}>
+                            {method.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Enter any additional information"
+                      className="min-h-[80px]"
                     />
                   </div>
                 </div>

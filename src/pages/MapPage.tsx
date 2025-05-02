@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -27,6 +28,10 @@ const MapPage: React.FC = () => {
     zoneName?: string;
     zoneDescription?: string;
     soilMoistureThreshold?: number;
+    soilType?: string;
+    cropType?: string;
+    irrigationMethod?: string;
+    notes?: string;
   } | null;
 
   useEffect(() => {
@@ -68,6 +73,10 @@ const MapPage: React.FC = () => {
         devices: [],  // We'll populate this below
         irrigationStatus: zone.irrigation_status as IrrigationStatus || IrrigationStatus.INACTIVE,
         soilMoistureThreshold: zone.soil_moisture_threshold,
+        soilType: zone.soil_type,
+        cropType: zone.crop_type,
+        irrigationMethod: zone.irrigation_method,
+        notes: zone.notes,
         createdAt: zone.created_at,
         updatedAt: zone.updated_at
       }));
@@ -121,8 +130,8 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type, // Supabase will handle enum conversion
-        status: newDevice.status, // Supabase will handle enum conversion
+        type: newDevice.type.toString() as any, // Convert enum to string for database
+        status: newDevice.status.toString() as any, // Convert enum to string for database
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
@@ -153,6 +162,12 @@ const MapPage: React.FC = () => {
     }
 
     try {
+      // Get additional data from route state if available
+      const soilType = routeState?.soilType || newZone.soilType;
+      const cropType = routeState?.cropType || newZone.cropType;
+      const irrigationMethod = routeState?.irrigationMethod || newZone.irrigationMethod;
+      const notes = routeState?.notes || newZone.notes;
+      
       // Format for database
       const zoneData = {
         id: newZone.id,
@@ -160,8 +175,12 @@ const MapPage: React.FC = () => {
         description: newZone.description || '',
         boundary_coordinates: newZone.boundaryCoordinates as any, // Type assertion for Json compatibility
         area_size: newZone.areaSize,
-        irrigation_status: newZone.irrigationStatus, // Supabase will handle enum conversion
+        irrigation_status: newZone.irrigationStatus.toString() as any, // Convert enum to string for database
         soil_moisture_threshold: newZone.soilMoistureThreshold,
+        soil_type: soilType,
+        crop_type: cropType, 
+        irrigation_method: irrigationMethod,
+        notes: notes,
         user_id: user.id
       };
       
@@ -172,7 +191,13 @@ const MapPage: React.FC = () => {
       if (error) throw error;
       
       // Add to local state
-      setZones(prev => [...prev, newZone]);
+      setZones(prev => [...prev, {
+        ...newZone,
+        soilType,
+        cropType,
+        irrigationMethod,
+        notes
+      }]);
       toast.success('Zone added successfully');
     } catch (error: any) {
       console.error('Error adding zone:', error);
@@ -185,7 +210,7 @@ const MapPage: React.FC = () => {
       // Update in database
       const { error } = await supabase
         .from('devices')
-        .update({ location: newLocation })
+        .update({ location: newLocation as any })
         .eq('id', deviceId);
       
       if (error) throw error;
@@ -257,7 +282,11 @@ const MapPage: React.FC = () => {
           createZone={routeState?.action === 'createZone' ? {
             name: routeState.zoneName || '',
             description: routeState.zoneDescription,
-            soilMoistureThreshold: routeState.soilMoistureThreshold
+            soilMoistureThreshold: routeState.soilMoistureThreshold,
+            soilType: routeState.soilType,
+            cropType: routeState.cropType,
+            irrigationMethod: routeState.irrigationMethod,
+            notes: routeState.notes
           } : undefined}
         />
       </div>

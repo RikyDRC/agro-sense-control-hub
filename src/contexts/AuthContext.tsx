@@ -1,331 +1,241 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
-
-export type UserRole = 'super_admin' | 'admin' | 'farmer';
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  display_name: string | null;
-  role: UserRole;
-  profile_image: string | null;
-  created_at: string;
-  updated_at: string;
-  phone_number: string | null; // Added phone_number field
-}
-
-export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  billing_interval: string;
-  features: Record<string, any>;
-}
-
-export interface UserSubscription {
-  id: string;
-  plan_id: string;
-  status: string;
-  start_date: string;
-  end_date: string | null;
-  plan?: SubscriptionPlan;
-}
+import { Session, User } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextProps {
-  session: Session | null;
   user: User | null;
-  profile: UserProfile | null;
-  subscription: UserSubscription | null;
+  session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string, displayName?: string, role?: UserRole, phoneNumber?: string) => Promise<{ error: any | null }>;
+  profile: any | null;
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<any>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-  refreshSubscription: () => Promise<void>;
-  isRoleSuperAdmin: () => boolean;
-  isRoleAdmin: () => boolean;
-  isRoleFarmer: () => boolean;
-  hasRole: (role: UserRole) => boolean;
-  updateUserRole: (userId: string, newRole: UserRole) => Promise<{ error: any | null }>;
+  updateProfile: (data: any) => Promise<any>;
+  refreshUser: () => Promise<void>;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-  const [fetchingProfile, setFetchingProfile] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { toast } = useToast();
 
-  const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
-    if (!userId) return null;
-    
+  // Function to refresh user data
+  const refreshUser = useCallback(async () => {
     try {
-      console.log("Fetching user profile for:", userId);
-      
-      const { data, error } = await supabase.rpc(
-        'get_profile_by_id',
-        { user_id: userId }
-      );
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setProfileError(error.message);
-        return null;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        // Also fetch profile data if needed
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (!profileError && profileData) {
+          setProfile(profileData);
+        }
       }
-
-      if (!data) {
-        console.log("No profile data received");
-        return null;
-      }
-
-      return data as unknown as UserProfile;
-    } catch (error: any) {
-      console.error('Error in fetchUserProfile:', error);
-      setProfileError(error.message);
-      return null;
-    }
-  };
-
-  const fetchUserSubscription = async (userId: string) => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select(`
-          id, plan_id, status, start_date, end_date,
-          plan:subscription_plans(id, name, description, price, billing_interval, features)
-        `)
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching user subscription:', error);
-        return null;
-      }
-
-      return data as UserSubscription;
     } catch (error) {
-      console.error('Error in fetchUserSubscription:', error);
-      return null;
+      console.error('Error refreshing user data:', error);
     }
-  };
+  }, []);
 
+  // Initialize auth state
   useEffect(() => {
-    setLoading(true);
-
-    const handleAuthChange = async (event: string, currentSession: Session | null) => {
-      console.log("Auth state changed:", event, currentSession?.user?.id);
-      
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (!currentSession?.user) {
-        setProfile(null);
-        setSubscription(null);
-        setLoading(false);
-        return;
-      }
-
+    const initAuth = async () => {
+      setLoading(true);
       try {
-        const userProfile = await fetchUserProfile(currentSession.user.id);
-        setProfile(userProfile);
+        // Get current session
+        const { data: sessionData } = await supabase.auth.getSession();
+        setSession(sessionData.session);
+        
+        if (sessionData.session?.user) {
+          setUser(sessionData.session.user);
           
-        const userSubscription = await fetchUserSubscription(currentSession.user.id);
-        setSubscription(userSubscription);
+          // Check if user is admin
+          const userRoles = sessionData.session.user.app_metadata?.roles || [];
+          setIsAdmin(userRoles.includes('super_admin'));
+          
+          // Get user profile
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', sessionData.session.user.id)
+            .single();
+          
+          if (profileError) {
+            console.error('Error fetching user profile:', profileError);
+          } else {
+            setProfile(profileData);
+          }
+        }
       } catch (error) {
-        console.error("Error loading user data:", error);
+        console.error('Error initializing auth:', error);
+        toast({
+          title: 'Authentication Error',
+          description: 'Failed to initialize authentication',
+          variant: 'destructive'
+        });
       } finally {
         setLoading(false);
       }
     };
-
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
-          setTimeout(() => {
-            handleAuthChange(event, currentSession);
-          }, 0);
-        } else {
-          setProfile(null);
-          setSubscription(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log("Initial session check:", currentSession?.user?.id);
+    
+    // Call init function
+    initAuth();
+    
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      setUser(session?.user || null);
       
-      if (currentSession?.user) {
-        handleAuthChange('INITIAL_SESSION', currentSession);
+      if (session?.user) {
+        // Check if user is admin
+        const userRoles = session.user.app_metadata?.roles || [];
+        setIsAdmin(userRoles.includes('super_admin'));
+        
+        // Get user profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (!profileError) {
+          setProfile(profileData);
+        }
       } else {
-        setLoading(false);
+        setProfile(null);
+        setIsAdmin(false);
       }
     });
-
+    
+    // Cleanup
     return () => {
-      authSubscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
-  }, []);
-
-  const refreshProfile = async () => {
-    if (!user) return;
-    if (fetchingProfile) return;
-    
-    setFetchingProfile(true);
-    setProfileError(null);
-    
-    try {
-      const userProfile = await fetchUserProfile(user.id);
-      setProfile(userProfile);
-    } catch (error: any) {
-      console.error("Error refreshing profile:", error);
-      setProfileError(error.message);
-    } finally {
-      setFetchingProfile(false);
-    }
-  };
-
-  const refreshSubscription = async () => {
-    if (!user) return;
-    
-    try {
-      const userSubscription = await fetchUserSubscription(user.id);
-      setSubscription(userSubscription);
-    } catch (error) {
-      console.error("Error refreshing subscription:", error);
-    }
-  };
-
+  }, [toast]);
+  
+  // Sign in function
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
       
-      if (error) {
-        console.error("Sign in error:", error);
-        toast.error(error.message);
-      }
-      
-      return { error };
-    } catch (error: any) {
-      console.error("Sign in catch error:", error);
-      toast.error(error.message || "Failed to sign in");
-      return { error };
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      throw error;
     }
   };
-
-  const signUp = async (email: string, password: string, displayName?: string, role: UserRole = 'farmer', phoneNumber?: string) => {
+  
+  // Sign up function
+  const signUp = async (email: string, password: string, metadata: any = {}) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email, 
+      const { data, error } = await supabase.auth.signUp({
+        email,
         password,
         options: {
-          data: {
-            display_name: displayName || email.split('@')[0],
-            role: role,
-            phone_number: phoneNumber || null
-          }
+          data: metadata,
         }
       });
-
-      if (error) {
-        console.error('Signup error:', error);
-        toast.error(error.message);
-        return { error };
-      }
       
-      toast.success("Signup successful! Please check your email to confirm your account.");
-      return { error: null };
-    } catch (error: any) {
-      console.error('Signup catch error:', error);
-      toast.error(error.message || "Failed to sign up");
-      return { error };
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      throw error;
     }
   };
-
+  
+  // Sign out function
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setSubscription(null);
-  };
-
-  const updateUserRole = async (userId: string, newRole: UserRole) => {
     try {
-      const { data: isSuperAdmin, error: checkError } = await supabase.rpc('is_current_user_super_admin');
-      
-      if (checkError) {
-        console.error('Error checking super admin status:', checkError);
-        toast.error('Failed to verify permissions: ' + checkError.message);
-        return { error: checkError };
-      }
-      
-      if (!isSuperAdmin) {
-        return { error: new Error('Only super admins can update user roles') };
-      }
-
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ 
-          role: newRole,
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', userId);
-
-      if (error) {
-        console.error('Error updating user role:', error);
-        toast.error('Failed to update user role');
-        return { error };
-      }
-
-      toast.success(`User role updated to ${newRole}`);
-      return { error: null };
-    } catch (error: any) {
-      console.error('Error in updateUserRole:', error);
-      toast.error(error.message || 'Failed to update user role');
-      return { error };
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
     }
   };
-
-  const isRoleSuperAdmin = () => profile?.role === 'super_admin';
-  const isRoleAdmin = () => profile?.role === 'admin';
-  const isRoleFarmer = () => profile?.role === 'farmer';
-  const hasRole = (role: UserRole) => profile?.role === role;
-
+  
+  // Update profile function
+  const updateProfile = async (data: any) => {
+    try {
+      if (!user) throw new Error('No user logged in');
+      
+      // Update user metadata if needed
+      if (data.email || data.phone || data.name) {
+        const userUpdateData: any = {};
+        
+        if (data.email) userUpdateData.email = data.email;
+        if (data.phone) userUpdateData.phone = data.phone;
+        
+        const { error: userError } = await supabase.auth.updateUser({
+          ...userUpdateData,
+          data: { name: data.name }
+        });
+        
+        if (userError) throw userError;
+      }
+      
+      // Update profile in profiles table
+      const updates = {
+        ...data,
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, ...updates });
+        
+      if (profileError) throw profileError;
+      
+      // Refresh profile data
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (error) throw error;
+      
+      setProfile(updatedProfile);
+      return updatedProfile;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+  
+  // Expose auth context values
+  const contextValue = {
+    user,
+    session,
+    loading,
+    profile,
+    signIn,
+    signUp,
+    signOut,
+    updateProfile,
+    refreshUser,
+    isAdmin
+  };
+  
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        profile,
-        subscription,
-        loading,
-        signIn,
-        signUp,
-        signOut,
-        refreshProfile,
-        refreshSubscription,
-        isRoleSuperAdmin,
-        isRoleAdmin,
-        isRoleFarmer,
-        hasRole,
-        updateUserRole
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -338,5 +248,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-export default AuthContext;

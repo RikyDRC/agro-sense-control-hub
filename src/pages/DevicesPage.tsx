@@ -36,7 +36,7 @@ const DevicesPage: React.FC = () => {
 
   // Form state for adding/editing devices
   const [newDeviceName, setNewDeviceName] = useState('');
-  const [newDeviceType, setNewDeviceType] = useState<DeviceType>('moisture_sensor');
+  const [newDeviceType, setNewDeviceType] = useState<DeviceType>(DeviceType.MOISTURE_SENSOR);
   const [newDeviceZone, setNewDeviceZone] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -279,7 +279,7 @@ const DevicesPage: React.FC = () => {
 
   const resetForm = () => {
     setNewDeviceName('');
-    setNewDeviceType('moisture_sensor');
+    setNewDeviceType(DeviceType.MOISTURE_SENSOR);
     setNewDeviceZone('');
   };
   
@@ -289,18 +289,17 @@ const DevicesPage: React.FC = () => {
   };
 
   const deviceTypes = [
-    { value: 'moisture_sensor', label: 'Moisture Sensor' },
-    { value: 'weather_station', label: 'Weather Station' },
-    { value: 'irrigation_controller', label: 'Irrigation Controller' },
-    { value: 'camera', label: 'Camera' },
+    { value: DeviceType.MOISTURE_SENSOR, label: 'Moisture Sensor' },
+    { value: DeviceType.WEATHER_STATION, label: 'Weather Station' },
+    { value: DeviceType.VALVE, label: 'Irrigation Controller' },
+    { value: DeviceType.CAMERA, label: 'Camera' },
   ];
 
   const deviceStatuses = [
-    { value: 'online', label: 'Online' },
-    { value: 'offline', label: 'Offline' },
-    { value: 'idle', label: 'Idle' },
-    { value: 'active', label: 'Active' },
-    { value: 'error', label: 'Error' },
+    { value: DeviceStatus.ONLINE, label: 'Online' },
+    { value: DeviceStatus.OFFLINE, label: 'Offline' },
+    { value: DeviceStatus.MAINTENANCE, label: 'Maintenance' },
+    { value: DeviceStatus.ALERT, label: 'Alert' },
   ];
 
   const filteredDevices = devices

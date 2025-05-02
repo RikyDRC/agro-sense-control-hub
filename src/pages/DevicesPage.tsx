@@ -183,10 +183,10 @@ const DevicesPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type.toString(), // Convert enum to string
-        status: newDevice.status.toString(), // Convert enum to string
+        type: newDevice.type, // Supabase will automatically convert the enum to string
+        status: newDevice.status, // Supabase will automatically convert the enum to string
         battery_level: newDevice.batteryLevel,
-        location: newDevice.location as any, // Cast to any to avoid type errors with JSON
+        location: newDevice.location as any, // Type assertion to avoid Json type issues
         zone_id: newDevice.zoneId,
         last_updated: timestamp,
         user_id: user.id
@@ -218,8 +218,8 @@ const DevicesPage: React.FC = () => {
       // Format for database - ensuring types are compatible with the database schema
       const deviceData = {
         name: formValues.name,
-        type: formValues.type.toString(), // Convert enum to string
-        status: formValues.status.toString(), // Convert enum to string
+        type: formValues.type, // Supabase will handle the enum conversion
+        status: formValues.status, // Supabase will handle the enum conversion
         battery_level: formValues.batteryLevel,
         zone_id: formValues.zoneId,
         updated_at: timestamp,

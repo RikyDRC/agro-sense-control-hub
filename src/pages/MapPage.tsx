@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -122,12 +121,12 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type,
-        status: newDevice.status,
+        type: newDevice.type, // Supabase will handle enum conversion
+        status: newDevice.status, // Supabase will handle enum conversion
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: newDevice.location,
+        location: newDevice.location as any, // Type assertion to avoid Json type issues
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
@@ -159,9 +158,9 @@ const MapPage: React.FC = () => {
         id: newZone.id,
         name: newZone.name,
         description: newZone.description || '',
-        boundary_coordinates: newZone.boundaryCoordinates,
+        boundary_coordinates: newZone.boundaryCoordinates as any, // Type assertion for Json compatibility
         area_size: newZone.areaSize,
-        irrigation_status: newZone.irrigationStatus,
+        irrigation_status: newZone.irrigationStatus, // Supabase will handle enum conversion
         soil_moisture_threshold: newZone.soilMoistureThreshold,
         user_id: user.id
       };

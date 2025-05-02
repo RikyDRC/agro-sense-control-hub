@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Battery, ArrowUpDown } from 'lucide-react';
+import { Pencil, Trash2, Battery, ArrowUpDown, Droplet, Thermometer, Eye, FlaskConical } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -1,9 +1,8 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
-import { UserRole } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/sonner';
 
 interface ProtectedRouteProps {

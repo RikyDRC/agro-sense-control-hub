@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the UserRole type that is used in ProtectedRoute
+export type UserRole = 'farmer' | 'admin' | 'super_admin';
+
 interface AuthContextProps {
   user: User | null;
   session: Session | null;

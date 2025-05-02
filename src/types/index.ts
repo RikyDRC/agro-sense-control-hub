@@ -35,7 +35,7 @@ export interface Zone {
   description?: string;
   boundaryCoordinates: Array<{ lat: number; lng: number }>;
   areaSize: number;
-  devices: Device[] | string[];
+  devices: (Device | string)[]; // Allow both Device objects and string IDs
   irrigationStatus: IrrigationStatus;
   soilMoistureThreshold?: number;
   createdAt: string;

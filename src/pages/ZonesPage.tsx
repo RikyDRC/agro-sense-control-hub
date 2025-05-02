@@ -175,7 +175,7 @@ const ZonesPage: React.FC = () => {
         if (device.zoneId) {
           const zone = formattedZones.find(z => z.id === device.zoneId);
           if (zone) {
-            zone.devices.push(device);
+            zone.devices.push(device.id); // Push the device ID instead of the device object
           }
         }
       });

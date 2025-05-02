@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import MapView from '@/components/map/MapView';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon, RotateCw } from 'lucide-react';
-import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
+import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -92,7 +93,7 @@ const MapPage: React.FC = () => {
         if (device.zoneId) {
           const zone = formattedZones.find(z => z.id === device.zoneId);
           if (zone) {
-            zone.devices.push(device);
+            zone.devices.push(device.id); // Push the device ID instead of the device object
           }
         }
       });
@@ -120,7 +121,7 @@ const MapPage: React.FC = () => {
     }
 
     try {
-      // Convert GeoLocation to JSON compatible format
+      // Convert to database format
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
@@ -134,9 +135,16 @@ const MapPage: React.FC = () => {
         user_id: user.id
       };
       
+      // Explicit casting for status and type to match database enum literals
+      const dbDeviceData = {
+        ...deviceData,
+        status: deviceData.status as "online" | "offline" | "maintenance" | "alert",
+        type: deviceData.type as "moisture_sensor" | "weather_station" | "valve" | "camera" | "temperature_sensor" | "pump" | "ph_sensor" | "light_sensor"
+      };
+      
       const { error } = await supabase
         .from('devices')
-        .insert(deviceData);
+        .insert(dbDeviceData);
       
       if (error) throw error;
       

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,8 +19,8 @@ import {
 
 // Mock data
 const currentDate = new Date();
-const currentWeather = {
-  id: 'current-forecast', // Add missing id property
+const initialCurrentWeather: WeatherForecast = {
+  id: 'current-forecast',
   date: new Date().toISOString(),
   temperature: {
     min: 18,
@@ -154,7 +155,7 @@ const getSeverityColor = (severity: string) => {
 };
 
 const WeatherPage: React.FC = () => {
-  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(currentWeather);
+  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(initialCurrentWeather);
   const [forecast, setForecast] = useState<WeatherForecast[]>(mockForecast);
   const [historicalTab, setHistoricalTab] = useState<'week' | 'month' | 'year'>('week');
   const [historicalData, setHistoricalData] = useState(mockHistoricalData);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger 
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/sonner';
-import { Device, DeviceStatus, DeviceType, Zone } from '@/types';
+import { Device, DeviceStatus, DeviceType, Zone, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialDevices: Device[] = [
@@ -58,7 +59,7 @@ const initialZones: Zone[] = [
     boundaryCoordinates: [],
     areaSize: 1200,
     devices: ['1', '2'],
-    irrigationStatus: 'active',
+    irrigationStatus: IrrigationStatus.ACTIVE,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -69,7 +70,7 @@ const initialZones: Zone[] = [
     boundaryCoordinates: [],
     areaSize: 900,
     devices: ['3'],
-    irrigationStatus: 'scheduled',
+    irrigationStatus: IrrigationStatus.SCHEDULED,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }

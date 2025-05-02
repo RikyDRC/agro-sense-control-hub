@@ -174,8 +174,8 @@ const ZonesPage: React.FC = () => {
       formattedDevices.forEach(device => {
         if (device.zoneId) {
           const zone = formattedZones.find(z => z.id === device.zoneId);
-          if (zone && !zone.devices.includes(device.id)) {
-            zone.devices.push(device.id);
+          if (zone) {
+            zone.devices.push(device);
           }
         }
       });

@@ -91,8 +91,8 @@ const MapPage: React.FC = () => {
       formattedDevices.forEach(device => {
         if (device.zoneId) {
           const zone = formattedZones.find(z => z.id === device.zoneId);
-          if (zone && !zone.devices.includes(device.id)) {
-            zone.devices.push(device.id);
+          if (zone) {
+            zone.devices.push(device);
           }
         }
       });
@@ -124,12 +124,12 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type,
-        status: newDevice.status,
+        type: newDevice.type.toString(),
+        status: newDevice.status.toString(),
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: JSON.parse(JSON.stringify(newDevice.location)), // Convert to JSON compatible format
+        location: JSON.parse(JSON.stringify(newDevice.location)),
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
@@ -211,14 +211,7 @@ const MapPage: React.FC = () => {
   const getDevicesForZone = (zoneId: string) => {
     if (!devices) return [];
     
-    return devices.filter(device => {
-      if (typeof device === 'string') {
-        // Find the actual device object by ID if it's a string reference
-        const actualDevice = devices.find(d => typeof d !== 'string' && d.id === device);
-        return actualDevice?.zoneId === zoneId;
-      }
-      return device.zoneId === zoneId;
-    });
+    return devices.filter(device => device.zoneId === zoneId);
   };
 
   // Improved handling of device saving to match database requirements

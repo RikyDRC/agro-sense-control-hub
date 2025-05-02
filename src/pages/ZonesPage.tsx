@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -24,14 +23,40 @@ import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ZoneFormValues {
   id?: string;
   name: string;
   description: string;
   soilMoistureThreshold?: number;
+  soilType?: string;
+  cropType?: string;
+  irrigationMethod?: string;
+  notes?: string;
   boundaryCoordinates?: GeoLocation[];
 }
+
+const soilTypes = [
+  { value: 'clay', label: 'Clay' },
+  { value: 'silt', label: 'Silt' },
+  { value: 'sand', label: 'Sandy' },
+  { value: 'loam', label: 'Loam' },
+  { value: 'peat', label: 'Peat' },
+  { value: 'chalk', label: 'Chalky' },
+];
+
+const irrigationMethods = [
+  { value: 'drip', label: 'Drip Irrigation' },
+  { value: 'sprinkler', label: 'Sprinkler System' },
+  { value: 'flood', label: 'Flood Irrigation' },
+  { value: 'manual', label: 'Manual Watering' },
+  { value: 'subsurface', label: 'Subsurface Irrigation' },
+];
 
 const getIrrigationStatusBadge = (status: IrrigationStatus) => {
   switch (status) {
@@ -91,15 +116,24 @@ const ZonesPage: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [formValues, setFormValues] = useState<ZoneFormValues>({
-    name: '',
-    description: '',
-    soilMoistureThreshold: 30
-  });
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [zoneToDelete, setZoneToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Initialize react-hook-form
+  const form = useForm<ZoneFormValues>({
+    resolver: zodResolver(zoneFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      soilMoistureThreshold: 30,
+      soilType: '',
+      cropType: '',
+      irrigationMethod: '',
+      notes: ''
+    }
+  });
 
   // Fetch zones and devices from the database
   useEffect(() => {
@@ -182,43 +216,73 @@ const ZonesPage: React.FC = () => {
     fetchData();
   };
 
-  const handleCreateZone = () => {
-    navigate('/map', { 
-      state: { 
-        action: 'createZone', 
-        zoneName: formValues.name,
-        zoneDescription: formValues.description,
-        soilMoistureThreshold: formValues.soilMoistureThreshold
-      } 
-    });
-    setIsDialogOpen(false);
+  const handleCreateZone = async (values: ZoneFormValues) => {
+    try {
+      const { name, description, soilMoistureThreshold, soilType, cropType, irrigationMethod, notes } = values;
+      
+      // Save basic zone info to state for map page
+      navigate('/map', { 
+        state: { 
+          action: 'createZone', 
+          zoneName: name,
+          zoneDescription: description,
+          soilMoistureThreshold,
+          soilType,
+          cropType,
+          irrigationMethod,
+          notes
+        } 
+      });
+      
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      console.error('Error creating zone:', error);
+      toast.error('Failed to create zone: ' + error.message);
+    }
   };
 
-  const handleUpdateZone = () => {
-    if (!formValues.id) return;
+  const handleUpdateZone = async (values: ZoneFormValues) => {
+    if (!form.getValues().id) return;
 
-    navigate('/map', { 
-      state: { 
-        action: 'editZone', 
-        zoneId: formValues.id,
-        zoneName: formValues.name,
-        zoneDescription: formValues.description,
-        soilMoistureThreshold: formValues.soilMoistureThreshold
-      } 
-    });
-
-    setIsDialogOpen(false);
-    setIsEditing(false);
+    try {
+      const zoneId = form.getValues().id;
+      const { name, description, soilMoistureThreshold, soilType, cropType, irrigationMethod, notes } = values;
+      
+      // Update basic zone info
+      navigate('/map', { 
+        state: { 
+          action: 'editZone', 
+          zoneId,
+          zoneName: name,
+          zoneDescription: description,
+          soilMoistureThreshold,
+          soilType,
+          cropType,
+          irrigationMethod,
+          notes
+        } 
+      });
+      
+      setIsDialogOpen(false);
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error('Error updating zone:', error);
+      toast.error('Failed to update zone: ' + error.message);
+    }
   };
 
   const handleEditZone = (zone: Zone) => {
-    setFormValues({
+    form.reset({
       id: zone.id,
       name: zone.name,
       description: zone.description || '',
       soilMoistureThreshold: zone.soilMoistureThreshold,
-      boundaryCoordinates: zone.boundaryCoordinates
+      soilType: zone.soilType || undefined,
+      cropType: zone.cropType || undefined,
+      irrigationMethod: zone.irrigationMethod || undefined,
+      notes: zone.notes || undefined
     });
+    
     setIsEditing(true);
     setIsDialogOpen(true);
   };
@@ -267,10 +331,14 @@ const ZonesPage: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormValues({
+    form.reset({
       name: '',
       description: '',
-      soilMoistureThreshold: 30
+      soilMoistureThreshold: 30,
+      soilType: '',
+      cropType: '',
+      irrigationMethod: '',
+      notes: ''
     });
   };
 
@@ -439,7 +507,7 @@ const ZonesPage: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span>{zone.areaSize.toLocaleString()} m²</span>
+                        <span>{zone.areaSize ? zone.areaSize.toLocaleString() : '0'} m²</span>
                       </TableCell>
                       <TableCell>
                         <Button 
@@ -491,82 +559,192 @@ const ZonesPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Zone Form Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+      {/* Enhanced Zone Form Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        if (!open) form.reset();
+        setIsDialogOpen(open);
+      }}>
+        <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle>{isEditing ? 'Edit Zone' : 'Add New Zone'}</DialogTitle>
+            <DialogTitle className="text-xl">{isEditing ? 'Edit Zone' : 'Add New Zone'}</DialogTitle>
             <DialogDescription>
               {isEditing 
-                ? 'Update the zone information' 
-                : 'Fill out the form to add a new zone to your farm'
+                ? 'Update the zone information and settings' 
+                : 'Create a new agricultural zone with detailed information'
               }
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={formValues.name}
-                onChange={(e) => setFormValues({...formValues, name: e.target.value})}
-                className="col-span-3"
-                placeholder="Field Zone A"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={formValues.description}
-                onChange={(e) => setFormValues({...formValues, description: e.target.value})}
-                className="col-span-3"
-                placeholder="Describe the zone and its purpose"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="soilMoistureThreshold" className="text-right">
-                Soil Moisture Threshold
-              </Label>
-              <div className="col-span-3 flex items-center">
-                <Input
-                  id="soilMoistureThreshold"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formValues.soilMoistureThreshold}
-                  onChange={(e) => setFormValues({
-                    ...formValues, 
-                    soilMoistureThreshold: parseInt(e.target.value) || 0
-                  })}
-                  className="w-20 mr-2"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(isEditing ? handleUpdateZone : handleCreateZone)} className="space-y-6 py-4">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zone Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Field Zone A" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        A descriptive name for your agricultural zone
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <span>%</span>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the zone's purpose and characteristics" 
+                          className="min-h-[80px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="soilMoistureThreshold"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Soil Moisture Threshold (%)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            max="100" 
+                            {...field} 
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Target moisture level for irrigation
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="soilType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Soil Type</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select soil type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {soilTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="cropType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Primary Crop Type</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Wheat, Corn, Soybeans" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="irrigationMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Irrigation Method</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select method" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {irrigationMethods.map((method) => (
+                              <SelectItem key={method.value} value={method.value}>
+                                {method.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Notes</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Enter any additional information about this zone" 
+                          className="min-h-[80px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    After saving, you'll be redirected to the map where you can draw the zone boundaries.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="col-span-4 pt-2">
-              <p className="text-sm text-muted-foreground">
-                After clicking {isEditing ? 'Update Zone' : 'Add Zone'}, you'll be redirected to the map where you can draw the zone boundaries.
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={isEditing ? handleUpdateZone : handleCreateZone}>
-              {isEditing ? 'Update Zone' : 'Add Zone'}
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="submit">
+                  {isEditing ? 'Update Zone' : 'Create Zone'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

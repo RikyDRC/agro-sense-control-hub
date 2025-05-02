@@ -1,24 +1,32 @@
 
-// Device Types
-export interface Device {
+// This file contains type definitions for the entire application
+
+export interface Profile {
   id: string;
-  name: string;
-  type: DeviceType;
-  status: DeviceStatus;
-  batteryLevel: number;
-  lastReading?: number;
-  lastUpdated: string;
-  location: GeoLocation;
-  zoneId?: string;
+  email: string;
+  display_name?: string;
+  phone_number?: string;
+  profile_image?: string;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
+export enum UserRole {
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  FARMER = 'farmer',
+  VIEWER = 'viewer'
 }
 
 export enum DeviceType {
   MOISTURE_SENSOR = 'moisture_sensor',
   TEMPERATURE_SENSOR = 'temperature_sensor',
+  PH_SENSOR = 'ph_sensor',
   VALVE = 'valve',
   PUMP = 'pump',
   WEATHER_STATION = 'weather_station',
-  PH_SENSOR = 'ph_sensor',
+  CAMERA = 'camera',
   LIGHT_SENSOR = 'light_sensor'
 }
 
@@ -29,34 +37,55 @@ export enum DeviceStatus {
   ALERT = 'alert'
 }
 
-// Zone Types
+export enum IrrigationStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SCHEDULED = 'scheduled',
+  PAUSED = 'paused'
+}
+
+export interface GeoLocation {
+  lat: number;
+  lng: number;
+}
+
 export interface Zone {
   id: string;
   name: string;
   description?: string;
   boundaryCoordinates: GeoLocation[];
-  areaSize: number; // in square meters
-  cropId?: string;
-  devices: string[]; // Array of device IDs
+  areaSize: number;
+  devices: string[];
   irrigationStatus: IrrigationStatus;
   soilMoistureThreshold?: number;
+  soilType?: string;
+  cropType?: string;
+  irrigationMethod?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export enum IrrigationStatus {
-  INACTIVE = 'inactive',
-  ACTIVE = 'active',
-  SCHEDULED = 'scheduled',
-  PAUSED = 'paused'
+export interface Device {
+  id: string;
+  name: string;
+  type: DeviceType;
+  status: DeviceStatus;
+  batteryLevel?: number;
+  lastReading?: number;
+  lastUpdated: string;
+  location: GeoLocation;
+  zoneId?: string;
 }
 
-export interface IrrigationStatusInfo {
-  isActive: boolean;
-  nextScheduled: string | null;
+export interface SensorReading {
+  id: string;
+  deviceId: string;
+  timestamp: string;
+  value: number;
+  unit: string;
 }
 
-// Crop Types
 export interface Crop {
   id: string;
   name: string;
@@ -64,15 +93,9 @@ export interface Crop {
   plantingDate: string;
   harvestDate?: string;
   growthStage: GrowthStage;
-  idealMoisture: {
-    min: number;
-    max: number;
-  };
-  idealTemperature: {
-    min: number;
-    max: number;
-  };
   zoneId: string;
+  idealMoisture: { min: number; max: number };
+  idealTemperature: { min: number; max: number };
 }
 
 export enum GrowthStage {
@@ -81,121 +104,71 @@ export enum GrowthStage {
   VEGETATIVE = 'vegetative',
   FLOWERING = 'flowering',
   FRUITING = 'fruiting',
-  HARVEST = 'harvest'
+  MATURITY = 'maturity',
+  HARVESTED = 'harvested'
 }
 
-// Automation Types
 export interface AutomationRule {
   id: string;
   name: string;
   description?: string;
-  condition: Condition;
-  action: Action;
-  zoneId: string;
   isActive: boolean;
+  condition: RuleCondition;
+  action: RuleAction;
+  zoneId: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Condition {
-  type: ConditionType;
-  sensorId?: string;
-  threshold?: number;
-  operator?: ComparisonOperator;
-  timeOfDay?: string;
-  daysOfWeek?: number[];
+export interface RuleCondition {
+  type: string;
+  parameter: string;
+  operator: string;
+  value: string | number;
 }
 
-export enum ConditionType {
-  SENSOR_READING = 'sensor_reading',
-  TIME_BASED = 'time_based',
-  WEATHER_FORECAST = 'weather_forecast'
+export interface RuleAction {
+  type: string;
+  target: string;
+  value?: string | number;
+  duration?: number;
 }
 
-export enum ComparisonOperator {
-  LESS_THAN = 'less_than',
-  GREATER_THAN = 'greater_than',
-  EQUAL_TO = 'equal_to',
-  NOT_EQUAL_TO = 'not_equal_to'
-}
-
-export interface Action {
-  type: ActionType;
-  deviceId?: string;
-  duration?: number; // in minutes
-  value?: any;
-}
-
-export enum ActionType {
-  TOGGLE_DEVICE = 'toggle_device',
-  SET_VALUE = 'set_value',
-  SEND_NOTIFICATION = 'send_notification'
-}
-
-// Weather Types
 export interface WeatherForecast {
+  id: string;
   date: string;
+  condition: WeatherCondition;
   temperature: {
     min: number;
     max: number;
-    current?: number;
+    unit: string;
   };
-  humidity: number;
   precipitation: {
     probability: number;
-    amount?: number;
+    amount: number;
+    unit: string;
   };
+  humidity: number;
   windSpeed: number;
-  condition: WeatherCondition;
 }
 
 export enum WeatherCondition {
-  SUNNY = 'sunny',
+  CLEAR = 'clear',
+  PARTLY_CLOUDY = 'partly_cloudy',
   CLOUDY = 'cloudy',
-  RAINY = 'rainy',
-  STORMY = 'stormy',
-  SNOWY = 'snowy',
-  FOGGY = 'foggy',
-  PARTLY_CLOUDY = 'partly_cloudy'
-}
-
-// User Types
-export interface User {
-  id: string;
-  email: string;
-  displayName: string;
-  role: UserRole;
-  createdAt: string;
-  farmId?: string;
-}
-
-export enum UserRole {
-  ADMIN = 'admin',
-  FARM_MANAGER = 'farm_manager',
-  TECHNICIAN = 'technician',
-  VIEWER = 'viewer'
-}
-
-// Utility Types
-export interface GeoLocation {
-  lat: number;
-  lng: number;
-}
-
-export interface SensorReading {
-  deviceId: string;
-  timestamp: string;
-  value: number;
-  unit: string;
+  RAIN = 'rain',
+  STORM = 'storm',
+  SNOW = 'snow',
+  FOG = 'fog'
 }
 
 export interface Alert {
   id: string;
   title: string;
   message: string;
-  severity: AlertSeverity;
   timestamp: string;
   isRead: boolean;
+  severity: AlertSeverity;
   deviceId?: string;
   zoneId?: string;
 }
@@ -205,4 +178,24 @@ export enum AlertSeverity {
   WARNING = 'warning',
   ERROR = 'error',
   CRITICAL = 'critical'
+}
+
+export interface Subscription {
+  id: string;
+  planId: string;
+  userId: string;
+  status: string;
+  startDate: string;
+  endDate?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  billingInterval: string;
+  features: string[] | Record<string, boolean>;
 }

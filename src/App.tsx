@@ -17,6 +17,7 @@ import SettingsPage from "./pages/SettingsPage";
 import SubscriptionPlansPage from "./pages/SubscriptionPlansPage";
 import SubscriptionSuccessPage from "./pages/SubscriptionSuccessPage";
 import AdminConfigPage from "./pages/AdminConfigPage";
+import DeviceConnectivity from "./pages/DeviceConnectivity";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/weather" element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
             <Route path="/automation" element={<ProtectedRoute><AutomationPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/connectivity" element={<ProtectedRoute><DeviceConnectivity /></ProtectedRoute>} />
             <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
             <Route path="/subscription/success" element={<ProtectedRoute><SubscriptionSuccessPage /></ProtectedRoute>} />
             <Route 

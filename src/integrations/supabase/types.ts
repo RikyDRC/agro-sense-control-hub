@@ -490,11 +490,15 @@ export type Database = {
           area_size: number
           boundary_coordinates: Json
           created_at: string
+          crop_type: string | null
           description: string | null
           id: string
+          irrigation_method: string | null
           irrigation_status: Database["public"]["Enums"]["irrigation_status"]
           name: string
+          notes: string | null
           soil_moisture_threshold: number | null
+          soil_type: string | null
           updated_at: string
           user_id: string
         }
@@ -502,11 +506,15 @@ export type Database = {
           area_size: number
           boundary_coordinates?: Json
           created_at?: string
+          crop_type?: string | null
           description?: string | null
           id?: string
+          irrigation_method?: string | null
           irrigation_status?: Database["public"]["Enums"]["irrigation_status"]
           name: string
+          notes?: string | null
           soil_moisture_threshold?: number | null
+          soil_type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -514,11 +522,15 @@ export type Database = {
           area_size?: number
           boundary_coordinates?: Json
           created_at?: string
+          crop_type?: string | null
           description?: string | null
           id?: string
+          irrigation_method?: string | null
           irrigation_status?: Database["public"]["Enums"]["irrigation_status"]
           name?: string
+          notes?: string | null
           soil_moisture_threshold?: number | null
+          soil_type?: string | null
           updated_at?: string
           user_id?: string
         }

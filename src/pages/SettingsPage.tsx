@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -31,13 +32,14 @@ const SettingsPage: React.FC = () => {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [fallbackUserRole, setFallbackUserRole] = useState<'super_admin' | 'admin' | 'farmer' | null>(null);
   
+  // Improved profile loading logic
   useEffect(() => {
     const initializeFallbackRole = async () => {
       if (user && !profile) {
         try {
           const { data, error } = await supabase
             .from('user_profiles')
-            .select('role')
+            .select('role, display_name, email')
             .eq('id', user.id)
             .single();
             
@@ -49,6 +51,7 @@ const SettingsPage: React.FC = () => {
           }
         } catch (err) {
           console.error("Error fetching fallback role:", err);
+          // Default to farmer role if we can't determine the actual role
           setFallbackUserRole('farmer');
         }
       }
@@ -59,6 +62,7 @@ const SettingsPage: React.FC = () => {
     }
   }, [user, profile, fallbackUserRole]);
   
+  // More aggressive profile refresh
   useEffect(() => {
     if (user && !profile) {
       console.log("Attempting to refresh profile from settings page");
@@ -66,8 +70,20 @@ const SettingsPage: React.FC = () => {
         console.error("Error refreshing profile:", err);
       });
     }
+    
+    // Add a secondary refresh after a short delay
+    if (user && !profile) {
+      const delayedRefresh = setTimeout(() => {
+        refreshProfile().catch(err => {
+          console.error("Error in delayed profile refresh:", err);
+        });
+      }, 1000);
+      
+      return () => clearTimeout(delayedRefresh);
+    }
   }, [user, profile, refreshProfile]);
   
+  // Faster loading transition
   useEffect(() => {
     console.log("Settings page status - loading:", loading, "profile:", !!profile, "fallbackRole:", fallbackUserRole);
     
@@ -78,7 +94,7 @@ const SettingsPage: React.FC = () => {
     const safetyTimer = setTimeout(() => {
       console.log("Safety timeout triggered in settings page");
       setIsPageLoading(false);
-    }, 2000);
+    }, 1000); // Reduced timeout from 2000 to 1000 ms
     
     return () => clearTimeout(safetyTimer);
   }, [loading, profile, fallbackUserRole]);
@@ -155,7 +171,7 @@ const SettingsPage: React.FC = () => {
             <h3 className="font-medium">{user.email || "User"}</h3>
             <Badge className={fallbackUserRole === 'super_admin' ? 'bg-red-500' : 
                              fallbackUserRole === 'admin' ? 'bg-blue-500' : 'bg-green-500'}>
-              {fallbackUserRole || 'User'}
+              {fallbackUserRole ? (fallbackUserRole === 'super_admin' ? 'super admin' : fallbackUserRole) : 'User'}
             </Badge>
           </div>
         </div>

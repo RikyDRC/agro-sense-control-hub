@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserProfile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { Save, UserIcon, Camera, Loader2 } from 'lucide-react';
+import { Save, UserIcon, Camera, Loader2, AlertCircle } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ProfileFormProps {
   profile: UserProfile;
@@ -21,6 +23,7 @@ interface ProfileFormProps {
 const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) => {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [formData, setFormData] = useState({
     displayName: '',
     farmName: 'Green Valley Farm',
@@ -53,8 +56,64 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     });
   };
   
+  // Modified update profile function to be more robust
   const handleUpdateProfile = async () => {
-    if (!profile) return;
+    if (!profile) {
+      // Try to get the user ID from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Could not identify the current user');
+        return;
+      }
+      
+      // Try to create a new profile if one doesn't exist
+      setLoading(true);
+      
+      try {
+        // First check if a profile already exists to prevent duplicates
+        const { data: existingProfile } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (existingProfile) {
+          // Update existing profile
+          const { error } = await supabase
+            .from('user_profiles')
+            .update({
+              display_name: formData.displayName,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+          if (error) throw error;
+        } else {
+          // Create new profile
+          const { error } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              display_name: formData.displayName,
+              role: 'farmer', // Default role
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (error) throw error;
+        }
+        
+        await refreshProfile();
+        toast.success('Profile updated successfully');
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to update profile');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
     
     setLoading(true);
     
@@ -79,8 +138,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     }
   };
 
+  // Improved image upload function
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!profile) return;
+    if (!profile) {
+      // Try to get user ID directly from auth if profile is not available
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You need to be logged in to upload a profile image');
+        return;
+      }
+    }
     
     const file = e.target.files?.[0];
     if (!file) return;
@@ -101,6 +168,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
         if (!event.target?.result) return;
         
         const base64Image = event.target.result as string;
+        const userId = profile?.id || (await supabase.auth.getUser()).data.user?.id;
+        
+        if (!userId) {
+          throw new Error('User ID not found');
+        }
         
         // Save profile image URL to user profile
         const { error } = await supabase
@@ -109,7 +181,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
             profile_image: base64Image,
             updated_at: new Date().toISOString()
           })
-          .eq('id', profile.id);
+          .eq('id', userId);
           
         if (error) throw error;
         
@@ -131,22 +203,66 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
     }
   };
 
+  // Add retry mechanism for profile loading
+  const handleRetryProfileLoad = () => {
+    setRetryCount(prev => prev + 1);
+    refreshProfile().then(() => {
+      toast.success('Profile refreshed successfully');
+    }).catch(err => {
+      console.error('Error refreshing profile:', err);
+      toast.error('Failed to refresh profile');
+    });
+  };
+
   if (!profile) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>User Profile</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <UserIcon className="h-5 w-5" /> User Profile
+          </CardTitle>
           <CardDescription>
-            Loading profile information...
+            Profile information is currently unavailable
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="space-y-2">
+              <p>
+                We're having trouble loading your complete profile information. 
+                You can still update your display name below.
+              </p>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input 
+                    id="displayName" 
+                    value={formData.displayName} 
+                    onChange={handleInputChange('displayName')}
+                    placeholder="Enter your name"
+                  />
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
         </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" onClick={handleRetryProfileLoad}>
+            Retry Loading Profile
+          </Button>
+          <Button onClick={handleUpdateProfile} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Save Changes
+              </>
+            )}
+          </Button>
+        </CardFooter>
       </Card>
     );
   }

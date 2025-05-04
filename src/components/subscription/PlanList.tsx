@@ -36,6 +36,21 @@ const PlanList: React.FC<PlanListProps> = ({
   onDeletePlan,
 }) => {
   const { profile, subscription, isRoleSuperAdmin } = useAuth();
+  
+  // Get user role with fallback for when profile is not available
+  const getUserRole = () => {
+    if (profile) {
+      return profile.role;
+    }
+    // Default to farmer if we can't determine the role
+    return 'farmer';
+  };
+
+  // We now have a more robust function to determine admin status
+  const isAdmin = () => {
+    const role = getUserRole();
+    return role === 'admin' || role === 'super_admin';
+  };
 
   if (plans.length === 0) {
     return (
@@ -79,12 +94,12 @@ const PlanList: React.FC<PlanListProps> = ({
         </Alert>
       )}
 
-      {profile?.role !== 'farmer' && (
+      {isAdmin() && (
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Admin Notice</AlertTitle>
           <AlertDescription>
-            As an {profile?.role.replace('_', ' ')}, you don't need a subscription plan to access all features.
+            As an {getUserRole().replace('_', ' ')}, you don't need a subscription plan to access all features.
             {isRoleSuperAdmin() && " You can manage all plans and assign them to users."}
           </AlertDescription>
         </Alert>
@@ -98,7 +113,7 @@ const PlanList: React.FC<PlanListProps> = ({
             billingInterval={plan.billing_interval}
             isActive={subscription?.plan?.id === plan.id}
             isSubscribing={subscribing}
-            canManagePlans={profile?.role === 'farmer'}
+            canManagePlans={getUserRole() === 'farmer'} // Only farmers need subscriptions
             deletingPlanId={deletingPlan}
             onSubscribe={onSubscribe}
             onEdit={onEditPlan}

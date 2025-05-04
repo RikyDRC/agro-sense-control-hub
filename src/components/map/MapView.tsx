@@ -78,6 +78,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [isNamingZone, setIsNamingZone] = useState(false);
 
   // Fetch the Google Maps API key from platform_config
+  // Modified to remove the role check so all users can access maps
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -410,7 +411,7 @@ const MapView: React.FC<MapViewProps> = ({
       <Alert variant="default" className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Google Maps API key is not configured. Please go to Settings and add your Google Maps API key.
+          Google Maps API key is not configured. Please contact your administrator to set up the Google Maps API key.
         </AlertDescription>
       </Alert>
     );

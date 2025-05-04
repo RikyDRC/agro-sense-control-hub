@@ -181,6 +181,60 @@ export type Database = {
           },
         ]
       }
+      device_api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      device_links: {
+        Row: {
+          created_at: string
+          device_name: string
+          expires_at: string
+          id: string
+          is_claimed: boolean
+          link_code: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name: string
+          expires_at: string
+          id?: string
+          is_claimed?: boolean
+          link_code: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string
+          expires_at?: string
+          id?: string
+          is_claimed?: boolean
+          link_code?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           battery_level: number | null
@@ -240,6 +294,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mqtt_config: {
+        Row: {
+          created_at: string
+          id: string
+          mqtt_enabled: boolean
+          mqtt_password: string
+          mqtt_username: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mqtt_enabled?: boolean
+          mqtt_password: string
+          mqtt_username: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mqtt_enabled?: boolean
+          mqtt_password?: string
+          mqtt_username?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       platform_config: {
         Row: {

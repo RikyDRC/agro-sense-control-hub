@@ -4,10 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { QrCodeIcon, RefreshCw, ClipboardCopy } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { QrCode, RefreshCw, ClipboardCopy } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
 
 interface DeviceLink {
   id: string;
@@ -38,19 +37,24 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
   const loadDeviceLinks = async () => {
     try {
       setLoading(true);
+      // Type cast since Supabase types don't know about our new table yet
       const { data, error } = await supabase
         .from('device_links')
         .select('*')
         .eq('user_id', userId)
         .eq('is_claimed', false)
         .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
       
       if (error) throw error;
       setDeviceLinks(data || []);
     } catch (error: any) {
       console.error('Error loading device links:', error);
-      toast.error('Failed to load device links');
+      toast({
+        title: "Error",
+        description: 'Failed to load device links',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -58,7 +62,11 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
 
   const generateDeviceLink = async () => {
     if (!deviceName.trim()) {
-      toast.error('Please enter a name for the device');
+      toast({
+        title: "Error",
+        description: 'Please enter a name for the device',
+        variant: "destructive"
+      });
       return;
     }
     
@@ -72,6 +80,7 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24);
       
+      // Type cast
       const { error } = await supabase
         .from('device_links')
         .insert({
@@ -80,16 +89,23 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
           device_name: deviceName,
           is_claimed: false,
           expires_at: expiresAt.toISOString()
-        });
+        }) as any;
       
       if (error) throw error;
       
-      toast.success('Device link created successfully');
+      toast({
+        title: "Success",
+        description: 'Device link created successfully'
+      });
       setDeviceName('');
       loadDeviceLinks();
     } catch (error: any) {
       console.error('Error generating device link:', error);
-      toast.error('Failed to generate device link');
+      toast({
+        title: "Error",
+        description: 'Failed to generate device link',
+        variant: "destructive"
+      });
     } finally {
       setGenerating(false);
     }
@@ -97,33 +113,55 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
 
   const deleteDeviceLink = async (id: string) => {
     try {
+      // Type cast
       const { error } = await supabase
         .from('device_links')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
       
       if (error) throw error;
       
-      toast.success('Device link deleted successfully');
+      toast({
+        title: "Success",
+        description: 'Device link deleted successfully'
+      });
       loadDeviceLinks();
     } catch (error: any) {
       console.error('Error deleting device link:', error);
-      toast.error('Failed to delete device link');
+      toast({
+        title: "Error",
+        description: 'Failed to delete device link',
+        variant: "destructive"
+      });
     }
   };
 
   const copyLinkToClipboard = (linkCode: string) => {
     const linkUrl = `https://farm-iot-dashboard.com/link?code=${linkCode}`;
     navigator.clipboard.writeText(linkUrl)
-      .then(() => toast.success('Device link copied to clipboard'))
-      .catch(() => toast.error('Failed to copy device link'));
+      .then(() => toast({
+        title: "Success",
+        description: 'Device link copied to clipboard'
+      }))
+      .catch(() => toast({
+        title: "Error",
+        description: 'Failed to copy device link',
+        variant: "destructive"
+      }));
   };
 
   const copySetupCommand = (linkCode: string) => {
     const command = `farmctl device link ${linkCode}`;
     navigator.clipboard.writeText(command)
-      .then(() => toast.success('Setup command copied to clipboard'))
-      .catch(() => toast.error('Failed to copy setup command'));
+      .then(() => toast({
+        title: "Success",
+        description: 'Setup command copied to clipboard'
+      }))
+      .catch(() => toast({
+        title: "Error",
+        description: 'Failed to copy setup command',
+        variant: "destructive"
+      }));
   };
 
   // Generate a QR code for a device link
@@ -151,7 +189,7 @@ const QRCodeLinking: React.FC<QRCodeLinkingProps> = ({ userId }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <QrCodeIcon className="h-5 w-5" />
+            <QrCode className="h-5 w-5" />
             QR Code Device Linking
           </CardTitle>
           <CardDescription>

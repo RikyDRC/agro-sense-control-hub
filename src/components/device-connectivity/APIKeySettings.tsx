@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Key, Copy, Eye, EyeOff, RefreshCw, Trash2 } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -36,16 +36,21 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
   const loadApiKeys = async () => {
     try {
       setLoading(true);
+      // We need to use a type cast here since our Supabase types haven't been updated yet
       const { data, error } = await supabase
         .from('device_api_keys')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
       
       if (error) throw error;
       setApiKeys(data || []);
     } catch (error: any) {
       console.error('Error loading API keys:', error);
-      toast.error('Failed to load API keys');
+      toast({
+        title: "Error",
+        description: 'Failed to load API keys',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -59,7 +64,11 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
 
   const createApiKey = async () => {
     if (!newKeyName.trim()) {
-      toast.error('Please enter a name for the API key');
+      toast({
+        title: "Error",
+        description: 'Please enter a name for the API key',
+        variant: "destructive"
+      });
       return;
     }
     
@@ -67,17 +76,21 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       setLoading(true);
       const newKey = generateApiKey();
       
+      // Type cast here too
       const { error } = await supabase
         .from('device_api_keys')
         .insert({
           name: newKeyName,
           key: newKey,
           user_id: userId
-        });
+        }) as any;
       
       if (error) throw error;
       
-      toast.success('API key created successfully');
+      toast({
+        title: "Success",
+        description: 'API key created successfully'
+      });
       setNewKeyName('');
       loadApiKeys();
       
@@ -90,7 +103,11 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       }, 300);
     } catch (error: any) {
       console.error('Error creating API key:', error);
-      toast.error('Failed to create API key');
+      toast({
+        title: "Error",
+        description: 'Failed to create API key',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -101,14 +118,18 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       setRegenerating(prev => ({ ...prev, [id]: true }));
       
       const newKey = generateApiKey();
+      // Type cast
       const { error } = await supabase
         .from('device_api_keys')
         .update({ key: newKey })
-        .eq('id', id);
+        .eq('id', id) as any;
       
       if (error) throw error;
       
-      toast.success('API key regenerated successfully');
+      toast({
+        title: "Success",
+        description: 'API key regenerated successfully'
+      });
       loadApiKeys();
       
       // Show the regenerated key automatically
@@ -120,7 +141,11 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       }, 300);
     } catch (error: any) {
       console.error('Error regenerating API key:', error);
-      toast.error('Failed to regenerate API key');
+      toast({
+        title: "Error",
+        description: 'Failed to regenerate API key',
+        variant: "destructive"
+      });
     } finally {
       setRegenerating(prev => ({ ...prev, [id]: false }));
     }
@@ -132,25 +157,40 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
     }
     
     try {
+      // Type cast
       const { error } = await supabase
         .from('device_api_keys')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
       
       if (error) throw error;
       
-      toast.success('API key deleted successfully');
+      toast({
+        title: "Success",
+        description: 'API key deleted successfully'
+      });
       loadApiKeys();
     } catch (error: any) {
       console.error('Error deleting API key:', error);
-      toast.error('Failed to delete API key');
+      toast({
+        title: "Error",
+        description: 'Failed to delete API key',
+        variant: "destructive"
+      });
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-      .then(() => toast.success('Copied to clipboard'))
-      .catch(() => toast.error('Failed to copy'));
+      .then(() => toast({
+        title: "Success",
+        description: 'Copied to clipboard'
+      }))
+      .catch(() => toast({
+        title: "Error",
+        description: 'Failed to copy',
+        variant: "destructive"
+      }));
   };
 
   const toggleShowKey = (key: string) => {
@@ -193,7 +233,9 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
 
           <div className="space-y-2">
             <Label>Your API Keys</Label>
-            {apiKeys.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-4">Loading API keys...</div>
+            ) : apiKeys.length === 0 ? (
               <div className="text-sm text-muted-foreground py-4">
                 No API keys created yet. Create your first key above.
               </div>

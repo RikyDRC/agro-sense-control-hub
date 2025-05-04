@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { wifi, Copy } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { Wifi, Copy } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Table,
@@ -53,11 +53,12 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
   const loadMQTTConfig = async () => {
     try {
       setLoading(true);
+      // Type cast since Supabase types don't know about our new table yet
       const { data, error } = await supabase
         .from('mqtt_config')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .single() as any;
       
       if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" which is expected if no config exists
         throw error;
@@ -66,7 +67,11 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
       setMqttConfig(data);
     } catch (error: any) {
       console.error('Error loading MQTT config:', error);
-      toast.error('Failed to load MQTT configuration');
+      toast({
+        title: "Error",
+        description: 'Failed to load MQTT configuration',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -90,6 +95,7 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
       if (!mqttConfig) {
         // Create new config
         const credentials = generateRandomCredentials();
+        // Type cast
         const { error } = await supabase
           .from('mqtt_config')
           .insert({
@@ -97,25 +103,36 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
             mqtt_username: credentials.username,
             mqtt_password: credentials.password,
             mqtt_enabled: enabled
-          });
+          }) as any;
           
         if (error) throw error;
-        toast.success('MQTT configuration created successfully');
+        toast({
+          title: "Success",
+          description: 'MQTT configuration created successfully'
+        });
       } else {
         // Update existing config
+        // Type cast
         const { error } = await supabase
           .from('mqtt_config')
           .update({ mqtt_enabled: enabled })
-          .eq('id', mqttConfig.id);
+          .eq('id', mqttConfig.id) as any;
           
         if (error) throw error;
-        toast.success('MQTT configuration updated successfully');
+        toast({
+          title: "Success",
+          description: 'MQTT configuration updated successfully'
+        });
       }
       
       loadMQTTConfig();
     } catch (error: any) {
       console.error('Error saving MQTT config:', error);
-      toast.error('Failed to save MQTT configuration');
+      toast({
+        title: "Error",
+        description: 'Failed to save MQTT configuration',
+        variant: "destructive"
+      });
     } finally {
       setSaving(false);
     }
@@ -132,21 +149,29 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
       setSaving(true);
       const credentials = generateRandomCredentials();
       
+      // Type cast
       const { error } = await supabase
         .from('mqtt_config')
         .update({
           mqtt_username: credentials.username,
           mqtt_password: credentials.password
         })
-        .eq('id', mqttConfig.id);
+        .eq('id', mqttConfig.id) as any;
         
       if (error) throw error;
       
-      toast.success('MQTT credentials regenerated successfully');
+      toast({
+        title: "Success",
+        description: 'MQTT credentials regenerated successfully'
+      });
       loadMQTTConfig();
     } catch (error: any) {
       console.error('Error regenerating MQTT credentials:', error);
-      toast.error('Failed to regenerate MQTT credentials');
+      toast({
+        title: "Error",
+        description: 'Failed to regenerate MQTT credentials',
+        variant: "destructive"
+      });
     } finally {
       setSaving(false);
     }
@@ -162,8 +187,15 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-      .then(() => toast.success('Copied to clipboard'))
-      .catch(() => toast.error('Failed to copy'));
+      .then(() => toast({
+        title: "Success",
+        description: 'Copied to clipboard'
+      }))
+      .catch(() => toast({
+        title: "Error",
+        description: 'Failed to copy',
+        variant: "destructive"
+      }));
   };
 
   return (
@@ -172,7 +204,7 @@ const MQTTSettings: React.FC<MQTTSettingsProps> = ({ userId }) => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <wifi className="h-5 w-5" />
+              <Wifi className="h-5 w-5" />
               <CardTitle>MQTT Connection</CardTitle>
             </div>
             <Switch 

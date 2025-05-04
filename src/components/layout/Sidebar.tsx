@@ -15,7 +15,7 @@ import {
   Smartphone, 
   LogOut, 
   ChevronRight, 
-  Seedling,
+  Sprout,
   Link as LinkIcon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open }) => {
     { name: 'Devices', href: '/devices', icon: Thermometer },
     { name: 'Map', href: '/map', icon: Map },
     { name: 'Zones', href: '/zones', icon: Layers },
-    { name: 'Crops', href: '/crops', icon: Seedling },
+    { name: 'Crops', href: '/crops', icon: Sprout },
     { name: 'Weather', href: '/weather', icon: Cloud },
     { name: 'Automation', href: '/automation', icon: Zap },
     { name: 'Device Connectivity', href: '/connectivity', icon: LinkIcon },
@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open }) => {
     >
       <div className="flex h-14 items-center justify-between border-b px-4">
         <Link to="/" className={cn("flex items-center", open ? "justify-start" : "justify-center w-full")}>
-          <Seedling className="h-6 w-6 text-primary" />
+          <Sprout className="h-6 w-6 text-primary" />
           {open && <span className="ml-2 font-semibold">Farm IoT</span>}
         </Link>
       </div>

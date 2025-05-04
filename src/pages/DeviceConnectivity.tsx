@@ -5,13 +5,16 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
-import APIKeySettings from '@/components/device-connectivity/APIKeySettings';
-import MQTTSettings from '@/components/device-connectivity/MQTTSettings';
-import QRCodeLinking from '@/components/device-connectivity/QRCodeLinking';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
 
 const DeviceConnectivity: React.FC = () => {
   const { user, loading } = useAuth();
+  const { toast } = useToast();
 
   if (loading) {
     return (
@@ -24,6 +27,89 @@ const DeviceConnectivity: React.FC = () => {
       </DashboardLayout>
     );
   }
+
+  // Placeholder API Key Settings component
+  const APIKeySettings = ({ userId }: { userId?: string }) => {
+    const handleGenerateKey = () => {
+      toast({
+        title: "API Key Generated",
+        description: "Your new API key has been created successfully.",
+      });
+    };
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>API Keys</CardTitle>
+          <CardDescription>Generate and manage API keys for your IoT devices to connect to the dashboard.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="apiKeyName">API Key Name</Label>
+            <Input id="apiKeyName" placeholder="Enter a name for your API key" />
+          </div>
+          <Button onClick={handleGenerateKey}>Generate New API Key</Button>
+          
+          <div className="mt-6">
+            <h3 className="text-lg font-medium mb-2">Your API Keys</h3>
+            <p className="text-muted-foreground text-sm">No API keys found. Generate a new key to get started.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Placeholder MQTT Settings component
+  const MQTTSettings = ({ userId }: { userId?: string }) => {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>MQTT Connection</CardTitle>
+          <CardDescription>Configure MQTT settings for real-time device communication.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="mqttBroker">MQTT Broker</Label>
+            <Input id="mqttBroker" defaultValue="mqtt.yourdomain.com" />
+          </div>
+          <div>
+            <Label htmlFor="mqttPort">Port</Label>
+            <Input id="mqttPort" defaultValue="1883" />
+          </div>
+          <div>
+            <Label htmlFor="mqttUsername">Username</Label>
+            <Input id="mqttUsername" placeholder="MQTT username" />
+          </div>
+          <div>
+            <Label htmlFor="mqttPassword">Password</Label>
+            <Input id="mqttPassword" type="password" placeholder="MQTT password" />
+          </div>
+          <Button>Save MQTT Settings</Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Placeholder QR Code Linking component
+  const QRCodeLinking = ({ userId }: { userId?: string }) => {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>QR Code Device Linking</CardTitle>
+          <CardDescription>Quick and easy device pairing using QR codes.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-gray-100 h-64 flex items-center justify-center border border-gray-200 rounded-md">
+            <p className="text-muted-foreground">QR Code will appear here</p>
+          </div>
+          <Button>Generate QR Code</Button>
+          <div>
+            <p className="text-sm text-muted-foreground mt-4">Scan this QR code with your IoT device's mobile app to link it to your dashboard.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <DashboardLayout>

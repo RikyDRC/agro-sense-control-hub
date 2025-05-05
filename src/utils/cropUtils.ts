@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Crop, GrowthStage, Zone } from '@/types';
+import { Crop, GrowthStage, Zone, CropImage } from '@/types';
 import { toast } from '@/components/ui/sonner';
 
 export interface CropFilter {
-  growthStage?: GrowthStage;
+  growthStage?: GrowthStage | '';
   zoneId?: string;
   searchQuery?: string;
   startDate?: Date;
@@ -23,7 +23,7 @@ export const fetchCrops = async (filters?: CropFilter) => {
     
     // Apply filters if provided
     if (filters) {
-      if (filters.growthStage) {
+      if (filters.growthStage && filters.growthStage !== '') {
         query = query.eq('growth_stage', filters.growthStage);
       }
       
@@ -50,7 +50,34 @@ export const fetchCrops = async (filters?: CropFilter) => {
       throw error;
     }
     
-    return data.map(cropFromDb);
+    // Fetch images for each crop
+    const cropsWithData = await Promise.all(
+      data.map(async (cropData) => {
+        const crop = cropFromDb(cropData);
+        
+        // Fetch images for this crop
+        const { data: imageData, error: imageError } = await supabase
+          .from('crop_images')
+          .select('*')
+          .eq('crop_id', crop.id)
+          .order('capture_date', { ascending: false });
+        
+        if (!imageError && imageData) {
+          crop.images = imageData.map(img => ({
+            id: img.id,
+            cropId: img.crop_id,
+            imageUrl: img.image_url,
+            captureDate: img.capture_date,
+            notes: img.notes,
+            createdAt: img.created_at
+          }));
+        }
+        
+        return crop;
+      })
+    );
+    
+    return cropsWithData;
   } catch (error: any) {
     console.error('Error fetching crops:', error);
     toast.error('Failed to load crops: ' + error.message);
@@ -73,7 +100,27 @@ export const fetchCropById = async (cropId: string) => {
       throw error;
     }
     
-    return cropFromDb(data);
+    const crop = cropFromDb(data);
+    
+    // Fetch images for this crop
+    const { data: imageData, error: imageError } = await supabase
+      .from('crop_images')
+      .select('*')
+      .eq('crop_id', cropId)
+      .order('capture_date', { ascending: false });
+    
+    if (!imageError && imageData) {
+      crop.images = imageData.map(img => ({
+        id: img.id,
+        cropId: img.crop_id,
+        imageUrl: img.image_url,
+        captureDate: img.capture_date,
+        notes: img.notes,
+        createdAt: img.created_at
+      }));
+    }
+    
+    return crop;
   } catch (error: any) {
     console.error('Error fetching crop by ID:', error);
     toast.error('Failed to load crop details: ' + error.message);
@@ -83,7 +130,18 @@ export const fetchCropById = async (cropId: string) => {
 
 export const createCrop = async (crop: Omit<Crop, 'id'>) => {
   try {
-    const cropForDb = cropToDb(crop);
+    const { auth } = supabase;
+    const user = auth.user();
+    
+    if (!user) {
+      toast.error('You must be logged in to create a crop');
+      return null;
+    }
+    
+    const cropForDb = {
+      ...cropToDb(crop),
+      user_id: user.id
+    };
     
     const { data, error } = await supabase
       .from('crops')
@@ -106,7 +164,18 @@ export const createCrop = async (crop: Omit<Crop, 'id'>) => {
 
 export const updateCrop = async (crop: Crop) => {
   try {
-    const cropForDb = cropToDb(crop);
+    const { auth } = supabase;
+    const user = auth.user();
+    
+    if (!user) {
+      toast.error('You must be logged in to update a crop');
+      return null;
+    }
+    
+    const cropForDb = {
+      ...cropToDb(crop),
+      user_id: user.id
+    };
     
     const { data, error } = await supabase
       .from('crops')
@@ -159,11 +228,90 @@ export const fetchZones = async () => {
       throw error;
     }
     
-    return data as Zone[];
+    // Convert to Zone type
+    return data.map(zone => ({
+      id: zone.id,
+      name: zone.name,
+      description: zone.description,
+      boundaryCoordinates: zone.boundary_coordinates,
+      areaSize: zone.area_size,
+      devices: [],
+      irrigationStatus: zone.irrigation_status,
+      soilMoistureThreshold: zone.soil_moisture_threshold,
+      soilType: zone.soil_type,
+      cropType: zone.crop_type,
+      irrigationMethod: zone.irrigation_method,
+      notes: zone.notes,
+      createdAt: zone.created_at,
+      updatedAt: zone.updated_at
+    })) as Zone[];
   } catch (error: any) {
     console.error('Error fetching zones:', error);
     toast.error('Failed to load zones: ' + error.message);
     return [];
+  }
+};
+
+// Functions for crop images
+export const addCropImage = async (cropId: string, imageUrl: string, captureDate: Date, notes?: string) => {
+  try {
+    const { auth } = supabase;
+    const user = auth.user();
+    
+    if (!user) {
+      toast.error('You must be logged in to add an image');
+      return null;
+    }
+    
+    const { data, error } = await supabase
+      .from('crop_images')
+      .insert({
+        crop_id: cropId,
+        image_url: imageUrl,
+        capture_date: captureDate.toISOString(),
+        notes: notes,
+        user_id: user.id
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Image added successfully');
+    return {
+      id: data.id,
+      cropId: data.crop_id,
+      imageUrl: data.image_url,
+      captureDate: data.capture_date,
+      notes: data.notes,
+      createdAt: data.created_at
+    } as CropImage;
+  } catch (error: any) {
+    console.error('Error adding crop image:', error);
+    toast.error('Failed to add image: ' + error.message);
+    return null;
+  }
+};
+
+export const deleteCropImage = async (imageId: string) => {
+  try {
+    const { error } = await supabase
+      .from('crop_images')
+      .delete()
+      .eq('id', imageId);
+    
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Image deleted successfully');
+    return true;
+  } catch (error: any) {
+    console.error('Error deleting crop image:', error);
+    toast.error('Failed to delete image: ' + error.message);
+    return false;
   }
 };
 
@@ -187,12 +335,13 @@ const cropFromDb = (dbCrop: any): Crop => {
     growthDays: dbCrop.growth_days || undefined,
     imageUrl: dbCrop.image_url || undefined,
     createdAt: dbCrop.created_at,
-    updatedAt: dbCrop.updated_at
+    updatedAt: dbCrop.updated_at,
+    images: []
   };
 };
 
 const cropToDb = (crop: Omit<Crop, 'id'> | Crop) => {
-  const { zoneName, ...rest } = crop as Crop & { zoneName?: string };
+  const { zoneName, images, ...rest } = crop as Crop & { zoneName?: string; images?: CropImage[] };
   
   return {
     name: rest.name,

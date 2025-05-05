@@ -21,6 +21,7 @@ import {
   createCrop, 
   updateCrop, 
   deleteCrop,
+  fetchCropById,
   CropFilter
 } from '@/utils/cropUtils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,6 +34,7 @@ const CropsPage: React.FC = () => {
   const [filters, setFilters] = useState<CropFilter>({});
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
+  const [selectedCropId, setSelectedCropId] = useState<string | null>(null);
 
   // Fetch zones
   const { 
@@ -53,6 +55,21 @@ const CropsPage: React.FC = () => {
     queryKey: ['crops', filters],
     queryFn: () => fetchCrops(filters),
     enabled: !!user
+  });
+
+  // Fetch selected crop details
+  const {
+    data: selectedCropDetails,
+    refetch: refetchSelectedCrop
+  } = useQuery({
+    queryKey: ['crop', selectedCropId],
+    queryFn: () => selectedCropId ? fetchCropById(selectedCropId) : null,
+    enabled: !!selectedCropId,
+    onSuccess: (data) => {
+      if (data) {
+        setSelectedCrop(data);
+      }
+    }
   });
 
   const handleFilterChange = (newFilters: CropFilter) => {
@@ -80,6 +97,7 @@ const CropsPage: React.FC = () => {
 
   const handleViewCropDetails = (crop: Crop) => {
     setSelectedCrop(crop);
+    setSelectedCropId(crop.id);
     setDetailModalOpen(true);
   };
 
@@ -88,6 +106,9 @@ const CropsPage: React.FC = () => {
       const result = await updateCrop(crop);
       if (result) {
         refetchCrops();
+        if (selectedCropId === crop.id) {
+          refetchSelectedCrop();
+        }
       }
     } else {
       const result = await createCrop(crop);
@@ -107,6 +128,12 @@ const CropsPage: React.FC = () => {
           setDetailModalOpen(false);
         }
       }
+    }
+  };
+
+  const handleRefreshCropDetails = () => {
+    if (selectedCropId) {
+      refetchSelectedCrop();
     }
   };
 
@@ -499,6 +526,7 @@ const CropsPage: React.FC = () => {
               onDelete={() => {
                 handleDeleteCrop(selectedCrop.id);
               }}
+              onRefresh={handleRefreshCropDetails}
             />
           )}
         </DialogContent>

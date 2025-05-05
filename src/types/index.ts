@@ -85,6 +85,15 @@ export interface SensorReading {
   unit: string;
 }
 
+export interface CropImage {
+  id: string;
+  cropId: string;
+  imageUrl: string;
+  captureDate: string;
+  notes?: string;
+  createdAt: string;
+}
+
 export interface Crop {
   id: string;
   name: string;
@@ -102,6 +111,7 @@ export interface Crop {
   estimatedYield?: number;
   growthDays?: number;
   imageUrl?: string;
+  images?: CropImage[];
   createdAt?: string;
   updatedAt?: string;
 }

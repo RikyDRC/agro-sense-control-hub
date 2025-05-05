@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserProfile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { Save, UserIcon, Camera, Loader2, AlertCircle } from 'lucide-react';
+import { Save, UserIcon, Camera, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -248,8 +248,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, refreshProfile }) =>
           </Alert>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={handleRetryProfileLoad}>
-            Retry Loading Profile
+          <Button variant="outline" onClick={handleRetryProfileLoad} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh Profile
           </Button>
           <Button onClick={handleUpdateProfile} disabled={loading}>
             {loading ? (

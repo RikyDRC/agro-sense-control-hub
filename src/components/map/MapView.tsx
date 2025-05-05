@@ -78,7 +78,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [isNamingZone, setIsNamingZone] = useState(false);
 
   // Fetch the Google Maps API key from platform_config
-  // Modified to remove the role check so all users can access maps
+  // Modified to use a PUBLIC key without any role restrictions
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -91,15 +91,17 @@ const MapView: React.FC<MapViewProps> = ({
           
         if (error) {
           console.error("Error fetching Google Maps API key:", error);
-          setApiKeyError(error.message);
+          setApiKeyError("Failed to load Google Maps API key. Please try again later.");
           toast.error("Failed to load Google Maps API key");
         } else if (data) {
           console.log("Google Maps API key loaded successfully");
           setGoogleMapsApiKey(data.value);
+        } else {
+          setApiKeyError("Google Maps API key not found in platform configuration.");
         }
       } catch (err: any) {
         console.error("Exception fetching Google Maps API key:", err);
-        setApiKeyError(err.message);
+        setApiKeyError("An unexpected error occurred while loading the map.");
       } finally {
         setApiKeyLoading(false);
       }
@@ -387,7 +389,7 @@ const MapView: React.FC<MapViewProps> = ({
       <Alert variant="destructive" className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Failed to load Google Maps API key: {apiKeyError}
+          {apiKeyError}
         </AlertDescription>
       </Alert>
     );

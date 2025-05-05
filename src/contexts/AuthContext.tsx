@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,6 +62,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [fetchingProfile, setFetchingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileRetries, setProfileRetries] = useState(0);
+  const [profileFetchTimeout, setProfileFetchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     if (!userId) return null;
@@ -68,23 +71,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Fetching user profile for:", userId);
       
-      const { data, error } = await supabase.rpc(
+      // First try with the RPC function
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
         'get_profile_by_id',
         { user_id: userId }
       );
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setProfileError(error.message);
+      if (!rpcError && rpcData) {
+        console.log("Profile fetched successfully via RPC:", rpcData);
+        return rpcData as unknown as UserProfile;
+      }
+      
+      // If RPC fails, fall back to direct query
+      console.log("RPC fetch failed, trying direct query:", rpcError);
+      const { data: queryData, error: queryError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (queryError) {
+        console.error('Error in direct profile query:', queryError);
+        setProfileError(queryError.message);
         return null;
       }
 
-      if (!data) {
-        console.log("No profile data received");
+      if (!queryData) {
+        console.log("No profile data received from direct query");
         return null;
       }
 
-      return data as unknown as UserProfile;
+      console.log("Profile fetched successfully via direct query:", queryData);
+      return queryData as UserProfile;
     } catch (error: any) {
       console.error('Error in fetchUserProfile:', error);
       setProfileError(error.message);
@@ -137,14 +155,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        const userProfile = await fetchUserProfile(currentSession.user.id);
-        setProfile(userProfile);
-          
-        const userSubscription = await fetchUserSubscription(currentSession.user.id);
-        setSubscription(userSubscription);
+        // Clear any existing fetch timeout
+        if (profileFetchTimeout) {
+          clearTimeout(profileFetchTimeout);
+        }
+        
+        // Create a new timeout to fetch the profile, giving the database time to propagate
+        const timeout = setTimeout(async () => {
+          const userProfile = await fetchUserProfile(currentSession.user.id);
+          setProfile(userProfile);
+            
+          const userSubscription = await fetchUserSubscription(currentSession.user.id);
+          setSubscription(userSubscription);
+          setLoading(false);
+        }, 500); // 500ms delay to ensure the database has time to propagate
+        
+        setProfileFetchTimeout(timeout);
       } catch (error) {
         console.error("Error loading user data:", error);
-      } finally {
         setLoading(false);
       }
     };
@@ -178,8 +206,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       authSubscription.unsubscribe();
+      if (profileFetchTimeout) {
+        clearTimeout(profileFetchTimeout);
+      }
     };
   }, []);
+
+  // Add retry logic for profile fetch
+  useEffect(() => {
+    if (user && !profile && profileRetries < 3 && !fetchingProfile) {
+      const timer = setTimeout(() => {
+        console.log(`Retrying profile fetch (attempt ${profileRetries + 1})`);
+        refreshProfile();
+        setProfileRetries(prev => prev + 1);
+      }, 2000); // Retry after 2 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, profile, profileRetries, fetchingProfile]);
 
   const refreshProfile = async () => {
     if (!user) return;

@@ -1,87 +1,63 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, Plus, Layers, Droplet, Thermometer, ArrowUpRight, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { DatePicker } from '@/components/ui/date-picker';
+import { Plus, Layers, CalendarIcon, TrendingUp, Download } from 'lucide-react';
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle 
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/sonner';
-import { Crop, GrowthStage, IrrigationStatus, Zone } from '@/types';
+import { Crop, GrowthStage, Zone } from '@/types';
 import CropForm from '@/components/crops/CropForm';
-
-const initialCrops: Crop[] = [
-  {
-    id: '1',
-    name: 'Tomatoes',
-    variety: 'Roma',
-    plantingDate: '2023-04-15',
-    harvestDate: '2023-07-20',
-    growthStage: GrowthStage.VEGETATIVE,
-    idealMoisture: {
-      min: 60,
-      max: 80
-    },
-    idealTemperature: {
-      min: 18,
-      max: 26
-    },
-    zoneId: 'zone-a'
-  },
-  {
-    id: '2',
-    name: 'Lettuce',
-    variety: 'Butterhead',
-    plantingDate: '2023-05-01',
-    harvestDate: '2023-06-15',
-    growthStage: GrowthStage.FLOWERING,
-    idealMoisture: {
-      min: 70,
-      max: 90
-    },
-    idealTemperature: {
-      min: 15,
-      max: 22
-    },
-    zoneId: 'zone-b'
-  }
-];
-
-const zones: Zone[] = [
-  {
-    id: 'zone-a',
-    name: 'Field Zone A',
-    description: 'Primary field zone',
-    boundaryCoordinates: [],
-    areaSize: 1200,
-    devices: ['1', '2'],
-    irrigationStatus: IrrigationStatus.ACTIVE,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'zone-b',
-    name: 'Field Zone B',
-    description: 'Secondary field zone',
-    boundaryCoordinates: [],
-    areaSize: 900,
-    devices: ['3'],
-    irrigationStatus: IrrigationStatus.SCHEDULED,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+import CropDetails from '@/components/crops/CropDetails';
+import CropFilters from '@/components/crops/CropFilters';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  fetchCrops, 
+  fetchZones, 
+  createCrop, 
+  updateCrop, 
+  deleteCrop,
+  CropFilter
+} from '@/utils/cropUtils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CropsPage: React.FC = () => {
-  const [crops, setCrops] = useState<Crop[]>(initialCrops);
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('current');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCrop, setEditingCrop] = useState<Crop | null>(null);
-  const [planningStart, setPlanningStart] = useState<Date>();
-  const [planningEnd, setPlanningEnd] = useState<Date>();
+  const [filters, setFilters] = useState<CropFilter>({});
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
+
+  // Fetch zones
+  const { 
+    data: zones = [], 
+    isLoading: zonesLoading 
+  } = useQuery({
+    queryKey: ['zones'],
+    queryFn: fetchZones,
+    enabled: !!user
+  });
+
+  // Fetch crops with filters
+  const { 
+    data: crops = [], 
+    isLoading: cropsLoading,
+    refetch: refetchCrops 
+  } = useQuery({
+    queryKey: ['crops', filters],
+    queryFn: () => fetchCrops(filters),
+    enabled: !!user
+  });
+
+  const handleFilterChange = (newFilters: CropFilter) => {
+    setFilters(newFilters);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -102,65 +78,206 @@ const CropsPage: React.FC = () => {
     setDialogOpen(true);
   };
 
-  const handleSaveCrop = (crop: Crop) => {
-    if (crop.id && crops.some(c => c.id === crop.id)) {
-      setCrops(prev => prev.map(c => c.id === crop.id ? crop : c));
-      toast.success("Crop updated successfully");
+  const handleViewCropDetails = (crop: Crop) => {
+    setSelectedCrop(crop);
+    setDetailModalOpen(true);
+  };
+
+  const handleSaveCrop = async (crop: Crop) => {
+    if (editingCrop) {
+      const result = await updateCrop(crop);
+      if (result) {
+        refetchCrops();
+      }
     } else {
-      setCrops(prev => [...prev, crop]);
-      toast.success("Crop added successfully");
+      const result = await createCrop(crop);
+      if (result) {
+        refetchCrops();
+      }
     }
     setDialogOpen(false);
   };
 
-  const handleDeleteCrop = (cropId: string) => {
-    setCrops(prev => prev.filter(crop => crop.id !== cropId));
-    toast.success("Crop deleted successfully");
+  const handleDeleteCrop = async (cropId: string) => {
+    if (confirm("Are you sure you want to delete this crop?")) {
+      const result = await deleteCrop(cropId);
+      if (result) {
+        refetchCrops();
+        if (detailModalOpen) {
+          setDetailModalOpen(false);
+        }
+      }
+    }
   };
 
-  const handlePlanningSubmit = () => {
-    if (!planningStart || !planningEnd) {
-      toast.error("Please select both start and end dates");
+  const downloadCropsCSV = () => {
+    if (crops.length === 0) {
+      toast.error("No crops data to export");
       return;
     }
-    
-    if (planningStart > planningEnd) {
-      toast.error("Start date must be before end date");
-      return;
+
+    try {
+      const headers = ["Name", "Variety", "Planting Date", "Harvest Date", "Growth Stage", "Zone"];
+      const rows = crops.map(crop => [
+        crop.name,
+        crop.variety || '',
+        formatDate(crop.plantingDate),
+        crop.harvestDate ? formatDate(crop.harvestDate) : '',
+        getGrowthStageDisplay(crop.growthStage),
+        crop.zoneName || zones.find(z => z.id === crop.zoneId)?.name || ''
+      ]);
+      
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `crops_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Crops data exported successfully");
+    } catch (error) {
+      console.error("Error exporting crops data:", error);
+      toast.error("Failed to export crops data");
     }
-    
-    toast.success("Crop planning period set");
   };
+
+  const groupCropsByGrowthStage = () => {
+    const grouped: Record<string, number> = {};
+    
+    crops.forEach(crop => {
+      const stage = crop.growthStage || GrowthStage.PLANTING;
+      grouped[stage] = (grouped[stage] || 0) + 1;
+    });
+    
+    return grouped;
+  };
+
+  const cropsByGrowthStage = groupCropsByGrowthStage();
+
+  // Filter crops for each tab
+  const currentCrops = crops.filter(crop => 
+    crop.growthStage !== GrowthStage.HARVESTED
+  );
+  
+  const harvestedCrops = crops.filter(crop => 
+    crop.growthStage === GrowthStage.HARVESTED
+  );
+
+  const upcomingPlantings = crops.filter(crop => {
+    const plantingDate = new Date(crop.plantingDate);
+    const today = new Date();
+    return plantingDate > today;
+  });
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Crops Management</h1>
-          <p className="text-muted-foreground">
-            Track and manage crop information, planting schedules, and growth stages
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Crops Management</h1>
+            <p className="text-muted-foreground">
+              Track and manage crop information, planting schedules, and growth stages
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={downloadCropsCSV}>
+              <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
+            <Button onClick={handleCreateCrop}>
+              <Plus className="mr-2 h-4 w-4" /> Add Crop
+            </Button>
+          </div>
         </div>
+
+        {!cropsLoading && !zonesLoading && (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-md font-medium">Total Crops</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{crops.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  {upcomingPlantings.length} upcoming plantings
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-md font-medium">Growth Stages</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(cropsByGrowthStage).map(([stage, count]) => (
+                    <div key={stage} className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+                      <span className="text-xs">
+                        {stage.charAt(0).toUpperCase() + stage.slice(1)}: {count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-md font-medium">Zones Coverage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{zones.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  Zones with active crops
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <CropFilters 
+          zones={zones} 
+          onFilterChange={handleFilterChange} 
+        />
 
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="current">Current Crops</TabsTrigger>
-            <TabsTrigger value="planning">Planning</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming Plantings</TabsTrigger>
+            <TabsTrigger value="harvested">Harvested</TabsTrigger>
           </TabsList>
 
           <TabsContent value="current" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Current Crops</h2>
-              <Button onClick={handleCreateCrop}>
-                <Plus className="mr-2 h-4 w-4" /> Add Crop
-              </Button>
-            </div>
-
-            {crops.length === 0 ? (
+            {cropsLoading ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {[1, 2, 3, 4].map((j) => (
+                        <div key={j} className="flex justify-between">
+                          <Skeleton className="h-4 w-1/3" />
+                          <Skeleton className="h-4 w-1/3" />
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : currentCrops.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-6">
-                  <p className="text-muted-foreground mb-4">No crops found</p>
+                  <Layers className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground mb-4">No active crops found</p>
                   <Button onClick={handleCreateCrop}>
                     <Plus className="mr-2 h-4 w-4" /> Add Your First Crop
                   </Button>
@@ -168,18 +285,25 @@ const CropsPage: React.FC = () => {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {crops.map((crop) => (
-                  <Card key={crop.id}>
+                {currentCrops.map((crop) => (
+                  <Card key={crop.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleViewCropDetails(crop)}>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle>
+                          <CardTitle className="text-lg">
                             {crop.name}
                             {crop.variety && <span className="ml-1 text-sm font-normal">({crop.variety})</span>}
                           </CardTitle>
-                          <CardDescription>{zones.find(z => z.id === crop.zoneId)?.name}</CardDescription>
+                          <CardDescription>{crop.zoneName || zones.find(z => z.id === crop.zoneId)?.name}</CardDescription>
                         </div>
-                        <Badge>{getGrowthStageDisplay(crop.growthStage)}</Badge>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCrop(crop);
+                          }}>
+                            <TrendingUp className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -198,35 +322,18 @@ const CropsPage: React.FC = () => {
                             <span>{formatDate(crop.harvestDate)}</span>
                           </div>
                         )}
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground flex items-center">
-                            <Droplet className="mr-1 h-3 w-3" /> Ideal Moisture:
-                          </span>
-                          <span>{crop.idealMoisture.min}% - {crop.idealMoisture.max}%</span>
+                        <div className="mt-2 flex justify-between items-center">
+                          <div className="text-sm font-medium">{getGrowthStageDisplay(crop.growthStage)}</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCrop(crop.id);
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground flex items-center">
-                            <Thermometer className="mr-1 h-3 w-3" /> Ideal Temp:
-                          </span>
-                          <span>{crop.idealTemperature.min}°C - {crop.idealTemperature.max}°C</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground flex items-center">
-                            <Layers className="mr-1 h-3 w-3" /> Zone Status:
-                          </span>
-                          <Badge variant="outline" className="text-xs font-normal">
-                            {zones.find(z => z.id === crop.zoneId)?.irrigationStatus === IrrigationStatus.ACTIVE ? 
-                              'Irrigating' : 'Scheduled'}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button size="sm" variant="outline" onClick={() => handleEditCrop(crop)}>
-                          <ArrowUpRight className="h-3 w-3 mr-1" /> Manage
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-500" onClick={() => handleDeleteCrop(crop.id)}>
-                          <X className="h-3 w-3 mr-1" /> Remove
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -235,69 +342,121 @@ const CropsPage: React.FC = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="planning">
-            <Card>
-              <CardHeader>
-                <CardTitle>Crop Planning</CardTitle>
-                <CardDescription>Plan your future crop rotations and planting schedules</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex-1 min-w-[250px]">
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium">Planting Date</h3>
-                      <DatePicker 
-                        selected={planningStart}
-                        onSelect={setPlanningStart}
-                        placeholder="Select date" 
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-[250px]">
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium">Harvest Date</h3>
-                      <DatePicker 
-                        selected={planningEnd}
-                        onSelect={setPlanningEnd}
-                        placeholder="Select date" 
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Recommended Crops for Selected Period</h3>
-                  
-                  <div className="bg-muted p-4 rounded-md text-center">
-                    <p className="text-muted-foreground">
-                      Select a date range to view crop recommendations
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button onClick={handlePlanningSubmit}>Apply Planning</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="upcoming" className="space-y-4">
+            {cropsLoading ? (
+              <Card>
+                <CardContent className="py-6">
+                  <Skeleton className="h-24 w-full" />
+                </CardContent>
+              </Card>
+            ) : upcomingPlantings.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-6">
+                  <CalendarIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground mb-4">No upcoming plantings scheduled</p>
+                  <Button onClick={handleCreateCrop}>
+                    <Plus className="mr-2 h-4 w-4" /> Schedule Planting
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {upcomingPlantings.map((crop) => (
+                  <Card key={crop.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleViewCropDetails(crop)}>
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {crop.name}
+                            {crop.variety && <span className="ml-1 text-sm font-normal">({crop.variety})</span>}
+                          </CardTitle>
+                          <CardDescription>{crop.zoneName || zones.find(z => z.id === crop.zoneId)?.name}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center">
+                            <CalendarIcon className="mr-1 h-3 w-3" /> Planting Date:
+                          </span>
+                          <span>{formatDate(crop.plantingDate)}</span>
+                        </div>
+                        {crop.harvestDate && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center">
+                              <CalendarIcon className="mr-1 h-3 w-3" /> Expected Harvest:
+                            </span>
+                            <span>{formatDate(crop.harvestDate)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="history">
-            <Card>
-              <CardHeader>
-                <CardTitle>Crop History</CardTitle>
-                <CardDescription>View your past crops and their performance metrics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-6 text-center">
+          <TabsContent value="harvested" className="space-y-4">
+            {cropsLoading ? (
+              <Card>
+                <CardContent className="py-6">
+                  <Skeleton className="h-24 w-full" />
+                </CardContent>
+              </Card>
+            ) : harvestedCrops.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-6">
                   <Layers className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-medium mb-1">No Historical Data</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Once crops are harvested, their data will appear here for analysis.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                  <p className="text-muted-foreground mb-4">No harvested crops recorded yet</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {harvestedCrops.map((crop) => (
+                  <Card key={crop.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleViewCropDetails(crop)}>
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {crop.name}
+                            {crop.variety && <span className="ml-1 text-sm font-normal">({crop.variety})</span>}
+                          </CardTitle>
+                          <CardDescription>{crop.zoneName || zones.find(z => z.id === crop.zoneId)?.name}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center">
+                            <CalendarIcon className="mr-1 h-3 w-3" /> Planted:
+                          </span>
+                          <span>{formatDate(crop.plantingDate)}</span>
+                        </div>
+                        {crop.harvestDate && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center">
+                              <CalendarIcon className="mr-1 h-3 w-3" /> Harvested:
+                            </span>
+                            <span>{formatDate(crop.harvestDate)}</span>
+                          </div>
+                        )}
+                        {crop.estimatedYield && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center">
+                              <TrendingUp className="mr-1 h-3 w-3" /> Yield:
+                            </span>
+                            <span>{crop.estimatedYield} kg</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -320,6 +479,28 @@ const CropsPage: React.FC = () => {
             onCancel={() => setDialogOpen(false)}
             initialValues={editingCrop || undefined}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Crop Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedCrop && (
+            <CropDetails 
+              crop={selectedCrop}
+              onEdit={() => {
+                setDetailModalOpen(false);
+                setEditingCrop(selectedCrop);
+                setDialogOpen(true);
+              }}
+              onDelete={() => {
+                handleDeleteCrop(selectedCrop.id);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout>

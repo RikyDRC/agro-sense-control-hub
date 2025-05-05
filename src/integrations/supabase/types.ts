@@ -124,13 +124,19 @@ export type Database = {
       crops: {
         Row: {
           created_at: string
+          estimated_yield: number | null
+          growth_days: number | null
           growth_stage: Database["public"]["Enums"]["growth_stage"]
           harvest_date: string | null
           id: string
           ideal_moisture: Json
           ideal_temperature: Json
+          image_url: string | null
           name: string
+          notes: string | null
+          plant_spacing: number | null
           planting_date: string
+          seed_source: string | null
           updated_at: string
           user_id: string
           variety: string | null
@@ -138,13 +144,19 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          estimated_yield?: number | null
+          growth_days?: number | null
           growth_stage?: Database["public"]["Enums"]["growth_stage"]
           harvest_date?: string | null
           id?: string
           ideal_moisture?: Json
           ideal_temperature?: Json
+          image_url?: string | null
           name: string
+          notes?: string | null
+          plant_spacing?: number | null
           planting_date: string
+          seed_source?: string | null
           updated_at?: string
           user_id: string
           variety?: string | null
@@ -152,13 +164,19 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          estimated_yield?: number | null
+          growth_days?: number | null
           growth_stage?: Database["public"]["Enums"]["growth_stage"]
           harvest_date?: string | null
           id?: string
           ideal_moisture?: Json
           ideal_temperature?: Json
+          image_url?: string | null
           name?: string
+          notes?: string | null
+          plant_spacing?: number | null
           planting_date?: string
+          seed_source?: string | null
           updated_at?: string
           user_id?: string
           variety?: string | null

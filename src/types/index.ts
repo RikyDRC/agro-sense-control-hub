@@ -1,4 +1,3 @@
-
 // This file contains type definitions for the entire application
 
 export interface Profile {
@@ -94,8 +93,17 @@ export interface Crop {
   harvestDate?: string;
   growthStage: GrowthStage;
   zoneId: string;
+  zoneName?: string;
   idealMoisture: { min: number; max: number };
   idealTemperature: { min: number; max: number };
+  notes?: string;
+  plantSpacing?: number;
+  seedSource?: string;
+  estimatedYield?: number;
+  growthDays?: number;
+  imageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export enum GrowthStage {

@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Crop, GrowthStage, Zone, CropImage } from '@/types';
+import { Crop, GrowthStage, Zone, CropImage, IrrigationStatus } from '@/types';
 import { toast } from '@/components/ui/sonner';
 
 export interface CropFilter {
@@ -226,7 +226,7 @@ export const fetchZones = async () => {
       throw error;
     }
     
-    // Convert to Zone type with proper type casting
+    // Convert to Zone type with proper type casting for enum types
     return data.map(zone => ({
       id: zone.id,
       name: zone.name,
@@ -234,7 +234,7 @@ export const fetchZones = async () => {
       boundaryCoordinates: (zone.boundary_coordinates || []) as unknown as Zone['boundaryCoordinates'],
       areaSize: zone.area_size,
       devices: [],
-      irrigationStatus: zone.irrigation_status,
+      irrigationStatus: zone.irrigation_status as IrrigationStatus,
       soilMoistureThreshold: zone.soil_moisture_threshold,
       soilType: zone.soil_type,
       cropType: zone.crop_type,
@@ -242,7 +242,7 @@ export const fetchZones = async () => {
       notes: zone.notes,
       createdAt: zone.created_at,
       updatedAt: zone.updated_at
-    }));
+    })) as Zone[];
   } catch (error: any) {
     console.error('Error fetching zones:', error);
     toast.error('Failed to load zones: ' + error.message);

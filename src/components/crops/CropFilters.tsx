@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -107,7 +106,7 @@ const CropFilters: React.FC<CropFiltersProps> = ({ zones, onFilterChange }) => {
                 <h4 className="font-medium">Growth Stage</h4>
                 <Select 
                   value={growthStage} 
-                  onValueChange={(value: string) => setGrowthStage(value as GrowthStage | '')}
+                  onValueChange={(value) => setGrowthStage(value as GrowthStage | '')}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select growth stage" />

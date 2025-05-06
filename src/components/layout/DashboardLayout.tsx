@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,8 +35,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         isMobile && sidebarOpen ? "ml-0" : "ml-0"
       )}>
         <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
+        <main className="flex-1 overflow-hidden p-4 md:p-6">
+          <ScrollArea className="h-full w-full">
+            {children}
+          </ScrollArea>
         </main>
       </div>
     </div>

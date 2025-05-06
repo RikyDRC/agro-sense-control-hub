@@ -23,10 +23,10 @@ export const fetchCrops = async (filters?: CropFilter) => {
     
     // Apply filters if provided
     if (filters) {
-      // Fix for the growthStage comparison - check if it's a non-empty string
-      if (filters.growthStage && filters.growthStage !== '') {
+      // Properly handle the growthStage filter with type checking
+      if (filters.growthStage && filters.growthStage !== '' as GrowthStage | '') {
         // Cast the GrowthStage enum value to string for the database query
-        query = query.eq('growth_stage', filters.growthStage.toString());
+        query = query.eq('growth_stage', filters.growthStage);
       }
       
       if (filters.zoneId) {
@@ -244,7 +244,7 @@ export const fetchZones = async () => {
       notes: zone.notes,
       createdAt: zone.created_at,
       updatedAt: zone.updated_at
-    })) as Zone[];
+    }));
   } catch (error: any) {
     console.error('Error fetching zones:', error);
     toast.error('Failed to load zones: ' + error.message);
@@ -347,7 +347,7 @@ const cropToDb = (crop: Omit<Crop, 'id'> | Crop) => {
     variety: rest.variety || null,
     planting_date: rest.plantingDate,
     harvest_date: rest.harvestDate || null,
-    growth_stage: rest.growthStage.toString(), // Convert enum to string for database
+    growth_stage: rest.growthStage,
     zone_id: rest.zoneId,
     ideal_moisture: rest.idealMoisture,
     ideal_temperature: rest.idealTemperature,

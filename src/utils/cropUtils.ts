@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Crop, GrowthStage, Zone, CropImage } from '@/types';
 import { toast } from '@/components/ui/sonner';
@@ -59,7 +60,7 @@ export const fetchCrops = async (filters?: CropFilter) => {
           .from('crop_images')
           .select('*')
           .eq('crop_id', crop.id)
-          .order('capture_date', { ascending: false });
+          .order('capture_date', { ascending: true });
         
         if (!imageError && imageData) {
           crop.images = imageData.map(img => ({
@@ -129,8 +130,7 @@ export const fetchCropById = async (cropId: string) => {
 
 export const createCrop = async (crop: Omit<Crop, 'id'>) => {
   try {
-    const { auth } = supabase;
-    const user = auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       toast.error('You must be logged in to create a crop');
@@ -144,7 +144,7 @@ export const createCrop = async (crop: Omit<Crop, 'id'>) => {
     
     const { data, error } = await supabase
       .from('crops')
-      .insert(cropForDb)
+      .insert(cropForDb as any)
       .select()
       .single();
     
@@ -163,8 +163,7 @@ export const createCrop = async (crop: Omit<Crop, 'id'>) => {
 
 export const updateCrop = async (crop: Crop) => {
   try {
-    const { auth } = supabase;
-    const user = auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       toast.error('You must be logged in to update a crop');
@@ -178,7 +177,7 @@ export const updateCrop = async (crop: Crop) => {
     
     const { data, error } = await supabase
       .from('crops')
-      .update(cropForDb)
+      .update(cropForDb as any)
       .eq('id', crop.id)
       .select()
       .single();
@@ -227,12 +226,12 @@ export const fetchZones = async () => {
       throw error;
     }
     
-    // Convert to Zone type
+    // Convert to Zone type with proper type casting
     return data.map(zone => ({
       id: zone.id,
       name: zone.name,
       description: zone.description,
-      boundaryCoordinates: zone.boundary_coordinates,
+      boundaryCoordinates: (zone.boundary_coordinates || []) as unknown as Zone['boundaryCoordinates'],
       areaSize: zone.area_size,
       devices: [],
       irrigationStatus: zone.irrigation_status,
@@ -243,7 +242,7 @@ export const fetchZones = async () => {
       notes: zone.notes,
       createdAt: zone.created_at,
       updatedAt: zone.updated_at
-    })) as Zone[];
+    }));
   } catch (error: any) {
     console.error('Error fetching zones:', error);
     toast.error('Failed to load zones: ' + error.message);
@@ -254,8 +253,7 @@ export const fetchZones = async () => {
 // Functions for crop images
 export const addCropImage = async (cropId: string, imageUrl: string, captureDate: Date, notes?: string) => {
   try {
-    const { auth } = supabase;
-    const user = auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       toast.error('You must be logged in to add an image');

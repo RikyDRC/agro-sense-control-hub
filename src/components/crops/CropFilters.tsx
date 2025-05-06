@@ -44,7 +44,7 @@ const CropFilters: React.FC<CropFiltersProps> = ({ zones, onFilterChange }) => {
     
     onFilterChange({
       searchQuery: searchQuery || undefined,
-      growthStage: growthStage as GrowthStage || undefined,
+      growthStage: growthStage || undefined,
       zoneId: zoneId || undefined,
       startDate,
       endDate
@@ -105,7 +105,10 @@ const CropFilters: React.FC<CropFiltersProps> = ({ zones, onFilterChange }) => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <h4 className="font-medium">Growth Stage</h4>
-                <Select value={growthStage} onValueChange={setGrowthStage}>
+                <Select 
+                  value={growthStage} 
+                  onValueChange={(value: string) => setGrowthStage(value as GrowthStage | '')}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select growth stage" />
                   </SelectTrigger>

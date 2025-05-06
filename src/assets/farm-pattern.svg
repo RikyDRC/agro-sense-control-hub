@@ -1,0 +1,44 @@
+
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(61, 131, 97, 0.2)" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#smallGrid)"/>
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(61, 131, 97, 0.4)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  
+  <rect width="500" height="500" fill="url(#grid)" />
+  
+  <!-- Farm icons -->
+  <g fill="#3D8361" opacity="0.3">
+    <!-- Plant icon -->
+    <path d="M220,280 C220,240 260,240 260,200 L240,200 L240,280 Z" />
+    <path d="M240,280 C240,240 280,240 280,200 L260,200 L260,280 Z" />
+    <rect x="240" y="280" width="20" height="40" />
+    
+    <!-- Water drop -->
+    <path d="M380,220 C380,180 340,160 340,120 C340,160 300,180 300,220 C300,253 323,275 340,275 C357,275 380,253 380,220 Z" />
+    
+    <!-- Sensor -->
+    <rect x="100" y="350" width="40" height="60" rx="5" />
+    <rect x="110" y="330" width="20" height="20" rx="10" />
+    <rect x="110" y="310" width="20" height="10" />
+    
+    <!-- Cloud -->
+    <path d="M430,120 C430,108 420,100 410,100 C400,100 390,108 390,120 L380,120 C380,108 370,100 360,100 C350,100 340,108 340,120 C330,120 320,130 320,140 C320,150 330,160 340,160 L420,160 C430,160 440,150 440,140 C440,130 430,120 430,120 Z" />
+    
+    <!-- Sun -->
+    <circle cx="120" cy="120" r="20" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(0 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(45 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(90 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(135 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(180 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(225 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(270 120 120)" />
+    <rect x="120" y="80" width="2" height="15" rx="1" transform="rotate(315 120 120)" />
+  </g>
+</svg>

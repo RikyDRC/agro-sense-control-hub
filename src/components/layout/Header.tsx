@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -22,6 +23,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
   const { user, profile, signOut } = useAuth();
+  const isMobile = useIsMobile();
   
   const getInitials = () => {
     if (profile?.display_name) {
@@ -32,24 +34,31 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
         .toUpperCase()
         .substring(0, 2);
     }
-    return profile?.email.substring(0, 2).toUpperCase() || 'U';
+    return profile?.email?.substring(0, 2).toUpperCase() || 'U';
   };
 
   const getUserRole = () => {
     if (!profile) return '';
-    return profile.role.replace('_', ' ');
+    return profile.role?.replace('_', ' ') || '';
   };
   
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b bg-white/80 backdrop-blur-sm border-border">
       <div className="flex items-center">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-4">
-          {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-        </Button>
+        {isMobile ? (
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+            <Menu className="h-5 w-5" />
+          </Button>
+        ) : (
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-4">
+            {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          </Button>
+        )}
         <h1 className="text-lg font-semibold text-gray-800 hidden md:block">AgroSense Control Hub</h1>
+        <h1 className="text-base font-semibold text-gray-800 md:hidden">AgroSense</h1>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 md:space-x-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -100,14 +109,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
                 <AvatarFallback className="bg-agro-green text-white">{getInitials()}</AvatarFallback>
               </Avatar>
               <span className="font-medium text-sm hidden md:inline-block">
-                {profile?.display_name || profile?.email.split('@')[0]}
+                {profile?.display_name || profile?.email?.split('@')[0]}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{profile?.display_name || profile?.email.split('@')[0]}</span>
+                <span>{profile?.display_name || profile?.email?.split('@')[0]}</span>
                 <span className="text-xs text-muted-foreground capitalize">{getUserRole()}</span>
               </div>
             </DropdownMenuLabel>

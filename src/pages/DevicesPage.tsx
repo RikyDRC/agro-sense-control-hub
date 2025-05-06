@@ -22,7 +22,9 @@ import {
   Trash2, 
   Check, 
   X,
-  RotateCw
+  RotateCw,
+  LayoutGrid,
+  LayoutList
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { 
@@ -41,6 +43,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DeviceFormValues {
   id?: string;
@@ -54,6 +57,7 @@ interface DeviceFormValues {
 
 const DevicesPage: React.FC = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [devices, setDevices] = useState<Device[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +74,12 @@ const DevicesPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deviceToDelete, setDeviceToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>(isMobile ? 'cards' : 'table');
+
+  // Effect to set appropriate view mode based on screen size
+  useEffect(() => {
+    setViewMode(isMobile ? 'cards' : viewMode);
+  }, [isMobile]);
 
   const filteredDevices = activeTab === 'all' 
     ? devices 
@@ -393,7 +402,7 @@ const DevicesPage: React.FC = () => {
               <Skeleton className="h-8 w-64" />
               <Skeleton className="h-4 w-96 mt-2" />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Skeleton className="h-10 w-32" />
               <Skeleton className="h-10 w-32" />
             </div>
@@ -401,7 +410,7 @@ const DevicesPage: React.FC = () => {
 
           <Skeleton className="h-10 w-full" /> {/* Tabs */}
           
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
@@ -426,7 +435,7 @@ const DevicesPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Devices</h1>
             <p className="text-muted-foreground">Manage your field sensors and irrigation equipment</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline"
               onClick={handleRefresh}
@@ -434,24 +443,26 @@ const DevicesPage: React.FC = () => {
               className="flex items-center gap-2"
             >
               <RotateCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
             <div className="flex rounded-md overflow-hidden border">
               <Button
                 variant={viewMode === 'table' ? 'default' : 'outline'}
                 size="sm"
-                className="rounded-none px-3"
+                className="rounded-none"
                 onClick={() => setViewMode('table')}
               >
-                Table
+                <LayoutList className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Table</span>
               </Button>
               <Button
                 variant={viewMode === 'cards' ? 'default' : 'outline'}
                 size="sm"
-                className="rounded-none px-3"
+                className="rounded-none"
                 onClick={() => setViewMode('cards')}
               >
-                Cards
+                <LayoutGrid className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Cards</span>
               </Button>
             </div>
             <Button onClick={() => {
@@ -459,149 +470,154 @@ const DevicesPage: React.FC = () => {
               setIsEditing(false);
               setIsDialogOpen(true);
             }}>
-              <Plus className="h-4 w-4 mr-2" /> Add Device
+              <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="sm:inline">Add Device</span>
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">All Devices</TabsTrigger>
-            <TabsTrigger value={DeviceType.MOISTURE_SENSOR}>Moisture Sensors</TabsTrigger>
-            <TabsTrigger value={DeviceType.TEMPERATURE_SENSOR}>Temperature Sensors</TabsTrigger>
-            <TabsTrigger value={DeviceType.VALVE}>Valves</TabsTrigger>
-            <TabsTrigger value={DeviceType.PUMP}>Pumps</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={activeTab} className="mt-6">
-            {filteredDevices.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-6">
-                  <p className="text-muted-foreground mb-4">No devices found</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      resetForm();
-                      setIsEditing(false);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" /> Add Device
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : viewMode === 'cards' ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredDevices.map((device) => (
-                  <DeviceCard 
-                    key={device.id} 
-                    device={device} 
-                    onStatusChange={handleStatusChange}
-                    onEdit={() => handleEditDevice(device)}
-                    onDelete={() => {
-                      setDeviceToDelete(device.id);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Device</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Zone</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Battery</TableHead>
-                        <TableHead>Last Updated</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredDevices.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center py-6">
-                            <p className="text-muted-foreground">No devices found</p>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        filteredDevices.map((device) => (
-                          <TableRow key={device.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-primary/10">
-                                  {getDeviceIcon(device.type)}
-                                </div>
-                                <span>{device.name}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {device.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </TableCell>
-                            <TableCell>
-                              {device.zoneId 
-                                ? zones.find(zone => zone.id === device.zoneId)?.name || 'Unknown Zone'
-                                : 'Unassigned'
-                              }
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={`${getStatusColor(device.status)} text-white`}>
-                                {getStatusText(device.status)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span className={
-                                  device.batteryLevel < 20 ? "text-red-500" : 
-                                  device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
-                                }>
-                                  {device.batteryLevel}%
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(device.lastUpdated).toLocaleString()}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="icon"
-                                  onClick={() => handleEditDevice(device)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="icon" 
-                                  className="text-red-500"
-                                  onClick={() => {
-                                    setDeviceToDelete(device.id);
-                                    setIsDeleteDialogOpen(true);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
+        <div className="overflow-x-auto">
+          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full overflow-x-auto flex whitespace-nowrap md:w-auto">
+              <TabsTrigger value="all">All Devices</TabsTrigger>
+              <TabsTrigger value={DeviceType.MOISTURE_SENSOR}>Moisture</TabsTrigger>
+              <TabsTrigger value={DeviceType.TEMPERATURE_SENSOR}>Temperature</TabsTrigger>
+              <TabsTrigger value={DeviceType.VALVE}>Valves</TabsTrigger>
+              <TabsTrigger value={DeviceType.PUMP}>Pumps</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value={activeTab} className="mt-6">
+              {filteredDevices.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-6">
+                    <p className="text-muted-foreground mb-4">No devices found</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        resetForm();
+                        setIsEditing(false);
+                        setIsDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Add Device
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : viewMode === 'cards' ? (
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {filteredDevices.map((device) => (
+                    <DeviceCard 
+                      key={device.id} 
+                      device={device} 
+                      onStatusChange={handleStatusChange}
+                      onEdit={() => handleEditDevice(device)}
+                      onDelete={() => {
+                        setDeviceToDelete(device.id);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-0 overflow-auto">
+                    <div className="w-full overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Device</TableHead>
+                            <TableHead className="hidden sm:table-cell">Type</TableHead>
+                            <TableHead className="hidden md:table-cell">Zone</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="hidden md:table-cell">Battery</TableHead>
+                            <TableHead className="hidden lg:table-cell">Last Updated</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredDevices.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-6">
+                                <p className="text-muted-foreground">No devices found</p>
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filteredDevices.map((device) => (
+                              <TableRow key={device.id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <div className="p-1.5 rounded-md bg-primary/10">
+                                      {getDeviceIcon(device.type)}
+                                    </div>
+                                    <span>{device.name}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  {device.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  {device.zoneId 
+                                    ? zones.find(zone => zone.id === device.zoneId)?.name || 'Unknown Zone'
+                                    : 'Unassigned'
+                                  }
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={`${getStatusColor(device.status)} text-white`}>
+                                    {getStatusText(device.status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <div className="flex items-center">
+                                    <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
+                                    <span className={
+                                      device.batteryLevel < 20 ? "text-red-500" : 
+                                      device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
+                                    }>
+                                      {device.batteryLevel}%
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">
+                                  {new Date(device.lastUpdated).toLocaleString()}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon"
+                                      onClick={() => handleEditDevice(device)}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon" 
+                                      className="text-red-500"
+                                      onClick={() => {
+                                        setDeviceToDelete(device.id);
+                                        setIsDeleteDialogOpen(true);
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Edit Device' : 'Add New Device'}</DialogTitle>
             <DialogDescription>
@@ -614,27 +630,33 @@ const DevicesPage: React.FC = () => {
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+              <Label htmlFor="name" className="text-right hidden sm:block">
+                Name
+              </Label>
+              <Label htmlFor="name" className="sm:hidden">
                 Name
               </Label>
               <Input
                 id="name"
                 value={formValues.name}
                 onChange={(e) => setFormValues({...formValues, name: e.target.value})}
-                className="col-span-3"
+                className="col-span-4 sm:col-span-3"
                 placeholder="Moisture Sensor A1"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
+              <Label htmlFor="type" className="text-right hidden sm:block">
+                Type
+              </Label>
+              <Label htmlFor="type" className="sm:hidden">
                 Type
               </Label>
               <Select 
                 value={formValues.type} 
                 onValueChange={(value) => setFormValues({...formValues, type: value as DeviceType})}
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-4 sm:col-span-3">
                   <SelectValue placeholder="Select device type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -648,14 +670,17 @@ const DevicesPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
+              <Label htmlFor="status" className="text-right hidden sm:block">
+                Status
+              </Label>
+              <Label htmlFor="status" className="sm:hidden">
                 Status
               </Label>
               <Select 
                 value={formValues.status} 
                 onValueChange={(value) => setFormValues({...formValues, status: value as DeviceStatus})}
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-4 sm:col-span-3">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -669,10 +694,13 @@ const DevicesPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="batteryLevel" className="text-right">
+              <Label htmlFor="batteryLevel" className="text-right hidden sm:block">
                 Battery Level
               </Label>
-              <div className="col-span-3 flex items-center">
+              <Label htmlFor="batteryLevel" className="sm:hidden">
+                Battery Level
+              </Label>
+              <div className="col-span-4 sm:col-span-3 flex items-center">
                 <Input
                   id="batteryLevel"
                   type="number"
@@ -690,14 +718,17 @@ const DevicesPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="zone" className="text-right">
+              <Label htmlFor="zone" className="text-right hidden sm:block">
+                Zone
+              </Label>
+              <Label htmlFor="zone" className="sm:hidden">
                 Zone
               </Label>
               <Select 
                 value={formValues.zoneId || 'unassigned'}
                 onValueChange={(value) => setFormValues({...formValues, zoneId: value === 'unassigned' ? undefined : value})}
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-4 sm:col-span-3">
                   <SelectValue placeholder="Assign to zone (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -713,10 +744,13 @@ const DevicesPage: React.FC = () => {
 
             {!isEditing && (
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">
+                <Label className="text-right hidden sm:block">
                   Location
                 </Label>
-                <div className="col-span-3">
+                <Label className="sm:hidden">
+                  Location
+                </Label>
+                <div className="col-span-4 sm:col-span-3">
                   <p className="text-sm text-muted-foreground">
                     Default position will be used. You can drag the device on the map to set its exact location later.
                   </p>
@@ -725,11 +759,14 @@ const DevicesPage: React.FC = () => {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="w-full sm:w-auto">Cancel</Button>
             </DialogClose>
-            <Button onClick={isEditing ? handleUpdateDevice : handleCreateDevice}>
+            <Button 
+              onClick={isEditing ? handleUpdateDevice : handleCreateDevice}
+              className="w-full sm:w-auto"
+            >
               {isEditing ? 'Update Device' : 'Add Device'}
             </Button>
           </DialogFooter>
@@ -744,13 +781,17 @@ const DevicesPage: React.FC = () => {
               Are you sure you want to delete this device? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
             <DialogClose asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <X className="h-4 w-4 mr-2" /> Cancel
               </Button>
             </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteConfirm}
+              className="w-full sm:w-auto"
+            >
               <Check className="h-4 w-4 mr-2" /> Delete
             </Button>
           </DialogFooter>

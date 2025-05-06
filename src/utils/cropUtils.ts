@@ -25,8 +25,8 @@ export const fetchCrops = async (filters?: CropFilter) => {
     if (filters) {
       // Properly handle the growthStage filter with type checking
       if (filters.growthStage && filters.growthStage !== '' as GrowthStage | '') {
-        // We need to use the value directly without casting
-        query = query.eq('growth_stage', filters.growthStage);
+        // Convert GrowthStage enum to string for the database query
+        query = query.eq('growth_stage', filters.growthStage.toString() as any);
       }
       
       if (filters.zoneId) {
@@ -347,7 +347,7 @@ const cropToDb = (crop: Omit<Crop, 'id'> | Crop) => {
     variety: rest.variety || null,
     planting_date: rest.plantingDate,
     harvest_date: rest.harvestDate || null,
-    growth_stage: rest.growthStage, // No casting needed - GrowthStage enum values match DB values
+    growth_stage: rest.growthStage.toString() as any, // Convert enum to string for the database
     zone_id: rest.zoneId,
     ideal_moisture: rest.idealMoisture,
     ideal_temperature: rest.idealTemperature,

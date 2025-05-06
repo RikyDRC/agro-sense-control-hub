@@ -121,6 +121,44 @@ export type Database = {
           },
         ]
       }
+      crop_images: {
+        Row: {
+          capture_date: string
+          created_at: string
+          crop_id: string
+          id: string
+          image_url: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          capture_date: string
+          created_at?: string
+          crop_id: string
+          id?: string
+          image_url: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          capture_date?: string
+          created_at?: string
+          crop_id?: string
+          id?: string
+          image_url?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crop_images_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crops: {
         Row: {
           created_at: string

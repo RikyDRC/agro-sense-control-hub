@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Crop, GrowthStage, Zone, CropImage } from '@/types';
 import { toast } from '@/components/ui/sonner';
@@ -107,7 +106,7 @@ export const fetchCropById = async (cropId: string) => {
       .from('crop_images')
       .select('*')
       .eq('crop_id', cropId)
-      .order('capture_date', { ascending: false });
+      .order('capture_date', { ascending: true });
     
     if (!imageError && imageData) {
       crop.images = imageData.map(img => ({

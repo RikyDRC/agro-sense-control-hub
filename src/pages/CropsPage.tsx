@@ -64,13 +64,15 @@ const CropsPage: React.FC = () => {
   } = useQuery({
     queryKey: ['crop', selectedCropId],
     queryFn: () => selectedCropId ? fetchCropById(selectedCropId) : null,
-    enabled: !!selectedCropId,
-    onSuccess: (data) => {
-      if (data) {
-        setSelectedCrop(data);
-      }
-    }
+    enabled: !!selectedCropId
   });
+
+  // Update selected crop when data is fetched
+  useEffect(() => {
+    if (selectedCropDetails) {
+      setSelectedCrop(selectedCropDetails);
+    }
+  }, [selectedCropDetails]);
 
   const handleFilterChange = (newFilters: CropFilter) => {
     setFilters(newFilters);

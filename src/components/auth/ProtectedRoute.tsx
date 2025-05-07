@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLocalLoading(false);
-    }, 500); // Reduced from 1000ms to 500ms for faster feedback
+    }, 500);
     
     return () => clearTimeout(timer);
   }, []);
@@ -56,17 +56,21 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
-  // For role-protected routes, we still check, but only if we have profile data
+  // For role-protected routes, check role if profile is available
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
-    toast.error("You don't have permission to access this page");
-    return <Navigate to="/" replace />;
+    toast.error(`You don't have permission to access this page. Required role: ${allowedRoles.join(' or ')}`);
+    
+    // Send admins and super admins to dashboard, others to subscription page
+    if (profile.role === 'super_admin' || profile.role === 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      return <Navigate to="/subscription/plans" replace />;
+    }
   }
 
-  // We're now returning the children even if we don't have a profile
-  // This is a fallback to ensure the app doesn't get stuck
   return <>{children}</>;
 };
 

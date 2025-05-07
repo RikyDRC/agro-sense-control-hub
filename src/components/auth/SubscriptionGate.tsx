@@ -43,7 +43,8 @@ const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
   }
 
   // Admin and Super Admin users don't need a subscription
-  if (isRoleSuperAdmin() || isRoleAdmin()) {
+  if (profile && (profile.role === 'super_admin' || profile.role === 'admin')) {
+    console.log(`Admin user detected (${profile.role}), bypassing subscription check`);
     return <>{children}</>;
   }
 

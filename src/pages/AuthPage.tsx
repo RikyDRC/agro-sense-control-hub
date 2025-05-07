@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,18 +31,22 @@ const AuthPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const redirectTo = searchParams.get('redirectTo') || '/subscription/plans';
 
+  // Handle redirection based on user role and subscription status
   useEffect(() => {
-    if (session) {
-      // If user is admin or super_admin, redirect to dashboard
-      if (profile?.role === 'super_admin' || profile?.role === 'admin') {
+    if (session && profile) {
+      console.log("Redirecting based on profile role:", profile.role);
+      
+      // If user is admin or super_admin, redirect to dashboard immediately
+      if (profile.role === 'super_admin' || profile.role === 'admin') {
         navigate('/dashboard');
+        return;
       } 
-      // If user has an active subscription, redirect to dashboard
-      else if (subscription && subscription.status === 'active') {
+      
+      // For farmers, check subscription status
+      if (subscription && subscription.status === 'active') {
         navigate('/dashboard');
-      } 
-      // Otherwise redirect to subscription plans page (for farmers and new users)
-      else {
+      } else {
+        // If no active subscription, send to subscription plans
         navigate('/subscription/plans');
       }
     }

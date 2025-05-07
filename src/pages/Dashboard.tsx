@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
@@ -8,6 +8,8 @@ import WeatherWidget from '@/components/dashboard/WeatherWidget';
 import QuickActions from '@/components/dashboard/QuickActions';
 import { Device, DeviceStatus, DeviceType, WeatherCondition, WeatherForecast } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/button';
+import { SunMoon } from 'lucide-react';
 
 // Mock Data
 const mockDevices: Device[] = [
@@ -115,11 +117,33 @@ const mockForecast: WeatherForecast[] = Array.from({ length: 5 }).map((_, index)
 });
 
 const Dashboard: React.FC = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
+  
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back to your farm monitoring system</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back to your farm monitoring system</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={toggleTheme}
+          className="h-9 w-9 rounded-full"
+        >
+          <SunMoon className="h-5 w-5" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </div>
 
       <div className="space-y-6">

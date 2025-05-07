@@ -1,234 +1,192 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ReactApexChart from 'react-apexcharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { DropletIcon, Thermometer, Wind } from 'lucide-react';
 
-interface SensorReadingsChartProps {
-  className?: string;
-}
-
-// Mock data
-const mockMoistureData = [
-  { x: '2023-04-01', y: 28 },
-  { x: '2023-04-02', y: 32 },
-  { x: '2023-04-03', y: 36 },
-  { x: '2023-04-04', y: 30 },
-  { x: '2023-04-05', y: 25 },
-  { x: '2023-04-06', y: 29 },
-  { x: '2023-04-07', y: 33 },
-  { x: '2023-04-08', y: 35 },
-  { x: '2023-04-09', y: 38 },
-  { x: '2023-04-10', y: 32 },
-  { x: '2023-04-11', y: 28 },
-  { x: '2023-04-12', y: 24 },
-  { x: '2023-04-13', y: 26 },
-  { x: '2023-04-14', y: 30 },
-  { x: '2023-04-15', y: 34 },
-];
-
-const mockTemperatureData = [
-  { x: '2023-04-01', y: 22 },
-  { x: '2023-04-02', y: 24 },
-  { x: '2023-04-03', y: 25 },
-  { x: '2023-04-04', y: 27 },
-  { x: '2023-04-05', y: 29 },
-  { x: '2023-04-06', y: 28 },
-  { x: '2023-04-07', y: 26 },
-  { x: '2023-04-08', y: 25 },
-  { x: '2023-04-09', y: 24 },
-  { x: '2023-04-10', y: 26 },
-  { x: '2023-04-11', y: 28 },
-  { x: '2023-04-12', y: 30 },
-  { x: '2023-04-13', y: 29 },
-  { x: '2023-04-14', y: 27 },
-  { x: '2023-04-15', y: 25 },
-];
-
-const mockHumidityData = [
-  { x: '2023-04-01', y: 65 },
-  { x: '2023-04-02', y: 62 },
-  { x: '2023-04-03', y: 58 },
-  { x: '2023-04-04', y: 55 },
-  { x: '2023-04-05', y: 60 },
-  { x: '2023-04-06', y: 64 },
-  { x: '2023-04-07', y: 68 },
-  { x: '2023-04-08', y: 66 },
-  { x: '2023-04-09', y: 62 },
-  { x: '2023-04-10', y: 59 },
-  { x: '2023-04-11', y: 63 },
-  { x: '2023-04-12', y: 67 },
-  { x: '2023-04-13', y: 70 },
-  { x: '2023-04-14', y: 68 },
-  { x: '2023-04-15', y: 65 },
-];
-
-const zones = [
-  { value: 'all', label: 'All Zones' },
-  { value: 'zone-a', label: 'Zone A' },
-  { value: 'zone-b', label: 'Zone B' },
-  { value: 'zone-c', label: 'Zone C' },
-];
-
-const timeRanges = [
-  { value: 'day', label: 'Last 24 Hours' },
-  { value: 'week', label: 'Last Week' },
-  { value: 'month', label: 'Last Month' },
-  { value: 'year', label: 'Last Year' },
-];
-
-const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ className }) => {
-  const [selectedZone, setSelectedZone] = useState('all');
-  const [selectedTimeRange, setSelectedTimeRange] = useState('week');
-  
-  const getChartOptions = (title: string, color: string, unit: string) => {
+// Mock data for the chart
+const generateHourlyData = (hours = 24, baseValue = 30, variance = 10) => {
+  return Array.from({ length: hours }).map((_, i) => {
+    const hour = i;
+    const timeLabel = `${hour}:00`;
+    // Create some natural-looking variations
+    const moistureValue = Math.max(0, Math.min(100, 
+      baseValue + Math.sin(i / 4) * variance + (Math.random() * variance - variance / 2)
+    ));
+    const tempValue = 18 + Math.sin(i / 8) * 5 + (Math.random() * 2);
+    const windSpeed = 5 + Math.cos(i / 6) * 3 + (Math.random() * 1.5);
+    
     return {
-      chart: {
-        type: 'area' as const,
-        toolbar: {
-          show: false,
-        },
-        zoom: {
-          enabled: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: 'smooth' as const,
-        width: 2,
-      },
-      colors: [color],
-      fill: {
-        type: 'gradient' as const,
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.2,
-          stops: [0, 90, 100],
-        },
-      },
-      tooltip: {
-        x: {
-          format: 'dd MMM yyyy',
-        },
-        y: {
-          formatter: function(value: number) {
-            return `${value}${unit}`;
-          },
-        },
-      },
-      grid: {
-        borderColor: '#f1f1f1',
-        row: {
-          colors: ['transparent', 'transparent'],
-          opacity: 0.5,
-        },
-      },
-      xaxis: {
-        type: 'datetime' as const,
-        labels: {
-          datetimeUTC: false,
-        },
-      },
-      yaxis: {
-        title: {
-          text: title,
-        },
-        labels: {
-          formatter: function(value: number) {
-            return `${value}${unit}`;
-          },
-        },
-      },
+      time: timeLabel,
+      moisture: moistureValue.toFixed(1),
+      temperature: tempValue.toFixed(1),
+      windSpeed: windSpeed.toFixed(1),
     };
-  };
+  });
+};
+
+const dailyData = generateHourlyData(24, 35, 15);
+
+// Generate weekly data with a different pattern
+const generateWeeklyData = () => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return days.map((day, i) => {
+    // Create a different pattern for weekly data
+    const moistureValue = 30 + Math.sin(i / 2) * 10 + (Math.random() * 5);
+    const tempValue = 20 + Math.sin(i / 3) * 4 + (Math.random() * 2);
+    const windSpeed = 6 + Math.cos(i / 2) * 2 + (Math.random() * 1.5);
+    
+    return {
+      time: day,
+      moisture: moistureValue.toFixed(1),
+      temperature: tempValue.toFixed(1),
+      windSpeed: windSpeed.toFixed(1),
+    };
+  });
+};
+
+const weeklyData = generateWeeklyData();
+
+// Generate monthly data with another pattern
+const generateMonthlyData = () => {
+  return Array.from({ length: 30 }).map((_, i) => {
+    const day = i + 1;
+    const moistureValue = 40 + Math.sin(i / 5) * 15 + (Math.random() * 8 - 4);
+    const tempValue = 22 + Math.sin(i / 7) * 6 + (Math.random() * 3 - 1.5);
+    const windSpeed = 7 + Math.cos(i / 4) * 3 + (Math.random() * 2 - 1);
+    
+    return {
+      time: `${day}`,
+      moisture: moistureValue.toFixed(1),
+      temperature: tempValue.toFixed(1),
+      windSpeed: windSpeed.toFixed(1),
+    };
+  });
+};
+
+const monthlyData = generateMonthlyData();
+
+const chartConfig = {
+  moisture: {
+    label: 'Soil Moisture',
+    color: 'hsl(152, 37%, 38%)',
+    theme: {
+      light: 'hsl(152, 37%, 38%)',
+      dark: 'hsl(152, 37%, 60%)',
+    },
+    icon: DropletIcon,
+  },
+  temperature: {
+    label: 'Temperature',
+    theme: {
+      light: 'hsl(46, 100%, 50%)',
+      dark: 'hsl(46, 100%, 60%)',
+    },
+    icon: Thermometer,
+  },
+  windSpeed: {
+    label: 'Wind Speed',
+    theme: {
+      light: 'hsl(200, 70%, 50%)',
+      dark: 'hsl(200, 70%, 60%)',
+    },
+    icon: Wind,
+  },
+};
+
+const SensorReadingsChart: React.FC = () => {
+  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  
+  const data = timeRange === 'daily' 
+    ? dailyData 
+    : timeRange === 'weekly' 
+      ? weeklyData 
+      : monthlyData;
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-2">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Sensor Readings</CardTitle>
-            <CardDescription>Historical readings from your field sensors</CardDescription>
+            <CardTitle className="text-lg font-semibold">Sensor Readings</CardTitle>
+            <CardDescription>Monitoring data from field sensors</CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
-            <Select value={selectedZone} onValueChange={setSelectedZone}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Zone" />
-              </SelectTrigger>
-              <SelectContent>
-                {zones.map((zone) => (
-                  <SelectItem key={zone.value} value={zone.value}>
-                    {zone.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeRanges.map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs 
+            defaultValue="daily" 
+            className="w-fit" 
+            onValueChange={(value) => setTimeRange(value as 'daily' | 'weekly' | 'monthly')}
+          >
+            <TabsList className="grid grid-cols-3 h-8">
+              <TabsTrigger value="daily" className="text-xs px-3">Daily</TabsTrigger>
+              <TabsTrigger value="weekly" className="text-xs px-3">Weekly</TabsTrigger>
+              <TabsTrigger value="monthly" className="text-xs px-3">Monthly</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="moisture" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="moisture">Soil Moisture</TabsTrigger>
-            <TabsTrigger value="temperature">Temperature</TabsTrigger>
-            <TabsTrigger value="humidity">Humidity</TabsTrigger>
-          </TabsList>
-          <TabsContent value="moisture">
-            <div className="h-[350px]">
-              <ReactApexChart
-                options={getChartOptions('Soil Moisture', '#3D8361', '%')}
-                series={[{
-                  name: 'Soil Moisture',
-                  data: mockMoistureData,
-                }]}
-                type="area" as const
-                height="100%"
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="temperature">
-            <div className="h-[350px]">
-              <ReactApexChart
-                options={getChartOptions('Temperature', '#FF9800', '°C')}
-                series={[{
-                  name: 'Temperature',
-                  data: mockTemperatureData,
-                }]}
-                type="area"
-                height="100%"
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="humidity">
-            <div className="h-[350px]">
-              <ReactApexChart
-                options={getChartOptions('Humidity', '#4B91C5', '%')}
-                series={[{
-                  name: 'Humidity',
-                  data: mockHumidityData,
-                }]}
-                type="area"
-                height="100%"
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+        <div className="h-[300px]">
+          <ChartContainer config={chartConfig} className="w-full h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="var(--muted-foreground)" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  minTickGap={8}
+                />
+                <YAxis 
+                  stroke="var(--muted-foreground)" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => `${value}${timeRange === 'daily' ? '%' : '°'}`}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend 
+                  formatter={(value) => chartConfig[value as keyof typeof chartConfig]?.label || value} 
+                  iconType="circle" 
+                  height={30}
+                  verticalAlign="bottom"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="moisture" 
+                  stroke="var(--color-moisture)" 
+                  strokeWidth={2} 
+                  dot={{ r: 2, strokeWidth: 2 }}
+                  activeDot={{ r: 4 }}
+                  name="Soil Moisture"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="temperature" 
+                  stroke="var(--color-temperature)" 
+                  strokeWidth={2} 
+                  dot={{ r: 2, strokeWidth: 2 }}
+                  activeDot={{ r: 4 }}
+                  name="Temperature"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="windSpeed" 
+                  stroke="var(--color-windSpeed)" 
+                  strokeWidth={2} 
+                  dot={{ r: 2, strokeWidth: 2 }}
+                  activeDot={{ r: 4 }}
+                  name="Wind Speed"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );

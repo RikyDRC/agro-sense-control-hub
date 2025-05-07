@@ -14,14 +14,26 @@ interface StatCardProps {
     isPositive: boolean;
   };
   className?: string;
+  colorClass?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon, trend, className }) => {
+const StatCard: React.FC<StatCardProps> = ({ 
+  title, 
+  value, 
+  description, 
+  icon, 
+  trend, 
+  className,
+  colorClass = "bg-primary/10 text-primary"
+}) => {
   return (
-    <Card className={cn("transition-all hover:shadow-md", className)}>
+    <Card className={cn(
+      "transition-all hover:shadow-md border-l-4", 
+      className
+    )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="h-8 w-8 rounded-full bg-primary/10 p-1.5 text-primary">
+        <div className={cn("h-8 w-8 rounded-full p-1.5", colorClass)}>
           {icon}
         </div>
       </CardHeader>
@@ -55,7 +67,8 @@ const DashboardStats: React.FC = () => {
         description="Total today" 
         icon={<DropletIcon className="h-full w-full" />}
         trend={{ value: 12, isPositive: false }}
-        className="border-l-4 border-agro-blue"
+        className="border-agro-blue"
+        colorClass="bg-agro-blue-light/30 text-agro-blue-dark"
       />
       <StatCard 
         title="Avg. Soil Moisture" 
@@ -63,21 +76,24 @@ const DashboardStats: React.FC = () => {
         description="Across all zones" 
         icon={<ThermometerIcon className="h-full w-full" />}
         trend={{ value: 8, isPositive: true }}
-        className="border-l-4 border-agro-green"
+        className="border-agro-green"
+        colorClass="bg-agro-green-light/30 text-agro-green-dark"
       />
       <StatCard 
         title="Active Pumps" 
         value="2/5" 
         description="Currently running" 
         icon={<Zap className="h-full w-full" />}
-        className="border-l-4 border-agro-status-warning"
+        className="border-agro-status-warning"
+        colorClass="bg-amber-100 text-amber-700"
       />
       <StatCard 
         title="Next Scheduled" 
         value="2h 15m" 
         description="Zone B irrigation" 
         icon={<Clock className="h-full w-full" />}
-        className="border-l-4 border-agro-status-info"
+        className="border-agro-status-info"
+        colorClass="bg-blue-100 text-blue-700"
       />
     </div>
   );

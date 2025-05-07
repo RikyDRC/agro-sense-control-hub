@@ -4,7 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Device, DeviceStatus, DeviceType } from '@/types';
-import { Battery, Droplet, Thermometer, Zap, Activity, Eye, FlaskConical } from 'lucide-react';
+import { 
+  Battery, 
+  Droplet, 
+  Thermometer, 
+  Zap, 
+  Activity, 
+  Eye, 
+  FlaskConical,
+  RefreshCw
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface DeviceStatusListProps {
   devices: Device[];
@@ -60,42 +70,66 @@ const getStatusText = (status: DeviceStatus) => {
   }
 };
 
+const getBatteryColorClass = (level: number) => {
+  if (level < 20) return "text-red-500";
+  if (level < 50) return "text-amber-500";
+  return "text-green-500";
+};
+
 const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className }) => {
   return (
-    <Card className={cn("h-full", className)}>
-      <CardHeader>
-        <CardTitle>Device Status</CardTitle>
-        <CardDescription>Status and battery levels of your field devices</CardDescription>
+    <Card className={cn("h-full shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Device Status</CardTitle>
+            <CardDescription>Status and battery levels of your field devices</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <RefreshCw className="h-4 w-4" />
+            <span className="sr-only">Refresh</span>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {devices.map((device) => (
-            <div key={device.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div 
+              key={device.id} 
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+            >
               <div className="flex items-center gap-3">
                 <div className={cn(
-                  "p-2 rounded-md",
-                  device.status === DeviceStatus.ONLINE ? "bg-green-100" : "bg-gray-100"
+                  "p-2 rounded-md transition-colors",
+                  device.status === DeviceStatus.ONLINE ? "bg-green-100 group-hover:bg-green-200" : 
+                  device.status === DeviceStatus.ALERT ? "bg-red-100 group-hover:bg-red-200" :
+                  device.status === DeviceStatus.MAINTENANCE ? "bg-amber-100 group-hover:bg-amber-200" :
+                  "bg-gray-100 group-hover:bg-gray-200"
                 )}>
                   {getDeviceIcon(device.type)}
                 </div>
                 <div>
                   <h4 className="font-medium text-sm">{device.name}</h4>
                   <p className="text-xs text-muted-foreground">
-                    Last updated: {new Date(device.lastUpdated).toLocaleString()}
+                    {device.lastReading !== undefined ? 
+                      `Last reading: ${device.lastReading}` : 
+                      `Last updated: ${new Date(device.lastUpdated).toLocaleString()}`
+                    }
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center">
-                  <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
-                  <span className={cn(
-                    "text-xs",
-                    device.batteryLevel < 20 ? "text-red-500" : 
-                    device.batteryLevel < 50 ? "text-amber-500" : "text-green-500"
-                  )}>
-                    {device.batteryLevel}%
-                  </span>
-                </div>
+                {device.batteryLevel !== undefined && (
+                  <div className="flex items-center">
+                    <Battery className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <span className={cn(
+                      "text-xs font-medium",
+                      getBatteryColorClass(device.batteryLevel)
+                    )}>
+                      {device.batteryLevel}%
+                    </span>
+                  </div>
+                )}
                 <Badge className={cn(
                   "text-white",
                   getStatusColor(device.status)
@@ -108,7 +142,11 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
 
           {devices.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Activity className="h-8 w-8 text-muted-foreground mb-2" />
               <p className="text-muted-foreground">No devices found</p>
+              <Button variant="outline" size="sm" className="mt-2">
+                Add Device
+              </Button>
             </div>
           )}
         </div>

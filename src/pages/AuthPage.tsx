@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, session, loading, subscription } = useAuth();
+  const { signIn, signUp, session, loading, subscription, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,11 +32,16 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (session) {
-      // If user has an active subscription, redirect to dashboard
-      if (subscription && subscription.status === 'active') {
+      // If user is admin or super_admin, redirect to dashboard
+      if (profile?.role === 'super_admin' || profile?.role === 'admin') {
         navigate('/dashboard');
-      } else {
-        // Otherwise redirect to subscription plans page
+      } 
+      // If user has an active subscription, redirect to dashboard
+      else if (subscription && subscription.status === 'active') {
+        navigate('/dashboard');
+      } 
+      // Otherwise redirect to subscription plans page (for farmers and new users)
+      else {
         navigate('/subscription/plans');
       }
     }
@@ -69,7 +74,7 @@ const AuthPage = () => {
     };
     
     checkUserCount();
-  }, [session, navigate, subscription]);
+  }, [session, navigate, subscription, profile]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

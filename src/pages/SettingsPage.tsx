@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -6,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfileForm from '@/components/settings/ProfileForm';
 import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
+import PaymentGatewaysConfig from '@/components/settings/PaymentGatewaysConfig';
 import { Globe, BellIcon, Settings as SettingsIcon, ShieldCheck, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -515,6 +515,8 @@ const SettingsPage: React.FC = () => {
               
               {hasSuperAdminRights() && <GoogleMapsApiKey />}
               
+              {hasSuperAdminRights() && <PaymentGatewaysConfig />}
+              
               {hasAdminRights() && (
                 <div className="grid gap-6">
                   <Card>
@@ -540,6 +542,23 @@ const SettingsPage: React.FC = () => {
                               </p>
                             </div>
                             <Button onClick={() => navigate('/admin/config')}>
+                              Manage
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {hasSuperAdminRights() && (
+                          <div className="flex justify-between items-center p-4 border rounded-md">
+                            <div>
+                              <h3 className="font-medium flex items-center">
+                                <CreditCard className="h-4 w-4 mr-2 text-blue-500" /> 
+                                Payment Gateways
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                Configure payment processors and checkout options
+                              </p>
+                            </div>
+                            <Button onClick={() => navigate('/admin/payment-gateways')}>
                               Manage
                             </Button>
                           </div>

@@ -9,28 +9,51 @@ import PlanList from '@/components/subscription/PlanList';
 import PlanForm from '@/components/subscription/PlanForm';
 import { useNavigate } from 'react-router-dom';
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  billing_interval: string;
-  features: Record<string, any>;
-}
-
 const SubscriptionPlansPage: React.FC = () => {
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPlanForm, setShowPlanForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+  const [editingPlan, setEditingPlan] = useState<any | null>(null);
   const [subscribing, setSubscribing] = useState(false);
   const [deletingPlan, setDeletingPlan] = useState<string | null>(null);
+  const [planFormData, setPlanFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    billing_interval: 'month',
+    features: {} as Record<string, any>
+  });
+  const [savingPlan, setSavingPlan] = useState(false);
+  
   const { isRoleSuperAdmin, user, subscription, refreshSubscription } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  useEffect(() => {
+    if (editingPlan) {
+      setPlanFormData({
+        id: editingPlan.id,
+        name: editingPlan.name,
+        description: editingPlan.description || '',
+        price: editingPlan.price.toString(),
+        billing_interval: editingPlan.billing_interval,
+        features: typeof editingPlan.features === 'object' ? 
+          editingPlan.features : 
+          JSON.parse(editingPlan.features || '{}')
+      });
+    } else {
+      setPlanFormData({
+        name: '',
+        description: '',
+        price: '',
+        billing_interval: 'month',
+        features: {}
+      });
+    }
+  }, [editingPlan]);
 
   const fetchPlans = async () => {
     try {
@@ -46,7 +69,12 @@ const SubscriptionPlansPage: React.FC = () => {
       if (data.length === 0 && isRoleSuperAdmin()) {
         await createDefaultPlan();
       } else {
-        setPlans(data || []);
+        // Parse JSON features if stored as string
+        const processedPlans = data.map(plan => ({
+          ...plan,
+          features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features
+        }));
+        setPlans(processedPlans || []);
       }
     } catch (error) {
       console.error('Error fetching plans:', error);
@@ -82,7 +110,10 @@ const SubscriptionPlansPage: React.FC = () => {
       if (error) throw error;
 
       toast.success('Default subscription plan created');
-      setPlans([data]);
+      setPlans([{
+        ...data,
+        features: typeof data.features === 'string' ? JSON.parse(data.features) : data.features
+      }]);
     } catch (error) {
       console.error('Error creating default plan:', error);
       toast.error('Failed to create default plan');
@@ -94,7 +125,7 @@ const SubscriptionPlansPage: React.FC = () => {
     setShowPlanForm(true);
   };
 
-  const handleEditPlan = (plan: SubscriptionPlan) => {
+  const handleEditPlan = (plan: any) => {
     setEditingPlan(plan);
     setShowPlanForm(true);
   };
@@ -119,13 +150,41 @@ const SubscriptionPlansPage: React.FC = () => {
     }
   };
 
-  const handleSavePlan = async (plan: any) => {
+  const handleFormDataChange = (field: string, value: any) => {
+    setPlanFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleFeatureChange = (key: string, value: any) => {
+    setPlanFormData(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        [key]: value
+      }
+    }));
+  };
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
+      setSavingPlan(true);
+      const planData = {
+        name: planFormData.name,
+        description: planFormData.description,
+        price: parseFloat(planFormData.price),
+        billing_interval: planFormData.billing_interval,
+        features: planFormData.features
+      };
+
       if (editingPlan) {
         // Update existing plan
         const { error } = await supabase
           .from('subscription_plans')
-          .update(plan)
+          .update(planData)
           .eq('id', editingPlan.id);
 
         if (error) throw error;
@@ -134,7 +193,7 @@ const SubscriptionPlansPage: React.FC = () => {
         // Create new plan
         const { error } = await supabase
           .from('subscription_plans')
-          .insert(plan);
+          .insert(planData);
 
         if (error) throw error;
         toast.success('New subscription plan created');
@@ -145,6 +204,8 @@ const SubscriptionPlansPage: React.FC = () => {
     } catch (error) {
       console.error('Error saving plan:', error);
       toast.error('Failed to save subscription plan');
+    } finally {
+      setSavingPlan(false);
     }
   };
 
@@ -188,9 +249,13 @@ const SubscriptionPlansPage: React.FC = () => {
             <ScrollArea className="h-[calc(100vh-200px)] md:h-auto">
               <div className="p-6">
                 <PlanForm
-                  plan={editingPlan}
-                  onSubmit={handleSavePlan}
+                  planFormData={planFormData}
+                  isEditing={!!editingPlan}
+                  savingPlan={savingPlan}
                   onCancel={() => setShowPlanForm(false)}
+                  onSave={handleSavePlan}
+                  onFormDataChange={handleFormDataChange}
+                  onFeatureChange={handleFeatureChange}
                 />
               </div>
             </ScrollArea>

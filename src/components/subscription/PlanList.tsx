@@ -7,22 +7,13 @@ import { Info, AlertTriangle } from 'lucide-react';
 import PlanCard from './PlanCard';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  billing_interval: string;
-  features: Record<string, any>;
-}
-
 interface PlanListProps {
-  plans: SubscriptionPlan[];
+  plans: any[];
   subscribing: boolean;
   deletingPlan: string | null;
   onAddPlan: () => void;
   onSubscribe: (planId: string) => void;
-  onEditPlan: (plan: SubscriptionPlan) => void;
+  onEditPlan: (plan: any) => void;
   onDeletePlan: (planId: string) => void;
 }
 
@@ -103,8 +94,12 @@ const PlanList: React.FC<PlanListProps> = ({
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}
-            {...plan}
+            id={plan.id}
+            name={plan.name}
+            description={plan.description}
+            price={plan.price}
             billingInterval={plan.billing_interval}
+            features={plan.features}
             isActive={subscription?.plan?.id === plan.id}
             isSubscribing={subscribing}
             canManagePlans={isRoleSuperAdmin()}

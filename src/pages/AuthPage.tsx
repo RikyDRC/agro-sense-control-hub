@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, session, loading } = useAuth();
+  const location = useLocation();
+  const { signIn, signUp, session, loading, subscription } = useAuth();
   const [activeTab, setActiveTab] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,9 +26,19 @@ const AuthPage = () => {
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isInitialSetup, setIsInitialSetup] = useState(false);
 
+  // Get the redirect target from URL parameters or use default
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTo = searchParams.get('redirectTo') || '/subscription/plans';
+
   useEffect(() => {
     if (session) {
-      navigate('/dashboard');
+      // If user has an active subscription, redirect to dashboard
+      if (subscription && subscription.status === 'active') {
+        navigate('/dashboard');
+      } else {
+        // Otherwise redirect to subscription plans page
+        navigate('/subscription/plans');
+      }
     }
     
     // Check if there are any users in the system to determine if this is initial setup
@@ -59,7 +69,7 @@ const AuthPage = () => {
     };
     
     checkUserCount();
-  }, [session, navigate]);
+  }, [session, navigate, subscription]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,14 +81,14 @@ const AuthPage = () => {
       
       if (error) {
         setError(error.message);
+        setIsProcessing(false);
         return;
       }
       
       toast.success('Signed in successfully');
-      navigate('/dashboard');
+      // Navigation will be handled by the useEffect above
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -105,6 +115,7 @@ const AuthPage = () => {
       
       if (error) {
         setError(error.message);
+        setIsProcessing(false);
         return;
       }
       
@@ -113,7 +124,9 @@ const AuthPage = () => {
       // If this is the first user (super admin), automatically log them in
       if (isInitialSetup) {
         await signIn(email, password);
-        navigate('/dashboard');
+        // Navigation will be handled by the useEffect above
+      } else {
+        setActiveTab('signin');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');

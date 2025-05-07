@@ -21,7 +21,8 @@ const SubscriptionPlansPage: React.FC = () => {
     description: '',
     price: '',
     billing_interval: 'month',
-    features: {} as Record<string, any>
+    features: {} as Record<string, any>,
+    id: undefined as string | undefined // Add id property with undefined as default value
   });
   const [savingPlan, setSavingPlan] = useState(false);
   
@@ -35,14 +36,14 @@ const SubscriptionPlansPage: React.FC = () => {
   useEffect(() => {
     if (editingPlan) {
       setPlanFormData({
-        id: editingPlan.id,
         name: editingPlan.name,
         description: editingPlan.description || '',
         price: editingPlan.price.toString(),
         billing_interval: editingPlan.billing_interval,
         features: typeof editingPlan.features === 'object' ? 
           editingPlan.features : 
-          JSON.parse(editingPlan.features || '{}')
+          JSON.parse(editingPlan.features || '{}'),
+        id: editingPlan.id // Now properly typed
       });
     } else {
       setPlanFormData({
@@ -50,7 +51,8 @@ const SubscriptionPlansPage: React.FC = () => {
         description: '',
         price: '',
         billing_interval: 'month',
-        features: {}
+        features: {},
+        id: undefined // Clear the id when creating a new plan
       });
     }
   }, [editingPlan]);

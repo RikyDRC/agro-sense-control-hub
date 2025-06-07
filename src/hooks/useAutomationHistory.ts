@@ -78,10 +78,10 @@ export const useAutomationHistory = () => {
 
       const newEntry: AutomationHistory = {
         id: data.id,
-        type: data.type,
+        type: data.type as 'RULE_TRIGGER' | 'SCHEDULE' | 'MANUAL',
         name: data.name,
         description: data.description,
-        status: data.status,
+        status: data.status as 'SUCCESS' | 'FAILURE' | 'PENDING',
         zoneId: data.zone_id,
         deviceId: data.device_id,
         timestamp: data.timestamp,

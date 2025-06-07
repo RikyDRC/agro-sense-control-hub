@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -71,7 +70,6 @@ const monthlyData = generateMonthlyData();
 const chartConfig = {
   moisture: {
     label: 'Soil Moisture',
-    color: 'hsl(152, 37%, 38%)',
     theme: {
       light: 'hsl(152, 37%, 38%)',
       dark: 'hsl(152, 37%, 60%)',

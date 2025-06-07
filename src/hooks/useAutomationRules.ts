@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AutomationRule } from '@/types';
+import { AutomationRule, RuleCondition, RuleAction } from '@/types';
 import { toast } from '@/components/ui/sonner';
 
 export const useAutomationRules = () => {
@@ -23,8 +23,8 @@ export const useAutomationRules = () => {
         id: rule.id,
         name: rule.name,
         description: rule.description,
-        condition: rule.condition,
-        action: rule.action,
+        condition: rule.condition as RuleCondition,
+        action: rule.action as RuleAction,
         zoneId: rule.zone_id,
         isActive: rule.is_active,
         createdAt: rule.created_at,
@@ -52,8 +52,8 @@ export const useAutomationRules = () => {
         .insert({
           name: rule.name,
           description: rule.description,
-          condition: rule.condition,
-          action: rule.action,
+          condition: rule.condition as any,
+          action: rule.action as any,
           zone_id: rule.zoneId,
           is_active: rule.isActive,
           user_id: userData.user.id
@@ -67,8 +67,8 @@ export const useAutomationRules = () => {
         id: data.id,
         name: data.name,
         description: data.description,
-        condition: data.condition,
-        action: data.action,
+        condition: data.condition as RuleCondition,
+        action: data.action as RuleAction,
         zoneId: data.zone_id,
         isActive: data.is_active,
         createdAt: data.created_at,
@@ -92,8 +92,8 @@ export const useAutomationRules = () => {
         .update({
           name: updates.name,
           description: updates.description,
-          condition: updates.condition,
-          action: updates.action,
+          condition: updates.condition as any,
+          action: updates.action as any,
           zone_id: updates.zoneId,
           is_active: updates.isActive
         })
@@ -107,8 +107,8 @@ export const useAutomationRules = () => {
         id: data.id,
         name: data.name,
         description: data.description,
-        condition: data.condition,
-        action: data.action,
+        condition: data.condition as RuleCondition,
+        action: data.action as RuleAction,
         zoneId: data.zone_id,
         isActive: data.is_active,
         createdAt: data.created_at,

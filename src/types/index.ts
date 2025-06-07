@@ -1,3 +1,4 @@
+
 // This file contains type definitions for the entire application
 
 export interface Profile {
@@ -157,6 +158,7 @@ export interface AutomationRule {
 
 // Updated RuleCondition to include the needed properties
 export interface RuleCondition {
+  [key: string]: any;
   type: string;
   parameter?: string;
   operator?: string;
@@ -170,6 +172,7 @@ export interface RuleCondition {
 
 // Updated RuleAction to include the needed properties
 export interface RuleAction {
+  [key: string]: any;
   type: string;
   target: string; // Required property
   value?: string | number;
@@ -206,6 +209,7 @@ export enum WeatherCondition {
   STORM = 'storm',
   SNOW = 'snow',
   FOG = 'fog',
+  DRIZZLE = 'drizzle',
   // Adding the values used in the code
   SUNNY = 'sunny',
   RAINY = 'rainy',

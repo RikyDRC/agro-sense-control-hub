@@ -67,6 +67,60 @@ export type Database = {
           },
         ]
       }
+      automation_history: {
+        Row: {
+          description: string
+          details: string | null
+          device_id: string | null
+          id: string
+          name: string
+          status: string
+          timestamp: string
+          type: string
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          description: string
+          details?: string | null
+          device_id?: string | null
+          id?: string
+          name: string
+          status: string
+          timestamp?: string
+          type: string
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          description?: string
+          details?: string | null
+          device_id?: string | null
+          id?: string
+          name?: string
+          status?: string
+          timestamp?: string
+          type?: string
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_history_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_history_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_rules: {
         Row: {
           action: Json
@@ -344,6 +398,66 @@ export type Database = {
           },
           {
             foreignKeyName: "devices_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      irrigation_schedules: {
+        Row: {
+          created_at: string
+          days_of_week: number[]
+          description: string | null
+          device_id: string
+          duration: number
+          id: string
+          is_active: boolean
+          name: string
+          start_time: string
+          updated_at: string
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_of_week: number[]
+          description?: string | null
+          device_id: string
+          duration: number
+          id?: string
+          is_active?: boolean
+          name: string
+          start_time: string
+          updated_at?: string
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          days_of_week?: number[]
+          description?: string | null
+          device_id?: string
+          duration?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "irrigation_schedules_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "irrigation_schedules_zone_id_fkey"
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "zones"

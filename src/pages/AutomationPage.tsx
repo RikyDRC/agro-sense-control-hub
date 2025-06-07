@@ -3,11 +3,16 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Plus, ArrowUpRight, CalendarDays, History, X, Clock, Loader2 } from 'lucide-react';
+import { Play, Pause, Plus, ArrowUpRight, CalendarDays, History, X, Clock, Loader2, CheckSquare, Square } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
+import { 
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/components/ui/sonner';
 import { 
   ConditionType, 
@@ -16,142 +21,22 @@ import {
   DeviceStatus,
   DeviceType,
   IrrigationStatus,
-  AutomationRule,
   Zone,
   Device
 } from '@/types';
 import AutomationRuleForm from '@/components/automation/AutomationRuleForm';
-import { v4 as uuidv4 } from 'uuid';
+import AutomationFilters from '@/components/automation/AutomationFilters';
+import BulkActions from '@/components/automation/BulkActions';
+import { useAutomationRules } from '@/hooks/useAutomationRules';
+import { useIrrigationSchedules, type IrrigationSchedule } from '@/hooks/useIrrigationSchedules';
+import { useAutomationHistory } from '@/hooks/useAutomationHistory';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Interface for Schedule
-interface IrrigationSchedule {
-  id: string;
-  name: string;
-  description: string;
-  zoneId: string;
-  deviceId: string;
-  startTime: string;
-  duration: number;
-  daysOfWeek: number[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Interface for History
-interface AutomationHistory {
-  id: string;
-  type: 'RULE_TRIGGER' | 'SCHEDULE' | 'MANUAL';
-  name: string;
-  description: string;
-  status: 'SUCCESS' | 'FAILURE' | 'PENDING';
-  zoneId: string;
-  deviceId?: string;
-  timestamp: string;
-  details?: string;
-}
-
-const initialRules: AutomationRule[] = [
-  {
-    id: '1',
-    name: 'Auto-Irrigation',
-    description: 'Automatically activate irrigation when soil moisture falls below threshold',
-    condition: {
-      type: ConditionType.SENSOR_READING,
-      sensorId: '1',
-      threshold: 30,
-      operator: ComparisonOperator.LESS_THAN
-    },
-    action: {
-      type: ActionType.TOGGLE_DEVICE,
-      deviceId: '2',
-      duration: 30,
-      target: '2' // Added required target field
-    },
-    zoneId: 'zone-a',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'Morning Irrigation',
-    description: 'Schedule irrigation every morning at 6:00 AM',
-    condition: {
-      type: ConditionType.TIME_BASED,
-      timeOfDay: '06:00',
-      daysOfWeek: [1, 2, 3, 4, 5, 6, 7]
-    },
-    action: {
-      type: ActionType.TOGGLE_DEVICE,
-      deviceId: '2',
-      duration: 15,
-      target: '2' // Added required target field
-    },
-    zoneId: 'zone-a',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
-const initialSchedules: IrrigationSchedule[] = [
-  {
-    id: 'sched-1',
-    name: 'Evening Irrigation',
-    description: 'Water zone A every evening',
-    zoneId: 'zone-a',
-    deviceId: '2',
-    startTime: '18:30',
-    duration: 20,
-    daysOfWeek: [1, 3, 5],
-    isActive: true,
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
-
-const initialHistory: AutomationHistory[] = [
-  {
-    id: 'hist-1',
-    type: 'RULE_TRIGGER',
-    name: 'Auto-Irrigation Triggered',
-    description: 'Moisture level below threshold (25%)',
-    status: 'SUCCESS',
-    zoneId: 'zone-a',
-    deviceId: '2',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    details: 'Valve opened for 30 minutes'
-  },
-  {
-    id: 'hist-2',
-    type: 'SCHEDULE',
-    name: 'Morning Irrigation Run',
-    description: 'Scheduled irrigation at 6:00 AM',
-    status: 'SUCCESS',
-    zoneId: 'zone-a',
-    deviceId: '2',
-    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-    details: 'Valve opened for 15 minutes'
-  },
-  {
-    id: 'hist-3',
-    type: 'MANUAL',
-    name: 'Manual Irrigation',
-    description: 'User initiated irrigation',
-    status: 'SUCCESS',
-    zoneId: 'zone-b',
-    deviceId: '5',
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    details: 'Valve opened for 10 minutes'
-  }
-];
-
+// Mock data for zones and devices - in a real app, these would come from hooks too
 const zones: Zone[] = [
   {
     id: 'zone-a',
@@ -229,17 +114,31 @@ const devices: Device[] = [
 ];
 
 const AutomationPage: React.FC = () => {
-  const [rules, setRules] = useState<AutomationRule[]>(initialRules);
-  const [schedules, setSchedules] = useState<IrrigationSchedule[]>(initialSchedules);
-  const [history, setHistory] = useState<AutomationHistory[]>(initialHistory);
+  // Hooks for data management
+  const { rules, loading: rulesLoading, createRule, updateRule, deleteRule, toggleRule } = useAutomationRules();
+  const { schedules, loading: schedulesLoading, createSchedule, updateSchedule, deleteSchedule, toggleSchedule } = useIrrigationSchedules();
+  const { history, loading: historyLoading, addHistoryEntry, clearHistory } = useAutomationHistory();
+
+  // UI state
   const [activeTab, setActiveTab] = useState('rules');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState(null);
   const [editingSchedule, setEditingSchedule] = useState<IrrigationSchedule | null>(null);
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'rule' | 'schedule'; name: string } | null>(null);
+
+  // Filtering and search state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+
+  // Bulk actions state
+  const [selectedRules, setSelectedRules] = useState<Set<string>>(new Set());
+  const [selectedSchedules, setSelectedSchedules] = useState<Set<string>>(new Set());
+
+  // Schedule form state
   const [newSchedule, setNewSchedule] = useState<Partial<IrrigationSchedule>>({
     name: '',
     description: '',
@@ -261,114 +160,100 @@ const AutomationPage: React.FC = () => {
     { name: 'Sun', value: 7 }
   ];
 
-  useEffect(() => {
-    // Simulate loading state
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  // Filter functions
+  const filteredRules = rules.filter(rule => {
+    const matchesSearch = rule.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         rule.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && rule.isActive) ||
+                         (statusFilter === 'inactive' && !rule.isActive);
+    const matchesType = typeFilter === 'all' || typeFilter === 'rules';
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
+  const filteredSchedules = schedules.filter(schedule => {
+    const matchesSearch = schedule.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         schedule.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && schedule.isActive) ||
+                         (statusFilter === 'inactive' && !schedule.isActive);
+    const matchesType = typeFilter === 'all' || typeFilter === 'schedules';
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  const activeFiltersCount = [searchTerm, statusFilter !== 'all', typeFilter !== 'all'].filter(Boolean).length;
+
+  // Event handlers
   const handleCreateRule = () => {
     setEditingRule(null);
     setDialogOpen(true);
   };
 
-  const handleEditRule = (rule: AutomationRule) => {
+  const handleEditRule = (rule) => {
     setEditingRule(rule);
     setDialogOpen(true);
   };
 
-  const handleSaveRule = (rule: AutomationRule) => {
-    if (rule.id && rules.some(r => r.id === rule.id)) {
-      setRules(prev => prev.map(r => r.id === rule.id ? rule : r));
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Rule Updated',
-        description: `Rule "${rule.name}" was updated`,
-        status: 'SUCCESS',
-        zoneId: rule.zoneId,
-        deviceId: rule.action.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-      toast.success("Rule updated successfully");
-    } else {
-      const newRule = {
-        ...rule,
-        id: uuidv4(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setRules(prev => [...prev, newRule]);
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Rule Created',
-        description: `New rule "${rule.name}" was created`,
-        status: 'SUCCESS',
-        zoneId: rule.zoneId,
-        deviceId: rule.action.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-      toast.success("Rule created successfully");
+  const handleSaveRule = async (rule) => {
+    try {
+      if (editingRule) {
+        await updateRule(rule.id, rule);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Rule Updated',
+          description: `Rule "${rule.name}" was updated`,
+          status: 'SUCCESS',
+          zoneId: rule.zoneId,
+          deviceId: rule.action.deviceId
+        });
+      } else {
+        await createRule(rule);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Rule Created',
+          description: `New rule "${rule.name}" was created`,
+          status: 'SUCCESS',
+          zoneId: rule.zoneId,
+          deviceId: rule.action.deviceId
+        });
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving rule:', error);
     }
-    setDialogOpen(false);
   };
 
-  const handleDeleteRule = (ruleId: string) => {
-    const ruleToDelete = rules.find(rule => rule.id === ruleId);
-    if (ruleToDelete) {
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Rule Deleted',
-        description: `Rule "${ruleToDelete.name}" was deleted`,
-        status: 'SUCCESS',
-        zoneId: ruleToDelete.zoneId,
-        deviceId: ruleToDelete.action.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-    }
-    
-    setRules(prev => prev.filter(rule => rule.id !== ruleId));
-    toast.success("Rule deleted successfully");
-  };
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
 
-  const toggleRuleStatus = (ruleId: string) => {
-    const rule = rules.find(r => r.id === ruleId);
-    if (!rule) return;
-    
-    const newStatus = !rule.isActive;
-    
-    setRules(prev => 
-      prev.map(rule => 
-        rule.id === ruleId 
-          ? { ...rule, isActive: newStatus, updatedAt: new Date().toISOString() } 
-          : rule
-      )
-    );
-    
-    // Add to history
-    const historyEntry: AutomationHistory = {
-      id: uuidv4(),
-      type: 'MANUAL',
-      name: `Rule ${newStatus ? 'Activated' : 'Paused'}`,
-      description: `Rule "${rule.name}" was ${newStatus ? 'activated' : 'paused'}`,
-      status: 'SUCCESS',
-      zoneId: rule.zoneId,
-      deviceId: rule.action.deviceId,
-      timestamp: new Date().toISOString()
-    };
-    setHistory(prev => [historyEntry, ...prev]);
-    
-    toast.success(`Rule ${newStatus ? 'activated' : 'paused'}`);
+    try {
+      if (itemToDelete.type === 'rule') {
+        await deleteRule(itemToDelete.id);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Rule Deleted',
+          description: `Rule "${itemToDelete.name}" was deleted`,
+          status: 'SUCCESS',
+          zoneId: rules.find(r => r.id === itemToDelete.id)?.zoneId || '',
+        });
+      } else {
+        await deleteSchedule(itemToDelete.id);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Schedule Deleted',
+          description: `Schedule "${itemToDelete.name}" was deleted`,
+          status: 'SUCCESS',
+          zoneId: schedules.find(s => s.id === itemToDelete.id)?.zoneId || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    } finally {
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const handleCreateSchedule = () => {
@@ -394,139 +279,134 @@ const AutomationPage: React.FC = () => {
     setScheduleDialogOpen(true);
   };
 
-  const handleSaveSchedule = () => {
-    if (!newSchedule.name || !newSchedule.zoneId || !newSchedule.deviceId) {
-      toast.error("Please fill in all required fields");
+  const handleSaveSchedule = async () => {
+    if (!newSchedule.name || !newSchedule.zoneId || !newSchedule.deviceId || selectedDays.length === 0) {
+      toast.error("Please fill in all required fields and select at least one day");
       return;
     }
 
-    if (selectedDays.length === 0) {
-      toast.error("Please select at least one day of the week");
-      return;
+    try {
+      const scheduleData = {
+        ...newSchedule,
+        daysOfWeek: selectedDays
+      } as Omit<IrrigationSchedule, 'id' | 'createdAt' | 'updatedAt'>;
+
+      if (editingSchedule) {
+        await updateSchedule(editingSchedule.id, scheduleData);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Schedule Updated',
+          description: `Schedule "${scheduleData.name}" was updated`,
+          status: 'SUCCESS',
+          zoneId: scheduleData.zoneId,
+          deviceId: scheduleData.deviceId
+        });
+      } else {
+        await createSchedule(scheduleData);
+        await addHistoryEntry({
+          type: 'MANUAL',
+          name: 'Schedule Created',
+          description: `New schedule "${scheduleData.name}" was created`,
+          status: 'SUCCESS',
+          zoneId: scheduleData.zoneId,
+          deviceId: scheduleData.deviceId
+        });
+      }
+      setScheduleDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving schedule:', error);
     }
+  };
 
-    const updatedSchedule = {
-      ...newSchedule,
-      daysOfWeek: selectedDays,
-      updatedAt: new Date().toISOString()
-    } as IrrigationSchedule;
+  // Bulk action handlers
+  const handleBulkActivate = async () => {
+    const ids = activeTab === 'rules' ? Array.from(selectedRules) : Array.from(selectedSchedules);
+    const promises = ids.map(id => 
+      activeTab === 'rules' ? 
+        updateRule(id, { isActive: true }) : 
+        updateSchedule(id, { isActive: true })
+    );
+    
+    try {
+      await Promise.all(promises);
+      toast.success(`${ids.length} items activated`);
+      setSelectedRules(new Set());
+      setSelectedSchedules(new Set());
+    } catch (error) {
+      toast.error('Failed to activate some items');
+    }
+  };
 
-    if (editingSchedule) {
-      // Update existing schedule
-      setSchedules(prev => 
-        prev.map(s => s.id === editingSchedule.id ? updatedSchedule : s)
-      );
-      
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Schedule Updated',
-        description: `Schedule "${updatedSchedule.name}" was updated`,
-        status: 'SUCCESS',
-        zoneId: updatedSchedule.zoneId,
-        deviceId: updatedSchedule.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-      
-      toast.success("Schedule updated successfully");
+  const handleBulkDeactivate = async () => {
+    const ids = activeTab === 'rules' ? Array.from(selectedRules) : Array.from(selectedSchedules);
+    const promises = ids.map(id => 
+      activeTab === 'rules' ? 
+        updateRule(id, { isActive: false }) : 
+        updateSchedule(id, { isActive: false })
+    );
+    
+    try {
+      await Promise.all(promises);
+      toast.success(`${ids.length} items deactivated`);
+      setSelectedRules(new Set());
+      setSelectedSchedules(new Set());
+    } catch (error) {
+      toast.error('Failed to deactivate some items');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = activeTab === 'rules' ? Array.from(selectedRules) : Array.from(selectedSchedules);
+    const promises = ids.map(id => 
+      activeTab === 'rules' ? 
+        deleteRule(id) : 
+        deleteSchedule(id)
+    );
+    
+    try {
+      await Promise.all(promises);
+      toast.success(`${ids.length} items deleted`);
+      setSelectedRules(new Set());
+      setSelectedSchedules(new Set());
+    } catch (error) {
+      toast.error('Failed to delete some items');
+    }
+  };
+
+  const handleBulkDuplicate = async () => {
+    if (activeTab === 'rules') {
+      const ids = Array.from(selectedRules);
+      for (const id of ids) {
+        const rule = rules.find(r => r.id === id);
+        if (rule) {
+          await createRule({
+            ...rule,
+            name: `${rule.name} (Copy)`,
+            isActive: false
+          });
+        }
+      }
+      setSelectedRules(new Set());
+      toast.success(`${ids.length} rules duplicated`);
     } else {
-      // Create new schedule
-      const newScheduleEntry = {
-        ...updatedSchedule,
-        id: uuidv4(),
-        createdAt: new Date().toISOString()
-      } as IrrigationSchedule;
-      
-      setSchedules(prev => [...prev, newScheduleEntry]);
-      
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Schedule Created',
-        description: `New schedule "${newScheduleEntry.name}" was created`,
-        status: 'SUCCESS',
-        zoneId: newScheduleEntry.zoneId,
-        deviceId: newScheduleEntry.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-      
-      toast.success("Schedule created successfully");
+      const ids = Array.from(selectedSchedules);
+      for (const id of ids) {
+        const schedule = schedules.find(s => s.id === id);
+        if (schedule) {
+          await createSchedule({
+            ...schedule,
+            name: `${schedule.name} (Copy)`,
+            isActive: false
+          });
+        }
+      }
+      setSelectedSchedules(new Set());
+      toast.success(`${ids.length} schedules duplicated`);
     }
-    
-    setScheduleDialogOpen(false);
   };
 
-  const handleDeleteSchedule = (scheduleId: string) => {
-    const scheduleToDelete = schedules.find(s => s.id === scheduleId);
-    if (scheduleToDelete) {
-      // Add to history
-      const historyEntry: AutomationHistory = {
-        id: uuidv4(),
-        type: 'MANUAL',
-        name: 'Schedule Deleted',
-        description: `Schedule "${scheduleToDelete.name}" was deleted`,
-        status: 'SUCCESS',
-        zoneId: scheduleToDelete.zoneId,
-        deviceId: scheduleToDelete.deviceId,
-        timestamp: new Date().toISOString()
-      };
-      setHistory(prev => [historyEntry, ...prev]);
-    }
-    
-    setSchedules(prev => prev.filter(s => s.id !== scheduleId));
-    toast.success("Schedule deleted successfully");
-  };
-
-  const toggleScheduleStatus = (scheduleId: string) => {
-    const schedule = schedules.find(s => s.id === scheduleId);
-    if (!schedule) return;
-    
-    const newStatus = !schedule.isActive;
-    
-    setSchedules(prev => 
-      prev.map(s => 
-        s.id === scheduleId 
-          ? { ...s, isActive: newStatus, updatedAt: new Date().toISOString() } 
-          : s
-      )
-    );
-    
-    // Add to history
-    const historyEntry: AutomationHistory = {
-      id: uuidv4(),
-      type: 'MANUAL',
-      name: `Schedule ${newStatus ? 'Activated' : 'Paused'}`,
-      description: `Schedule "${schedule.name}" was ${newStatus ? 'activated' : 'paused'}`,
-      status: 'SUCCESS',
-      zoneId: schedule.zoneId,
-      deviceId: schedule.deviceId,
-      timestamp: new Date().toISOString()
-    };
-    setHistory(prev => [historyEntry, ...prev]);
-    
-    toast.success(`Schedule ${newStatus ? 'activated' : 'paused'}`);
-  };
-
-  const toggleDaySelection = (day: number) => {
-    setSelectedDays(prev => 
-      prev.includes(day) 
-        ? prev.filter(d => d !== day) 
-        : [...prev, day].sort((a, b) => a - b)
-    );
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    setNewSchedule(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  if (isLoading) {
+  // Loading states
+  if (rulesLoading && schedulesLoading && historyLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -547,15 +427,36 @@ const AutomationPage: React.FC = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Irrigation Automation</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Irrigation Automation</h1>
           <p className="text-muted-foreground">Manage your automated irrigation rules and schedules</p>
         </div>
 
+        <AutomationFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          onClearFilters={() => {
+            setSearchTerm('');
+            setStatusFilter('all');
+            setTypeFilter('all');
+          }}
+          activeFiltersCount={activeFiltersCount}
+        />
+
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
-            <TabsTrigger value="rules">Rules</TabsTrigger>
-            <TabsTrigger value="schedules">Schedules</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="rules">
+              Rules ({filteredRules.length})
+            </TabsTrigger>
+            <TabsTrigger value="schedules">
+              Schedules ({filteredSchedules.length})
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              History ({history.length})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="rules" className="space-y-4">
@@ -566,7 +467,16 @@ const AutomationPage: React.FC = () => {
               </Button>
             </div>
 
-            {rules.length === 0 ? (
+            <BulkActions
+              selectedCount={selectedRules.size}
+              onActivateSelected={handleBulkActivate}
+              onDeactivateSelected={handleBulkDeactivate}
+              onDeleteSelected={handleBulkDelete}
+              onDuplicateSelected={handleBulkDuplicate}
+              onClearSelection={() => setSelectedRules(new Set())}
+            />
+
+            {filteredRules.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-6">
                   <p className="text-muted-foreground mb-4">No automation rules found</p>
@@ -577,13 +487,27 @@ const AutomationPage: React.FC = () => {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {rules.map((rule) => (
-                  <Card key={rule.id}>
+                {filteredRules.map((rule) => (
+                  <Card key={rule.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle>{rule.name}</CardTitle>
-                          <CardDescription>{rule.description}</CardDescription>
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedRules.has(rule.id)}
+                            onCheckedChange={(checked) => {
+                              const newSelected = new Set(selectedRules);
+                              if (checked) {
+                                newSelected.add(rule.id);
+                              } else {
+                                newSelected.delete(rule.id);
+                              }
+                              setSelectedRules(newSelected);
+                            }}
+                          />
+                          <div>
+                            <CardTitle>{rule.name}</CardTitle>
+                            <CardDescription>{rule.description}</CardDescription>
+                          </div>
                         </div>
                         <Badge variant={rule.isActive ? "default" : "outline"}>
                           {rule.isActive ? "Active" : "Paused"}
@@ -628,18 +552,26 @@ const AutomationPage: React.FC = () => {
                       </div>
                       <div className="flex justify-end gap-2 mt-4">
                         {rule.isActive ? (
-                          <Button size="sm" variant="outline" onClick={() => toggleRuleStatus(rule.id)}>
+                          <Button size="sm" variant="outline" onClick={() => toggleRule(rule.id)}>
                             <Pause className="mr-1 h-3 w-3" /> Pause
                           </Button>
                         ) : (
-                          <Button size="sm" variant="outline" onClick={() => toggleRuleStatus(rule.id)}>
+                          <Button size="sm" variant="outline" onClick={() => toggleRule(rule.id)}>
                             <Play className="mr-1 h-3 w-3" /> Resume
                           </Button>
                         )}
                         <Button size="sm" variant="outline" onClick={() => handleEditRule(rule)}>
                           <ArrowUpRight className="mr-1 h-3 w-3" /> Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-500 hover:bg-red-50" onClick={() => handleDeleteRule(rule.id)}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-red-500 hover:bg-red-50" 
+                          onClick={() => {
+                            setItemToDelete({ id: rule.id, type: 'rule', name: rule.name });
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
                           <X className="mr-1 h-3 w-3" /> Delete
                         </Button>
                       </div>
@@ -658,7 +590,16 @@ const AutomationPage: React.FC = () => {
               </Button>
             </div>
 
-            {schedules.length === 0 ? (
+            <BulkActions
+              selectedCount={selectedSchedules.size}
+              onActivateSelected={handleBulkActivate}
+              onDeactivateSelected={handleBulkDeactivate}
+              onDeleteSelected={handleBulkDelete}
+              onDuplicateSelected={handleBulkDuplicate}
+              onClearSelection={() => setSelectedSchedules(new Set())}
+            />
+
+            {filteredSchedules.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-6 text-center">
                   <CalendarDays className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -673,13 +614,27 @@ const AutomationPage: React.FC = () => {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {schedules.map((schedule) => (
-                  <Card key={schedule.id}>
+                {filteredSchedules.map((schedule) => (
+                  <Card key={schedule.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle>{schedule.name}</CardTitle>
-                          <CardDescription>{schedule.description}</CardDescription>
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedSchedules.has(schedule.id)}
+                            onCheckedChange={(checked) => {
+                              const newSelected = new Set(selectedSchedules);
+                              if (checked) {
+                                newSelected.add(schedule.id);
+                              } else {
+                                newSelected.delete(schedule.id);
+                              }
+                              setSelectedSchedules(newSelected);
+                            }}
+                          />
+                          <div>
+                            <CardTitle>{schedule.name}</CardTitle>
+                            <CardDescription>{schedule.description}</CardDescription>
+                          </div>
                         </div>
                         <Badge variant={schedule.isActive ? "default" : "outline"}>
                           {schedule.isActive ? "Active" : "Paused"}
@@ -717,18 +672,26 @@ const AutomationPage: React.FC = () => {
                       </div>
                       <div className="flex justify-end gap-2 mt-4">
                         {schedule.isActive ? (
-                          <Button size="sm" variant="outline" onClick={() => toggleScheduleStatus(schedule.id)}>
+                          <Button size="sm" variant="outline" onClick={() => toggleSchedule(schedule.id)}>
                             <Pause className="mr-1 h-3 w-3" /> Pause
                           </Button>
                         ) : (
-                          <Button size="sm" variant="outline" onClick={() => toggleScheduleStatus(schedule.id)}>
+                          <Button size="sm" variant="outline" onClick={() => toggleSchedule(schedule.id)}>
                             <Play className="mr-1 h-3 w-3" /> Resume
                           </Button>
                         )}
                         <Button size="sm" variant="outline" onClick={() => handleEditSchedule(schedule)}>
                           <ArrowUpRight className="mr-1 h-3 w-3" /> Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-500 hover:bg-red-50" onClick={() => handleDeleteSchedule(schedule.id)}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-red-500 hover:bg-red-50" 
+                          onClick={() => {
+                            setItemToDelete({ id: schedule.id, type: 'schedule', name: schedule.name });
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
                           <X className="mr-1 h-3 w-3" /> Delete
                         </Button>
                       </div>
@@ -742,8 +705,8 @@ const AutomationPage: React.FC = () => {
           <TabsContent value="history" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Automation History</h2>
-              <Button variant="outline">
-                <History className="mr-2 h-4 w-4" /> View All
+              <Button variant="outline" onClick={clearHistory}>
+                <History className="mr-2 h-4 w-4" /> Clear History
               </Button>
             </div>
             
@@ -855,7 +818,7 @@ const AutomationPage: React.FC = () => {
                   id="name" 
                   placeholder="Daily Morning Irrigation"
                   value={newSchedule.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => setNewSchedule(prev => ({ ...prev, name: e.target.value }))}
                 />
               </div>
               
@@ -865,7 +828,7 @@ const AutomationPage: React.FC = () => {
                   id="description" 
                   placeholder="Brief description of this schedule"
                   value={newSchedule.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) => setNewSchedule(prev => ({ ...prev, description: e.target.value }))}
                 />
               </div>
               
@@ -874,7 +837,7 @@ const AutomationPage: React.FC = () => {
                   <Label htmlFor="zone">Zone</Label>
                   <Select 
                     value={newSchedule.zoneId} 
-                    onValueChange={(value) => handleInputChange('zoneId', value)}
+                    onValueChange={(value) => setNewSchedule(prev => ({ ...prev, zoneId: value }))}
                   >
                     <SelectTrigger id="zone">
                       <SelectValue placeholder="Select zone" />
@@ -893,7 +856,7 @@ const AutomationPage: React.FC = () => {
                   <Label htmlFor="device">Device</Label>
                   <Select 
                     value={newSchedule.deviceId} 
-                    onValueChange={(value) => handleInputChange('deviceId', value)}
+                    onValueChange={(value) => setNewSchedule(prev => ({ ...prev, deviceId: value }))}
                   >
                     <SelectTrigger id="device">
                       <SelectValue placeholder="Select device" />
@@ -919,7 +882,7 @@ const AutomationPage: React.FC = () => {
                     id="startTime" 
                     type="time"
                     value={newSchedule.startTime}
-                    onChange={(e) => handleInputChange('startTime', e.target.value)}
+                    onChange={(e) => setNewSchedule(prev => ({ ...prev, startTime: e.target.value }))}
                   />
                 </div>
                 
@@ -931,7 +894,7 @@ const AutomationPage: React.FC = () => {
                     min="1"
                     max="120"
                     value={newSchedule.duration}
-                    onChange={(e) => handleInputChange('duration', parseInt(e.target.value))}
+                    onChange={(e) => setNewSchedule(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
                   />
                 </div>
               </div>
@@ -944,7 +907,13 @@ const AutomationPage: React.FC = () => {
                       key={day.value}
                       type="button"
                       variant={selectedDays.includes(day.value) ? "default" : "outline"}
-                      onClick={() => toggleDaySelection(day.value)}
+                      onClick={() => {
+                        setSelectedDays(prev => 
+                          prev.includes(day.value) 
+                            ? prev.filter(d => d !== day.value) 
+                            : [...prev, day.value].sort((a, b) => a - b)
+                        );
+                      }}
                       className="flex-1 min-w-[48px]"
                     >
                       {day.name}
@@ -965,6 +934,24 @@ const AutomationPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{itemToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

@@ -3,7 +3,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Plus, ArrowUpRight, CalendarDays, History, X, Clock, Loader2, CheckSquare, Square } from 'lucide-react';
+import { Play, Pause, Plus, ArrowUpRight, CalendarDays, History, X, Clock, Loader2, CheckSquare, Square, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -18,11 +18,7 @@ import {
   ConditionType, 
   ComparisonOperator, 
   ActionType,
-  DeviceStatus,
-  DeviceType,
-  IrrigationStatus,
-  Zone,
-  Device
+  DeviceType
 } from '@/types';
 import AutomationRuleForm from '@/components/automation/AutomationRuleForm';
 import AutomationFilters from '@/components/automation/AutomationFilters';
@@ -30,94 +26,25 @@ import BulkActions from '@/components/automation/BulkActions';
 import { useAutomationRules } from '@/hooks/useAutomationRules';
 import { useIrrigationSchedules, type IrrigationSchedule } from '@/hooks/useIrrigationSchedules';
 import { useAutomationHistory } from '@/hooks/useAutomationHistory';
+import { useZones } from '@/hooks/useZones';
+import { useDevices } from '@/hooks/useDevices';
+import { useAutomationEngine } from '@/hooks/useAutomationEngine';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for zones and devices - in a real app, these would come from hooks too
-const zones: Zone[] = [
-  {
-    id: 'zone-a',
-    name: 'Field Zone A',
-    description: 'Primary field zone',
-    boundaryCoordinates: [],
-    areaSize: 1200,
-    devices: ['1', '2', '3'],
-    irrigationStatus: IrrigationStatus.ACTIVE,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'zone-b',
-    name: 'Field Zone B',
-    description: 'Secondary field zone',
-    boundaryCoordinates: [],
-    areaSize: 900,
-    devices: ['4', '5'],
-    irrigationStatus: IrrigationStatus.SCHEDULED,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
-const devices: Device[] = [
-  {
-    id: '1',
-    name: 'Moisture Sensor A1',
-    type: DeviceType.MOISTURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 85,
-    lastReading: 45.5,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
-  {
-    id: '2',
-    name: 'Valve A1',
-    type: DeviceType.VALVE,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 78,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
-  {
-    id: '3',
-    name: 'Temperature Sensor A1',
-    type: DeviceType.TEMPERATURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 92,
-    lastReading: 22.3,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
-  {
-    id: '4',
-    name: 'Moisture Sensor B1',
-    type: DeviceType.MOISTURE_SENSOR,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 65,
-    lastReading: 62.1,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  },
-  {
-    id: '5',
-    name: 'Valve B1',
-    type: DeviceType.VALVE,
-    status: DeviceStatus.ONLINE,
-    batteryLevel: 70,
-    lastUpdated: new Date().toISOString(),
-    location: { lat: 35.6895, lng: 139.6917 }
-  }
-];
-
 const AutomationPage: React.FC = () => {
   // Hooks for data management
   const { rules, loading: rulesLoading, createRule, updateRule, deleteRule, toggleRule } = useAutomationRules();
   const { schedules, loading: schedulesLoading, createSchedule, updateSchedule, deleteSchedule, toggleSchedule } = useIrrigationSchedules();
   const { history, loading: historyLoading, addHistoryEntry, clearHistory } = useAutomationHistory();
+  const { zones, loading: zonesLoading } = useZones();
+  const { devices, loading: devicesLoading } = useDevices();
+
+  // Initialize automation engine
+  const { runAutomationEngine } = useAutomationEngine();
 
   // UI state
   const [activeTab, setActiveTab] = useState('rules');
@@ -406,7 +333,8 @@ const AutomationPage: React.FC = () => {
   };
 
   // Loading states
-  if (rulesLoading && schedulesLoading && historyLoading) {
+  if ((rulesLoading || schedulesLoading || historyLoading || zonesLoading || devicesLoading) && 
+      (rules.length === 0 && schedules.length === 0 && history.length === 0)) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -426,9 +354,20 @@ const AutomationPage: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Irrigation Automation</h1>
-          <p className="text-muted-foreground">Manage your automated irrigation rules and schedules</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Irrigation Automation</h1>
+            <p className="text-muted-foreground">Manage your automated irrigation rules and schedules</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Activity className="h-3 w-3" />
+              Engine Running
+            </Badge>
+            <Button variant="outline" onClick={runAutomationEngine}>
+              Test Rules Now
+            </Button>
+          </div>
         </div>
 
         <AutomationFilters
@@ -521,7 +460,7 @@ const AutomationPage: React.FC = () => {
                           <span>
                             {rule.condition.type === ConditionType.SENSOR_READING && (
                               <>
-                                Sensor {devices.find(d => d.id === rule.condition.sensorId)?.name} 
+                                Sensor {devices.find(d => d.id === rule.condition.sensorId)?.name || 'Unknown'} 
                                 {' '}
                                 {rule.condition.operator === ComparisonOperator.LESS_THAN ? 'below' : 'above'} 
                                 {' '}
@@ -540,14 +479,14 @@ const AutomationPage: React.FC = () => {
                           <span>
                             {rule.action.type === ActionType.TOGGLE_DEVICE && (
                               <>
-                                Turn {devices.find(d => d.id === rule.action.deviceId)?.name} on for {rule.action.duration} mins
+                                Turn {devices.find(d => d.id === rule.action.deviceId)?.name || 'Unknown'} on for {rule.action.duration} mins
                               </>
                             )}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Zone:</span>
-                          <span>{zones.find(z => z.id === rule.zoneId)?.name}</span>
+                          <span>{zones.find(z => z.id === rule.zoneId)?.name || 'Unknown'}</span>
                         </div>
                       </div>
                       <div className="flex justify-end gap-2 mt-4">
@@ -790,7 +729,34 @@ const AutomationPage: React.FC = () => {
           <AutomationRuleForm
             zones={zones}
             devices={devices}
-            onSubmit={handleSaveRule}
+            onSubmit={async (rule) => {
+              try {
+                if (editingRule) {
+                  await updateRule(rule.id, rule);
+                  await addHistoryEntry({
+                    type: 'MANUAL',
+                    name: 'Rule Updated',
+                    description: `Rule "${rule.name}" was updated`,
+                    status: 'SUCCESS',
+                    zoneId: rule.zoneId,
+                    deviceId: rule.action.deviceId
+                  });
+                } else {
+                  await createRule(rule);
+                  await addHistoryEntry({
+                    type: 'MANUAL',
+                    name: 'Rule Created',
+                    description: `New rule "${rule.name}" was created`,
+                    status: 'SUCCESS',
+                    zoneId: rule.zoneId,
+                    deviceId: rule.action.deviceId
+                  });
+                }
+                setDialogOpen(false);
+              } catch (error) {
+                console.error('Error saving rule:', error);
+              }
+            }}
             onCancel={() => setDialogOpen(false)}
             initialValues={editingRule || undefined}
           />

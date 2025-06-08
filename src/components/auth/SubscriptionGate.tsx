@@ -2,10 +2,11 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface SubscriptionGateProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface SubscriptionGateProps {
 
 const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
   const { user, profile, subscription, loading, isRoleSuperAdmin, isRoleAdmin } = useAuth();
+  const { limits } = useSubscriptionLimits();
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const navigate = useNavigate();
   
@@ -63,6 +65,19 @@ const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
             <p className="mb-4">
               Please choose a subscription plan to continue using AgroSense Hub and gain access to all features.
             </p>
+            
+            {/* Show current limits */}
+            <div className="space-y-2 mb-4">
+              <p className="text-sm font-medium">Your current limits:</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <Badge variant="outline">Zones: {limits.maxZones === Infinity ? '∞' : limits.maxZones}</Badge>
+                <Badge variant="outline">Devices: {limits.maxDevices === Infinity ? '∞' : limits.maxDevices}</Badge>
+                <Badge variant="outline">Crops: {limits.maxCrops === Infinity ? '∞' : limits.maxCrops}</Badge>
+                <Badge variant={limits.hasAutomation ? "default" : "secondary"}>
+                  Automation: {limits.hasAutomation ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button variant="outline" onClick={() => navigate('/')}>

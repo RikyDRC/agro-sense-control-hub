@@ -7,11 +7,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface PlanFeature {
-  key: string;
-  value: boolean | number;
-}
-
 interface PlanCardProps {
   id: string;
   name: string;
@@ -50,24 +45,68 @@ const PlanCard: React.FC<PlanCardProps> = ({
   };
 
   const renderFeaturesList = (features: Record<string, any>) => {
-    return Object.entries(features).map(([key, value]) => {
-      if (typeof value === 'boolean' && value) {
-        return (
+    const featureItems = [];
+    
+    // Show key limits first
+    if (features.max_zones) {
+      featureItems.push(
+        <div key="zones" className="flex items-center py-1">
+          <Check className="h-4 w-4 mr-2 text-green-500" />
+          <span>{features.max_zones === -1 ? 'Unlimited' : features.max_zones} Zones</span>
+        </div>
+      );
+    }
+    
+    if (features.max_devices) {
+      featureItems.push(
+        <div key="devices" className="flex items-center py-1">
+          <Check className="h-4 w-4 mr-2 text-green-500" />
+          <span>{features.max_devices === -1 ? 'Unlimited' : features.max_devices} Devices</span>
+        </div>
+      );
+    }
+    
+    if (features.max_crops) {
+      featureItems.push(
+        <div key="crops" className="flex items-center py-1">
+          <Check className="h-4 w-4 mr-2 text-green-500" />
+          <span>{features.max_crops === -1 ? 'Unlimited' : features.max_crops} Crops</span>
+        </div>
+      );
+    }
+
+    // Show boolean features
+    Object.entries(features).forEach(([key, value]) => {
+      if (typeof value === 'boolean' && value && !key.startsWith('max_')) {
+        const displayName = key.split('_').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        
+        featureItems.push(
           <div key={key} className="flex items-center py-1">
             <Check className="h-4 w-4 mr-2 text-green-500" />
-            <span>{key.split('_').join(' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-          </div>
-        );
-      } else if (typeof value === 'number' && value > 0) {
-        return (
-          <div key={key} className="flex items-center py-1">
-            <Check className="h-4 w-4 mr-2 text-green-500" />
-            <span>{`${value} ${key.split('_').join(' ')}`}</span>
+            <span>{displayName}</span>
           </div>
         );
       }
-      return null;
-    }).filter(Boolean);
+    });
+
+    // Always show shared platform features for all plans
+    featureItems.push(
+      <div key="shared-weather" className="flex items-center py-1">
+        <Check className="h-4 w-4 mr-2 text-blue-500" />
+        <span>Weather API (Shared)</span>
+      </div>
+    );
+    
+    featureItems.push(
+      <div key="shared-maps" className="flex items-center py-1">
+        <Check className="h-4 w-4 mr-2 text-blue-500" />
+        <span>Google Maps (Shared)</span>
+      </div>
+    );
+
+    return featureItems;
   };
 
   const shouldShowSubscribeButton = () => {

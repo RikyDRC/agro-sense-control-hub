@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -71,19 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // First try with the RPC function
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
-        'get_profile_by_id',
-        { user_id: userId }
-      );
-
-      if (!rpcError && rpcData) {
-        console.log("Profile fetched successfully via RPC:", rpcData);
-        return rpcData as unknown as UserProfile;
-      }
-      
-      // If RPC fails, fall back to direct query
-      console.log("RPC fetch failed, trying direct query:", rpcError);
+      // Use direct query since RLS is now enabled
       const { data: queryData, error: queryError } = await supabase
         .from('user_profiles')
         .select('*')
@@ -91,17 +78,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
       
       if (queryError) {
-        console.error('Error in direct profile query:', queryError);
+        console.error('Error in profile query:', queryError);
         setProfileError(queryError.message);
         return null;
       }
 
       if (!queryData) {
-        console.log("No profile data received from direct query");
+        console.log("No profile data received from query");
         return null;
       }
 
-      console.log("Profile fetched successfully via direct query:", queryData);
+      console.log("Profile fetched successfully:", queryData);
       return queryData as UserProfile;
     } catch (error: any) {
       console.error('Error in fetchUserProfile:', error);
@@ -121,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           plan:subscription_plans(id, name, description, price, billing_interval, features)
         `)
         .eq('user_id', userId)
-        .eq('status', 'active')
+        .in('status', ['active', 'trial']) // Include trial status
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

@@ -51,7 +51,11 @@ export const useContactSubmissions = () => {
 
       if (error) throw error;
 
-      setSubmissions(data || []);
+      // Type assertion to ensure correct typing
+      setSubmissions((data as any[])?.map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'approved' | 'denied'
+      })) || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching contact submissions:', err);

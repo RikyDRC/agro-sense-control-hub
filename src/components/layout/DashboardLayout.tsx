@@ -27,7 +27,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-muted/30 overflow-hidden">
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+      <Sidebar />
       
       <div className={cn(
         "flex flex-col flex-1 overflow-hidden transition-all duration-300",

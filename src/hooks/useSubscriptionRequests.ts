@@ -56,7 +56,11 @@ export const useSubscriptionRequests = () => {
 
       if (error) throw error;
 
-      setRequests(data || []);
+      // Type assertion to ensure correct typing
+      setRequests((data as any[])?.map(item => ({
+        ...item,
+        approval_status: item.approval_status as 'pending' | 'approved' | 'denied'
+      })) || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching subscription requests:', err);

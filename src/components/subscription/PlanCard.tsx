@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PlanFeature {
   key: string;
@@ -42,6 +43,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { isRoleAdmin, isRoleSuperAdmin } = useAuth();
+  
   const formatPrice = (price: number, interval: string) => {
     return `$${price.toFixed(2)}/${interval === 'month' ? 'mo' : 'yr'}`;
   };
@@ -65,6 +68,11 @@ const PlanCard: React.FC<PlanCardProps> = ({
       }
       return null;
     }).filter(Boolean);
+  };
+
+  const shouldShowSubscribeButton = () => {
+    // Show subscribe button for non-admins or if user is admin but can manage plans
+    return !isActive && (!isRoleAdmin() && !isRoleSuperAdmin() || canManagePlans);
   };
 
   return (
@@ -124,22 +132,29 @@ const PlanCard: React.FC<PlanCardProps> = ({
             </div>
           )}
         </div>
-        <Button 
-          variant={isActive ? "outline" : "default"}
-          disabled={isSubscribing || !canManagePlans || isActive}
-          onClick={() => onSubscribe(id)}
-        >
-          {isSubscribing ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : isActive ? (
-            'Current Plan'
-          ) : (
-            'Subscribe'
-          )}
-        </Button>
+        
+        {shouldShowSubscribeButton() && (
+          <Button 
+            variant="default"
+            disabled={isSubscribing}
+            onClick={() => onSubscribe(id)}
+          >
+            {isSubscribing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Subscribe'
+            )}
+          </Button>
+        )}
+        
+        {isActive && (
+          <Button variant="outline" disabled>
+            Current Plan
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

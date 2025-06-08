@@ -48,8 +48,8 @@ const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
     return <>{children}</>;
   }
 
-  // Check if farmer has an active subscription
-  if (!subscription || subscription.status !== 'active') {
+  // Check if farmer has an active subscription (including free tier)
+  if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trial')) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-muted/30 p-4">
         <Card className="w-full max-w-md">

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -39,6 +39,10 @@ interface MapViewProps {
     irrigationMethod?: string;
     notes?: string;
   };
+  newDevice?: {
+    name: string;
+    type: DeviceType;
+  };
 }
 
 const MapView: React.FC<MapViewProps> = ({ 
@@ -48,7 +52,8 @@ const MapView: React.FC<MapViewProps> = ({
   onZoneAdd,
   onDeviceMove,
   editZoneId,
-  createZone
+  createZone,
+  newDevice
 }) => {
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
@@ -63,6 +68,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [apiKeyLoading, setApiKeyLoading] = useState<boolean>(true);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 35.6895, lng: 139.6917 });
+  const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   
   const polygonRefs = useRef<{[key: string]: google.maps.Polygon | null}>({});
   const markerRefs = useRef<{[key: string]: google.maps.Marker | null}>({});
@@ -77,8 +83,33 @@ const MapView: React.FC<MapViewProps> = ({
   const [notes, setNotes] = useState('');
   const [isNamingZone, setIsNamingZone] = useState(false);
 
+  // Get user's current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(location);
+          setMapCenter(location);
+          console.log("User location detected:", location);
+        },
+        (error) => {
+          console.warn("Could not get user location:", error);
+          // Keep default location if geolocation fails
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    }
+  }, []);
+
   // Fetch the Google Maps API key from platform_config
-  // Modified to use a PUBLIC key without any role restrictions
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -109,6 +140,16 @@ const MapView: React.FC<MapViewProps> = ({
     
     fetchApiKey();
   }, []);
+
+  // Handle new device from route state
+  useEffect(() => {
+    if (newDevice && isScriptLoaded) {
+      setNewDeviceName(newDevice.name);
+      setNewDeviceType(newDevice.type);
+      setIsAddingDevice(true);
+      toast.info('Click on the map to place your new device');
+    }
+  }, [newDevice, isScriptLoaded]);
 
   const onScriptLoad = useCallback(() => {
     console.log("Google Maps script loaded successfully");
@@ -166,10 +207,18 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [createZone, drawingManager, isScriptLoaded]);
 
-  // Set initial map center based on device/zone locations
+  // Set initial map center based on user location, then device/zone locations
   useEffect(() => {
-    if (devices.length > 0 || zones.length > 0) {
-      if (isScriptLoaded && mapInstance) {
+    if (isScriptLoaded && mapInstance) {
+      // If we have user location, use it first
+      if (userLocation) {
+        mapInstance.setCenter(userLocation);
+        mapInstance.setZoom(15);
+        return;
+      }
+
+      // Otherwise, fit to existing devices/zones
+      if (devices.length > 0 || zones.length > 0) {
         const bounds = new google.maps.LatLngBounds();
         let hasLocations = false;
         
@@ -192,7 +241,7 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
     }
-  }, [devices, zones, mapInstance, isScriptLoaded]);
+  }, [devices, zones, mapInstance, isScriptLoaded, userLocation]);
 
   const onPolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     console.log("Polygon drawing completed");
@@ -312,6 +361,21 @@ const MapView: React.FC<MapViewProps> = ({
         lng: e.latLng.lng()
       };
       
+      // Check if the click is within any zone
+      let targetZoneId: string | undefined;
+      for (const zone of zones) {
+        if (zone.boundaryCoordinates.length > 0) {
+          const polygon = new google.maps.Polygon({
+            paths: zone.boundaryCoordinates
+          });
+          
+          if (google.maps.geometry.poly.containsLocation(e.latLng, polygon)) {
+            targetZoneId = zone.id;
+            break;
+          }
+        }
+      }
+      
       const newDevice: Device = {
         id: uuidv4(),
         name: newDeviceName || `New ${newDeviceType}`,
@@ -320,7 +384,7 @@ const MapView: React.FC<MapViewProps> = ({
         batteryLevel: 100,
         lastUpdated: new Date().toISOString(),
         location,
-        zoneId: selectedZone || undefined
+        zoneId: targetZoneId || selectedZone || undefined
       };
       
       if (onDeviceAdd) {
@@ -329,8 +393,14 @@ const MapView: React.FC<MapViewProps> = ({
       
       setIsAddingDevice(false);
       setNewDeviceName('');
+      
+      // If device was placed from DevicesPage, navigate back
+      if (newDevice) {
+        toast.success(`Device placed successfully${targetZoneId ? ' in zone' : ''}`);
+        navigate('/devices');
+      }
     }
-  }, [isAddingDevice, newDeviceType, newDeviceName, selectedZone, onDeviceAdd]);
+  }, [isAddingDevice, newDeviceType, newDeviceName, selectedZone, zones, onDeviceAdd, newDevice, navigate]);
 
   const getDeviceIcon = (type: DeviceType, status: DeviceStatus) => {
     const baseUrl = 'https://maps.google.com/mapfiles/ms/icons/';
@@ -441,8 +511,20 @@ const MapView: React.FC<MapViewProps> = ({
       <div className="flex flex-col lg:flex-row gap-4">
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>Field Map</CardTitle>
-            <CardDescription>Manage your fields, zones, and device placement</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Field Map</CardTitle>
+                <CardDescription>
+                  {userLocation ? 'Showing your current location' : 'Manage your fields, zones, and device placement'}
+                </CardDescription>
+              </div>
+              {userLocation && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  Your Location
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <LoadScript 
@@ -454,10 +536,22 @@ const MapView: React.FC<MapViewProps> = ({
               <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={mapCenter}
-                zoom={14}
+                zoom={userLocation ? 15 : 14}
                 onLoad={onMapLoad}
                 onClick={handleMapClick}
               >
+                {/* User location marker */}
+                {isScriptLoaded && userLocation && (
+                  <Marker
+                    position={userLocation}
+                    icon={{
+                      url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                      scaledSize: new google.maps.Size(32, 32)
+                    }}
+                    title="Your Location"
+                  />
+                )}
+
                 {/* Zone Polygons */}
                 {isScriptLoaded && zones.map((zone) => (
                   <Polygon
@@ -487,6 +581,7 @@ const MapView: React.FC<MapViewProps> = ({
                     onLoad={(marker) => {
                       markerRefs.current[device.id] = marker;
                     }}
+                    title={`${device.name} (${device.type})`}
                   />
                 ))}
                 
@@ -552,62 +647,97 @@ const MapView: React.FC<MapViewProps> = ({
           </Card>
           
           {/* Device Placement Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Device</CardTitle>
-              <CardDescription>Place new devices on the map</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="deviceType">Device Type</Label>
-                <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
-                  <SelectTrigger id="deviceType">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(DeviceType).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="deviceName">Device Name (Optional)</Label>
-                <Input
-                  id="deviceName"
-                  value={newDeviceName}
-                  onChange={(e) => setNewDeviceName(e.target.value)}
-                  placeholder={`New ${newDeviceType.replace('_', ' ')}`}
-                />
-              </div>
-              
-              <Button
-                className="w-full"
-                onClick={() => {
-                  setIsAddingDevice(true);
-                  if (drawingManager && isScriptLoaded) {
-                    drawingManager.setDrawingMode(null);
-                  }
-                }}
-                disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
-              >
-                {isAddingDevice ? 'Click on Map to Place' : 'Place Device on Map'}
-              </Button>
-              
-              {isAddingDevice && (
+          {!newDevice && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Add Device</CardTitle>
+                <CardDescription>Place new devices on the map</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deviceType">Device Type</Label>
+                  <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
+                    <SelectTrigger id="deviceType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(DeviceType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="deviceName">Device Name (Optional)</Label>
+                  <Input
+                    id="deviceName"
+                    value={newDeviceName}
+                    onChange={(e) => setNewDeviceName(e.target.value)}
+                    placeholder={`New ${newDeviceType.replace('_', ' ')}`}
+                  />
+                </div>
+                
                 <Button
-                  variant="outline"
                   className="w-full"
-                  onClick={() => setIsAddingDevice(false)}
+                  onClick={() => {
+                    setIsAddingDevice(true);
+                    if (drawingManager && isScriptLoaded) {
+                      drawingManager.setDrawingMode(null);
+                    }
+                  }}
+                  disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
                 >
-                  Cancel
+                  {isAddingDevice ? 'Click on Map to Place' : 'Place Device on Map'}
                 </Button>
-              )}
-            </CardContent>
-          </Card>
+                
+                {isAddingDevice && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setIsAddingDevice(false)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Device from route state */}
+          {newDevice && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Place Device</CardTitle>
+                <CardDescription>Click on the map to place your new device</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Device:</span>
+                    <Badge variant="outline">{newDevice.name}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Type:</span>
+                    <Badge variant="secondary">
+                      {newDevice.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate('/devices')}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           {/* Zone Naming Dialog - Enhanced with all fields */}
           {isNamingZone && (

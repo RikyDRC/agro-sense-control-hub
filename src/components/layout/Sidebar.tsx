@@ -18,8 +18,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const Sidebar = () => {
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onNavigate?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) => {
   const location = useLocation();
   const { isRoleAdmin, isRoleSuperAdmin } = useAuth();
 
@@ -49,62 +55,85 @@ const Sidebar = () => {
     ] : [])
   ];
 
+  const NavItem = ({ item }: { item: typeof mainNavItems[0] }) => {
+    const isActive = location.pathname === item.to;
+    
+    const content = (
+      <NavLink
+        to={item.to}
+        onClick={onNavigate}
+        className={cn(
+          'group flex items-center text-sm font-medium rounded-md transition-colors',
+          isCollapsed ? 'justify-center p-3' : 'px-3 py-2',
+          isActive
+            ? 'bg-primary text-primary-foreground'
+            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+        )}
+      >
+        <item.icon className={cn('h-5 w-5', isCollapsed ? '' : 'mr-3')} />
+        {!isCollapsed && <span>{item.label}</span>}
+      </NavLink>
+    );
+
+    if (isCollapsed) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {content}
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{item.label}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return content;
+  };
+
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
+    <div className="flex h-full w-full flex-col bg-white border-r border-gray-200">
       <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-        <div className="flex items-center flex-shrink-0 px-4">
-          <h1 className="text-xl font-bold text-gray-900">AgroSense Hub</h1>
+        <div className={cn(
+          "flex items-center flex-shrink-0 px-4",
+          isCollapsed && "justify-center px-2"
+        )}>
+          {isCollapsed ? (
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">AS</span>
+            </div>
+          ) : (
+            <h1 className="text-xl font-bold text-gray-900">AgroSense Hub</h1>
+          )}
         </div>
         
-        <nav className="mt-8 flex-1 px-2 space-y-8">
+        <nav className={cn("mt-8 flex-1 space-y-6", isCollapsed ? "px-2" : "px-2")}>
           {/* Main Navigation */}
           <div>
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Main
-            </h3>
-            <div className="mt-2 space-y-1">
+            {!isCollapsed && (
+              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Main
+              </h3>
+            )}
+            <div className="space-y-1">
               {mainNavItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    )
-                  }
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.label}
-                </NavLink>
+                <NavItem key={item.to} item={item} />
               ))}
             </div>
           </div>
 
           {/* Tools */}
           <div>
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Tools
-            </h3>
-            <div className="mt-2 space-y-1">
+            {!isCollapsed && (
+              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Tools
+              </h3>
+            )}
+            <div className="space-y-1">
               {toolsNavItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    )
-                  }
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.label}
-                </NavLink>
+                <NavItem key={item.to} item={item} />
               ))}
             </div>
           </div>
@@ -112,26 +141,14 @@ const Sidebar = () => {
           {/* Admin Section */}
           {adminNavItems.length > 0 && (
             <div>
-              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Administration
-              </h3>
-              <div className="mt-2 space-y-1">
+              {!isCollapsed && (
+                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Administration
+                </h3>
+              )}
+              <div className="space-y-1">
                 {adminNavItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      cn(
-                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
-                        isActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                      )
-                    }
-                  >
-                    <item.icon className="mr-3 h-5 w-5" />
-                    {item.label}
-                  </NavLink>
+                  <NavItem key={item.to} item={item} />
                 ))}
               </div>
             </div>

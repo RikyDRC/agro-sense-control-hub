@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -20,7 +21,7 @@ const MapPage: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Check for state passed from ZonesPage
+  // Check for state passed from other pages
   const routeState = location.state as {
     action?: string;
     zoneId?: string;
@@ -31,6 +32,10 @@ const MapPage: React.FC = () => {
     cropType?: string;
     irrigationMethod?: string;
     notes?: string;
+    device?: {
+      name: string;
+      type: DeviceType;
+    };
   } | null;
 
   useEffect(() => {
@@ -46,6 +51,7 @@ const MapPage: React.FC = () => {
       const { data: zonesData, error: zonesError } = await supabase
         .from('zones')
         .select('*')
+        .eq('user_id', user?.id)
         .order('name');
       
       if (zonesError) {
@@ -56,6 +62,7 @@ const MapPage: React.FC = () => {
       const { data: devicesData, error: devicesError } = await supabase
         .from('devices')
         .select('*')
+        .eq('user_id', user?.id)
         .order('name');
       
       if (devicesError) {
@@ -129,19 +136,19 @@ const MapPage: React.FC = () => {
       const deviceData = {
         id: newDevice.id,
         name: newDevice.name,
-        type: newDevice.type.toString(), // Convert enum to string for database
-        status: newDevice.status.toString(), // Convert enum to string for database
+        type: newDevice.type.toString(),
+        status: newDevice.status.toString(),
         battery_level: newDevice.batteryLevel,
         last_reading: newDevice.lastReading,
         last_updated: newDevice.lastUpdated,
-        location: newDevice.location as any, // Type assertion for Json compatibility
+        location: newDevice.location as any,
         zone_id: newDevice.zoneId,
         user_id: user.id
       };
       
       const { error } = await supabase
         .from('devices')
-        .insert(deviceData as any); // Type assertion for Supabase compatibility
+        .insert(deviceData as any);
       
       if (error) throw error;
       
@@ -172,9 +179,9 @@ const MapPage: React.FC = () => {
         id: newZone.id,
         name: newZone.name,
         description: newZone.description || '',
-        boundary_coordinates: newZone.boundaryCoordinates as any, // Type assertion for Json compatibility
+        boundary_coordinates: newZone.boundaryCoordinates as any,
         area_size: newZone.areaSize,
-        irrigation_status: newZone.irrigationStatus.toString(), // Convert enum to string for database
+        irrigation_status: newZone.irrigationStatus.toString(),
         soil_moisture_threshold: newZone.soilMoistureThreshold,
         soil_type: soilType,
         crop_type: cropType, 
@@ -185,7 +192,7 @@ const MapPage: React.FC = () => {
       
       const { error } = await supabase
         .from('zones')
-        .insert(zoneData as any); // Type assertion for Supabase compatibility
+        .insert(zoneData as any);
       
       if (error) throw error;
       
@@ -210,7 +217,8 @@ const MapPage: React.FC = () => {
       const { error } = await supabase
         .from('devices')
         .update({ location: newLocation as any })
-        .eq('id', deviceId);
+        .eq('id', deviceId)
+        .eq('user_id', user?.id);
       
       if (error) throw error;
       
@@ -268,6 +276,7 @@ const MapPage: React.FC = () => {
           <AlertDescription>
             Draw zones by selecting the polygon tool, then place devices within zones. 
             Drag existing devices to reposition them.
+            {routeState?.device && " Click on the map to place your new device."}
           </AlertDescription>
         </Alert>
 
@@ -287,6 +296,7 @@ const MapPage: React.FC = () => {
             irrigationMethod: routeState.irrigationMethod,
             notes: routeState.notes
           } : undefined}
+          newDevice={routeState?.action === 'placeDevice' ? routeState.device : undefined}
         />
       </div>
     </DashboardLayout>

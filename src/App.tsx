@@ -7,44 +7,62 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SubscriptionGate from "@/components/auth/SubscriptionGate";
+
+// Pages
+import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import DevicesPage from "./pages/DevicesPage";
-import MapPage from "./pages/MapPage";
 import ZonesPage from "./pages/ZonesPage";
+import AutomationPage from "./pages/AutomationPage";
 import CropsPage from "./pages/CropsPage";
 import WeatherPage from "./pages/WeatherPage";
-import AutomationPage from "./pages/AutomationPage";
+import MapPage from "./pages/MapPage";
 import SettingsPage from "./pages/SettingsPage";
+import DeviceConnectivity from "./pages/DeviceConnectivity";
 import SubscriptionPlansPage from "./pages/SubscriptionPlansPage";
 import SubscriptionSuccessPage from "./pages/SubscriptionSuccessPage";
-import AdminConfigPage from "./pages/AdminConfigPage";
-import DeviceConnectivity from "./pages/DeviceConnectivity";
-import AuthPage from "./pages/AuthPage";
+import ContactFormPage from "./pages/ContactFormPage";
+import SubscriptionPendingPage from "./pages/SubscriptionPendingPage";
 import NotFound from "./pages/NotFound";
+
+// Admin Pages
+import AdminConfigPage from "./pages/AdminConfigPage";
 import FarmersManagementPage from "./pages/admin/FarmersManagementPage";
 import PaymentGatewaysPage from "./pages/admin/PaymentGatewaysPage";
+import ContactSubmissionsPage from "./pages/admin/ContactSubmissionsPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/subscription/plans" element={
+            <Route path="/subscription/plans" element={<SubscriptionPlansPage />} />
+            <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+            
+            {/* Protected routes that require authentication */}
+            <Route path="/contact" element={
               <ProtectedRoute>
-                <SubscriptionPlansPage />
+                <ContactFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/subscription/pending" element={
+              <ProtectedRoute>
+                <SubscriptionPendingPage />
               </ProtectedRoute>
             } />
             
-            {/* Protected and subscription-required routes */}
+            {/* Protected routes that require authentication AND subscription */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <SubscriptionGate>
@@ -59,17 +77,17 @@ const App = () => (
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
-            <Route path="/map" element={
-              <ProtectedRoute>
-                <SubscriptionGate>
-                  <MapPage />
-                </SubscriptionGate>
-              </ProtectedRoute>
-            } />
             <Route path="/zones" element={
               <ProtectedRoute>
                 <SubscriptionGate>
                   <ZonesPage />
+                </SubscriptionGate>
+              </ProtectedRoute>
+            } />
+            <Route path="/automation" element={
+              <ProtectedRoute>
+                <SubscriptionGate>
+                  <AutomationPage />
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
@@ -87,10 +105,10 @@ const App = () => (
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
-            <Route path="/automation" element={
+            <Route path="/map" element={
               <ProtectedRoute>
                 <SubscriptionGate>
-                  <AutomationPage />
+                  <MapPage />
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
@@ -101,52 +119,41 @@ const App = () => (
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
-            <Route path="/connectivity" element={
+            <Route path="/device-connectivity" element={
               <ProtectedRoute>
                 <SubscriptionGate>
                   <DeviceConnectivity />
                 </SubscriptionGate>
               </ProtectedRoute>
             } />
-            
-            {/* Protected route with no subscription requirement */}
-            <Route path="/subscription/success" element={
-              <ProtectedRoute>
-                <SubscriptionSuccessPage />
+
+            {/* Admin-only routes */}
+            <Route path="/admin/config" element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
+                <AdminConfigPage />
               </ProtectedRoute>
             } />
-            
-            {/* Admin only routes */}
-            <Route 
-              path="/admin/config" 
-              element={
-                <ProtectedRoute allowedRoles={['super_admin']}>
-                  <AdminConfigPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/farmers" 
-              element={
-                <ProtectedRoute allowedRoles={['super_admin']}>
-                  <FarmersManagementPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/payment-gateways" 
-              element={
-                <ProtectedRoute allowedRoles={['super_admin']}>
-                  <PaymentGatewaysPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* 404 page */}
+            <Route path="/admin/farmers" element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <FarmersManagementPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/payments" element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
+                <PaymentGatewaysPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/contact-submissions" element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <ContactSubmissionsPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

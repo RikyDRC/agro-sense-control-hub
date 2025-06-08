@@ -1,154 +1,143 @@
 
-import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { 
-  LayoutDashboard, 
-  Thermometer, 
-  Map, 
-  Layers, 
-  Cloud, 
-  Zap, 
-  Settings, 
-  Smartphone, 
-  LogOut, 
-  ChevronRight, 
-  Sprout,
-  Link as LinkIcon,
-  X
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Smartphone,
+  MapPin,
+  Zap,
+  Wheat,
+  Cloud,
+  Map,
+  Settings,
+  Wifi,
+  Users,
+  CreditCard,
+  MessageSquare,
+  ShieldCheck
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 
-interface SidebarProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
+const Sidebar = () => {
   const location = useLocation();
-  const { user, signOut } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const isMobile = useIsMobile();
-  
-  useEffect(() => {
-    // Get user role from user meta data if available
-    if (user && user.user_metadata && user.user_metadata.role) {
-      setUserRole(user.user_metadata.role);
-    }
-  }, [user]);
-  
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+  const { isRoleAdmin, isRoleSuperAdmin } = useAuth();
 
-  const navigationItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Devices', href: '/devices', icon: Thermometer },
-    { name: 'Map', href: '/map', icon: Map },
-    { name: 'Zones', href: '/zones', icon: Layers },
-    { name: 'Crops', href: '/crops', icon: Sprout },
-    { name: 'Weather', href: '/weather', icon: Cloud },
-    { name: 'Automation', href: '/automation', icon: Zap },
-    { name: 'Device Connectivity', href: '/connectivity', icon: LinkIcon },
-    { name: 'Settings', href: '/settings', icon: Settings },
+  const mainNavItems = [
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/devices', icon: Smartphone, label: 'Devices' },
+    { to: '/zones', icon: MapPin, label: 'Zones' },
+    { to: '/automation', icon: Zap, label: 'Automation' },
+    { to: '/crops', icon: Wheat, label: 'Crops' },
+    { to: '/weather', icon: Cloud, label: 'Weather' },
+    { to: '/map', icon: Map, label: 'Map View' },
   ];
 
-  // Add Admin Config for super_admin users
-  if (userRole === 'super_admin') {
-    navigationItems.push({ 
-      name: 'Admin Config', 
-      href: '/admin/config', 
-      icon: Smartphone 
-    });
-  }
+  const toolsNavItems = [
+    { to: '/device-connectivity', icon: Wifi, label: 'Device Connectivity' },
+    { to: '/settings', icon: Settings, label: 'Settings' },
+  ];
 
-  const SidebarContent = () => (
-    <>
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <Link to="/" className={cn("flex items-center", open ? "justify-start" : "justify-center w-full")}>
-          <Sprout className="h-6 w-6 text-primary" />
-          {open && <span className="ml-2 font-semibold">Farm IoT</span>}
-        </Link>
-        {isMobile && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden" 
-            onClick={() => setOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+  const adminNavItems = [
+    ...(isRoleAdmin() || isRoleSuperAdmin() ? [
+      { to: '/admin/farmers', icon: Users, label: 'Farmers Management' },
+      { to: '/admin/contact-submissions', icon: MessageSquare, label: 'Contact Submissions' }
+    ] : []),
+    ...(isRoleSuperAdmin() ? [
+      { to: '/admin/config', icon: ShieldCheck, label: 'Platform Config' },
+      { to: '/admin/payments', icon: CreditCard, label: 'Payment Gateways' }
+    ] : [])
+  ];
 
-      <ScrollArea className="flex-1 py-2">
-        <nav className="grid gap-1 px-2">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => isMobile && setOpen(false)}
-                className={cn(
-                  "group flex items-center rounded-md px-2 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
-                  isActive ? "bg-accent text-accent-foreground" : "transparent",
-                  !open && "justify-center"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                {open && <span className="ml-3">{item.name}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-      </ScrollArea>
-
-      <div className="mt-auto p-4 border-t">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className={cn(
-            "w-full justify-start",
-            !open && "justify-center px-0"
-          )} 
-          onClick={handleSignOut}
-        >
-          <LogOut className="h-5 w-5" />
-          {open && <span className="ml-2">Sign out</span>}
-        </Button>
-      </div>
-    </>
-  );
-
-  // Render mobile sidebar as a slide-out sheet
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="p-0 w-64 border-r">
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  // Desktop sidebar
   return (
-    <div 
-      className={cn(
-        "fixed inset-y-0 left-0 z-10 flex flex-col border-r bg-background transition-all duration-300",
-        open ? "w-64" : "w-20"
-      )}
-    >
-      <SidebarContent />
+    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
+      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+        <div className="flex items-center flex-shrink-0 px-4">
+          <h1 className="text-xl font-bold text-gray-900">AgroSense Hub</h1>
+        </div>
+        
+        <nav className="mt-8 flex-1 px-2 space-y-8">
+          {/* Main Navigation */}
+          <div>
+            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Main
+            </h3>
+            <div className="mt-2 space-y-1">
+              {mainNavItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    cn(
+                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    )
+                  }
+                >
+                  <item.icon className="mr-3 h-5 w-5" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Tools */}
+          <div>
+            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Tools
+            </h3>
+            <div className="mt-2 space-y-1">
+              {toolsNavItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    cn(
+                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    )
+                  }
+                >
+                  <item.icon className="mr-3 h-5 w-5" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Admin Section */}
+          {adminNavItems.length > 0 && (
+            <div>
+              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Administration
+              </h3>
+              <div className="mt-2 space-y-1">
+                {adminNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                        isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      )
+                    }
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          )}
+        </nav>
+      </div>
     </div>
   );
 };

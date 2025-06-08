@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,7 +21,7 @@ const SubscriptionPlansPage: React.FC = () => {
     price: '',
     billing_interval: 'month',
     features: {} as Record<string, any>,
-    id: undefined as string | undefined // Add id property with undefined as default value
+    id: undefined as string | undefined
   });
   const [savingPlan, setSavingPlan] = useState(false);
   
@@ -43,7 +42,7 @@ const SubscriptionPlansPage: React.FC = () => {
         features: typeof editingPlan.features === 'object' ? 
           editingPlan.features : 
           JSON.parse(editingPlan.features || '{}'),
-        id: editingPlan.id // Now properly typed
+        id: editingPlan.id
       });
     } else {
       setPlanFormData({
@@ -52,7 +51,7 @@ const SubscriptionPlansPage: React.FC = () => {
         price: '',
         billing_interval: 'month',
         features: {},
-        id: undefined // Clear the id when creating a new plan
+        id: undefined
       });
     }
   }, [editingPlan]);
@@ -218,20 +217,34 @@ const SubscriptionPlansPage: React.FC = () => {
       return;
     }
 
+    // Check if user already has an active subscription
+    if (subscription && subscription.status === 'active') {
+      toast.error('You already have an active subscription');
+      return;
+    }
+
+    // Find the selected plan
+    const selectedPlan = plans.find(plan => plan.id === planId);
+    if (!selectedPlan) {
+      toast.error('Selected plan not found');
+      return;
+    }
+
     setSubscribing(true);
+    
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { planId }
-      });
+      // For free tier, redirect to contact form (will be auto-approved)
+      if (selectedPlan.name === 'Free Tier' || selectedPlan.price === 0) {
+        navigate(`/contact?planId=${planId}`);
+        return;
+      }
 
-      if (error) throw error;
-      if (!data.url) throw new Error('No checkout URL returned');
-
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
+      // For paid plans, redirect to contact form for approval process
+      navigate(`/contact?planId=${planId}`);
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      toast.error('Failed to set up subscription payment');
+      console.error('Error with subscription process:', error);
+      toast.error('Failed to process subscription request');
+    } finally {
       setSubscribing(false);
     }
   };

@@ -175,6 +175,53 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          additional_notes: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone_number: string
+          selected_plan_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone_number: string
+          selected_plan_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone_number?: string
+          selected_plan_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_submissions_selected_plan_id_fkey"
+            columns: ["selected_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crop_images: {
         Row: {
           capture_date: string
@@ -607,6 +654,60 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      subscription_requests: {
+        Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
+          contact_submission_id: string | null
+          created_at: string
+          denial_reason: string | null
+          id: string
+          plan_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          contact_submission_id?: string | null
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          plan_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          contact_submission_id?: string | null
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          plan_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_requests_contact_submission_id_fkey"
+            columns: ["contact_submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_requests_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {

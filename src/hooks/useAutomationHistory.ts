@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface AutomationHistory {
   id: string;
@@ -16,16 +17,24 @@ export interface AutomationHistory {
 }
 
 export const useAutomationHistory = () => {
+  const { user } = useAuth();
   const [history, setHistory] = useState<AutomationHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchHistory = async (limit = 50) => {
+    if (!user) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('automation_history')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's automation history is fetched
         .order('timestamp', { ascending: false })
         .limit(limit);
 
@@ -55,10 +64,9 @@ export const useAutomationHistory = () => {
   };
 
   const addHistoryEntry = async (entry: Omit<AutomationHistory, 'id' | 'timestamp'>) => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+    if (!user) throw new Error('User not authenticated');
 
+    try {
       const { data, error } = await supabase
         .from('automation_history')
         .insert({
@@ -69,7 +77,7 @@ export const useAutomationHistory = () => {
           zone_id: entry.zoneId,
           device_id: entry.deviceId,
           details: entry.details,
-          user_id: userData.user.id
+          user_id: user.id
         })
         .select()
         .single();
@@ -97,11 +105,13 @@ export const useAutomationHistory = () => {
   };
 
   const clearHistory = async () => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('automation_history')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+        .eq('user_id', user.id); // Only clear current user's history
 
       if (error) throw error;
 
@@ -116,7 +126,7 @@ export const useAutomationHistory = () => {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [user]);
 
   return {
     history,

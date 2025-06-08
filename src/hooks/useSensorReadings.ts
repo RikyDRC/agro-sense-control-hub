@@ -3,19 +3,29 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SensorReading } from '@/types';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useSensorReadings = (deviceId?: string) => {
+  const { user } = useAuth();
   const [readings, setReadings] = useState<SensorReading[]>([]);
   const [latestReading, setLatestReading] = useState<SensorReading | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReadings = async () => {
+    if (!user) {
+      setReadings([]);
+      setLatestReading(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       let query = supabase
         .from('sensor_readings')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's sensor readings are fetched
         .order('timestamp', { ascending: false });
 
       if (deviceId) {
@@ -46,11 +56,14 @@ export const useSensorReadings = (deviceId?: string) => {
   };
 
   const getLatestReadingForDevice = async (deviceId: string): Promise<SensorReading | null> => {
+    if (!user) return null;
+
     try {
       const { data, error } = await supabase
         .from('sensor_readings')
         .select('*')
         .eq('device_id', deviceId)
+        .eq('user_id', user.id) // Ensure only user's sensor readings
         .order('timestamp', { ascending: false })
         .limit(1)
         .single();
@@ -75,7 +88,7 @@ export const useSensorReadings = (deviceId?: string) => {
 
   useEffect(() => {
     fetchReadings();
-  }, [deviceId]);
+  }, [deviceId, user]);
 
   return {
     readings,

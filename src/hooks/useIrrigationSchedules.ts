@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface IrrigationSchedule {
   id: string;
@@ -18,16 +19,24 @@ export interface IrrigationSchedule {
 }
 
 export const useIrrigationSchedules = () => {
+  const { user } = useAuth();
   const [schedules, setSchedules] = useState<IrrigationSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSchedules = async () => {
+    if (!user) {
+      setSchedules([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('irrigation_schedules')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's irrigation schedules are fetched
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -58,10 +67,9 @@ export const useIrrigationSchedules = () => {
   };
 
   const createSchedule = async (schedule: Omit<IrrigationSchedule, 'id' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+    if (!user) throw new Error('User not authenticated');
 
+    try {
       const { data, error } = await supabase
         .from('irrigation_schedules')
         .insert({
@@ -73,7 +81,7 @@ export const useIrrigationSchedules = () => {
           duration: schedule.duration,
           days_of_week: schedule.daysOfWeek,
           is_active: schedule.isActive,
-          user_id: userData.user.id
+          user_id: user.id
         })
         .select()
         .single();
@@ -105,6 +113,8 @@ export const useIrrigationSchedules = () => {
   };
 
   const updateSchedule = async (id: string, updates: Partial<IrrigationSchedule>) => {
+    if (!user) return;
+
     try {
       const { data, error } = await supabase
         .from('irrigation_schedules')
@@ -119,6 +129,7 @@ export const useIrrigationSchedules = () => {
           is_active: updates.isActive
         })
         .eq('id', id)
+        .eq('user_id', user.id) // Ensure only user's schedules can be updated
         .select()
         .single();
 
@@ -149,11 +160,14 @@ export const useIrrigationSchedules = () => {
   };
 
   const deleteSchedule = async (id: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('irrigation_schedules')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id); // Ensure only user's schedules can be deleted
 
       if (error) throw error;
 
@@ -179,7 +193,7 @@ export const useIrrigationSchedules = () => {
 
   useEffect(() => {
     fetchSchedules();
-  }, []);
+  }, [user]);
 
   return {
     schedules,

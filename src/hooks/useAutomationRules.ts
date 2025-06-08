@@ -3,18 +3,27 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AutomationRule, RuleCondition, RuleAction } from '@/types';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAutomationRules = () => {
+  const { user } = useAuth();
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRules = async () => {
+    if (!user) {
+      setRules([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('automation_rules')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's automation rules are fetched
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -43,10 +52,9 @@ export const useAutomationRules = () => {
   };
 
   const createRule = async (rule: Omit<AutomationRule, 'id' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+    if (!user) throw new Error('User not authenticated');
 
+    try {
       const { data, error } = await supabase
         .from('automation_rules')
         .insert({
@@ -56,7 +64,7 @@ export const useAutomationRules = () => {
           action: rule.action as any,
           zone_id: rule.zoneId,
           is_active: rule.isActive,
-          user_id: userData.user.id
+          user_id: user.id
         })
         .select()
         .single();
@@ -86,6 +94,8 @@ export const useAutomationRules = () => {
   };
 
   const updateRule = async (id: string, updates: Partial<AutomationRule>) => {
+    if (!user) return;
+
     try {
       const { data, error } = await supabase
         .from('automation_rules')
@@ -98,6 +108,7 @@ export const useAutomationRules = () => {
           is_active: updates.isActive
         })
         .eq('id', id)
+        .eq('user_id', user.id) // Ensure only user's rules can be updated
         .select()
         .single();
 
@@ -126,11 +137,14 @@ export const useAutomationRules = () => {
   };
 
   const deleteRule = async (id: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('automation_rules')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id); // Ensure only user's rules can be deleted
 
       if (error) throw error;
 
@@ -156,7 +170,7 @@ export const useAutomationRules = () => {
 
   useEffect(() => {
     fetchRules();
-  }, []);
+  }, [user]);
 
   return {
     rules,

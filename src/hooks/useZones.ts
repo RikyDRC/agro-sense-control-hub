@@ -3,18 +3,27 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Zone } from '@/types';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useZones = () => {
+  const { user } = useAuth();
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchZones = async () => {
+    if (!user) {
+      setZones([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('zones')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's zones are fetched
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -49,7 +58,7 @@ export const useZones = () => {
 
   useEffect(() => {
     fetchZones();
-  }, []);
+  }, [user]);
 
   return {
     zones,

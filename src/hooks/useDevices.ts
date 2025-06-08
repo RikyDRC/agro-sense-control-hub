@@ -3,18 +3,27 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Device } from '@/types';
 import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useDevices = () => {
+  const { user } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDevices = async () => {
+    if (!user) {
+      setDevices([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('devices')
         .select('*')
+        .eq('user_id', user.id) // Ensure only user's devices are fetched
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -47,7 +56,8 @@ export const useDevices = () => {
       const { error } = await supabase
         .from('devices')
         .update({ status })
-        .eq('id', deviceId);
+        .eq('id', deviceId)
+        .eq('user_id', user?.id); // Ensure only user's devices can be updated
 
       if (error) throw error;
 
@@ -64,7 +74,7 @@ export const useDevices = () => {
 
   useEffect(() => {
     fetchDevices();
-  }, []);
+  }, [user]);
 
   return {
     devices,

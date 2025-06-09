@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
@@ -10,6 +9,8 @@ import { Device, DeviceStatus, DeviceType, WeatherCondition, WeatherForecast } f
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { SunMoon } from 'lucide-react';
+import { getUserLocationWeather } from '@/services/weatherService';
+import { toast } from '@/components/ui/sonner';
 
 // Mock Data
 const mockDevices: Device[] = [
@@ -118,6 +119,9 @@ const mockForecast: WeatherForecast[] = Array.from({ length: 5 }).map((_, index)
 
 const Dashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentWeather, setCurrentWeather] = useState<WeatherForecast | null>(null);
+  const [forecast, setForecast] = useState<WeatherForecast[]>([]);
+  const [weatherLoading, setWeatherLoading] = useState(true);
   
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -127,6 +131,32 @@ const Dashboard: React.FC = () => {
       document.documentElement.classList.add('dark');
     }
   };
+
+  // Fetch real weather data based on user location
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        setWeatherLoading(true);
+        const weatherData = await getUserLocationWeather();
+        
+        if (weatherData) {
+          setCurrentWeather(weatherData.current);
+          setForecast(weatherData.forecast);
+        } else {
+          // Fallback to Tunisia coordinates if location not available
+          console.log('Using fallback location for weather data');
+          toast.info('Using default location for weather data');
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        toast.error('Failed to load weather data');
+      } finally {
+        setWeatherLoading(false);
+      }
+    };
+
+    fetchWeatherData();
+  }, []);
   
   return (
     <DashboardLayout>
@@ -163,10 +193,19 @@ const Dashboard: React.FC = () => {
             <DeviceStatusList devices={mockDevices} />
           </div>
           <div className="lg:col-span-2">
-            <WeatherWidget 
-              currentWeather={mockCurrentWeather} 
-              forecast={mockForecast} 
-            />
+            {!weatherLoading && currentWeather ? (
+              <WeatherWidget 
+                currentWeather={currentWeather} 
+                forecast={forecast} 
+              />
+            ) : (
+              <div className="flex items-center justify-center h-48 bg-muted/50 rounded-lg">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Loading weather data...</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

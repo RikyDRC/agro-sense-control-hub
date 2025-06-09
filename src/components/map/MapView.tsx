@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const containerStyle = {
   width: '100%',
-  height: '400px' // Reduced height for mobile
+  height: '600px' // Increased from 400px for bigger map
 };
 
 const libraries: ("drawing" | "places" | "geometry" | "visualization")[] = ["drawing", "places", "geometry"];
@@ -173,6 +173,9 @@ const MapView: React.FC<MapViewProps> = ({
   const onMapLoad = useCallback((map: google.maps.Map) => {
     console.log("Map loaded successfully");
     setMapInstance(map);
+    
+    // Set map to satellite view only
+    map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
   }, []);
 
   const onDrawingManagerLoad = useCallback((drawingManager: google.maps.drawing.DrawingManager) => {
@@ -458,7 +461,7 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[400px] w-full" />
+          <Skeleton className="h-[600px] w-full" />
         </CardContent>
       </Card>
     );
@@ -514,12 +517,12 @@ const MapView: React.FC<MapViewProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex flex-col gap-4">
         <Card className="flex-1">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Field Map</CardTitle>
+                <CardTitle className="text-lg">Field Map - Satellite View</CardTitle>
                 <CardDescription className="text-sm">
                   {userLocation ? 'Your current location' : 'Manage your fields and devices'}
                 </CardDescription>
@@ -539,7 +542,7 @@ const MapView: React.FC<MapViewProps> = ({
               onLoad={onScriptLoad}
               onError={onScriptError}
               loadingElement={
-                <div className="flex items-center justify-center h-[400px]">
+                <div className="flex items-center justify-center h-[600px]">
                   <Loader2 className="h-8 w-8 animate-spin" />
                   <span className="ml-2">Loading map...</span>
                 </div>
@@ -555,6 +558,7 @@ const MapView: React.FC<MapViewProps> = ({
                   streetViewControl: false,
                   mapTypeControl: false,
                   fullscreenControl: false,
+                  mapTypeId: google.maps.MapTypeId.SATELLITE
                 }}
               >
                 {/* User location marker */}
@@ -623,7 +627,7 @@ const MapView: React.FC<MapViewProps> = ({
           </CardContent>
         </Card>
         
-        <div className="lg:w-80 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Zone Selection Card */}
           <Card>
             <CardHeader>

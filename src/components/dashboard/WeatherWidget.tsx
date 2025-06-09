@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,7 +16,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { formatDateTunisia } from '@/services/weatherService';
 
 interface WeatherWidgetProps {
   currentWeather: WeatherForecast;
@@ -57,10 +56,9 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
 }) => {
   const [view, setView] = useState<'current' | 'forecast'>('current');
   
-  // Format the date for readability
+  // Format the date for readability using Tunisia timezone
   const formatWeatherDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'EEE, MMM d');
+    return formatDateTunisia(dateString);
   };
   
   // Get weather condition description
@@ -92,8 +90,8 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold">Weather</CardTitle>
-            <CardDescription>Current conditions and forecast</CardDescription>
+            <CardTitle className="text-lg font-semibold">Weather - Tunisia</CardTitle>
+            <CardDescription>Current conditions and forecast (Tunisia Time)</CardDescription>
           </div>
           <Tabs 
             defaultValue="current" 
@@ -159,7 +157,10 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
                   className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <span className="text-xs text-muted-foreground mb-1">
-                    {format(new Date(day.date), 'EEE')}
+                    {new Date(day.date).toLocaleDateString('en-US', { 
+                      timeZone: 'Africa/Tunis',
+                      weekday: 'short'
+                    })}
                   </span>
                   {getWeatherIcon(day.condition, "h-8 w-8 my-2")}
                   <div className="flex items-center justify-center space-x-1 mt-1">

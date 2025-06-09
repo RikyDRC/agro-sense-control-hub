@@ -1,7 +1,7 @@
-
 import { WeatherCondition, WeatherForecast } from '@/types';
 
 const OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1';
+const TUNISIA_TIMEZONE = 'Africa/Tunis';
 
 interface OpenMeteoResponse {
   latitude: number;
@@ -144,7 +144,7 @@ export const getWeatherData = async (latitude: number, longitude: number): Promi
   forecast: WeatherForecast[];
 }> => {
   try {
-    const url = `${OPEN_METEO_BASE_URL}/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=7`;
+    const url = `${OPEN_METEO_BASE_URL}/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=${TUNISIA_TIMEZONE}&forecast_days=7`;
     
     const response = await fetch(url);
     if (!response.ok) {
@@ -182,7 +182,7 @@ export const getWeatherData = async (latitude: number, longitude: number): Promi
         max: data.daily.temperature_2m_max[index + 1],
         unit: '°C'
       },
-      humidity: data.current.relative_humidity_2m, // Using current humidity as daily humidity is not available
+      humidity: data.current.relative_humidity_2m,
       precipitation: {
         probability: data.daily.precipitation_probability_max[index + 1] || 0,
         amount: data.daily.precipitation_sum[index + 1],
@@ -211,7 +211,7 @@ export const getHistoricalWeatherData = async (
   precipitation: number;
 }>> => {
   try {
-    const url = `${OPEN_METEO_BASE_URL}/archive?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_mean,relative_humidity_2m_mean,precipitation_sum&timezone=auto`;
+    const url = `${OPEN_METEO_BASE_URL}/archive?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_mean,relative_humidity_2m_mean,precipitation_sum&timezone=${TUNISIA_TIMEZONE}`;
     
     const response = await fetch(url);
     if (!response.ok) {
@@ -221,7 +221,12 @@ export const getHistoricalWeatherData = async (
     const data = await response.json();
     
     return data.daily.time.map((date: string, index: number) => ({
-      date: new Date(date).toLocaleDateString(),
+      date: new Date(date).toLocaleDateString('en-US', { 
+        timeZone: TUNISIA_TIMEZONE,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
       temperature: data.daily.temperature_2m_mean[index],
       humidity: data.daily.relative_humidity_2m_mean[index],
       precipitation: data.daily.precipitation_sum[index]
@@ -230,4 +235,60 @@ export const getHistoricalWeatherData = async (
     console.error('Error fetching historical weather data:', error);
     throw error;
   }
+};
+
+// Function to get user's location-based weather
+export const getUserLocationWeather = async (): Promise<{
+  current: WeatherForecast;
+  forecast: WeatherForecast[];
+} | null> => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported');
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const weatherData = await getWeatherData(latitude, longitude);
+          resolve(weatherData);
+        } catch (error) {
+          console.error('Error fetching location-based weather:', error);
+          resolve(null);
+        }
+      },
+      (error) => {
+        console.warn('Could not get location for weather:', error);
+        resolve(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+  });
+};
+
+// Function to format date in Tunisia timezone
+export const formatDateTunisia = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', {
+    timeZone: TUNISIA_TIMEZONE,
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+export const formatTimeTunisia = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleTimeString('en-US', {
+    timeZone: TUNISIA_TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };

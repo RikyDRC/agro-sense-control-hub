@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, LoadScript, DrawingManager, Marker, Polygon } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,18 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle, MapPin, Loader2 } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2, Map } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const containerStyle = {
+// Mobile-optimized container style
+const getMobileContainerStyle = (isMobile: boolean) => ({
   width: '100%',
-  height: '700px'
-};
+  height: isMobile ? '400px' : '700px'
+});
 
 const libraries: ("drawing" | "places" | "geometry" | "visualization")[] = ["drawing", "places", "geometry"];
 
@@ -57,6 +58,7 @@ const MapView: React.FC<MapViewProps> = ({
   newDevice
 }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [newDeviceType, setNewDeviceType] = useState<DeviceType>(DeviceType.MOISTURE_SENSOR);
   const [newDeviceName, setNewDeviceName] = useState('');
@@ -236,7 +238,7 @@ const MapView: React.FC<MapViewProps> = ({
       // If we have user location, use it first
       if (userLocation) {
         mapInstance.setCenter(userLocation);
-        mapInstance.setZoom(15);
+        mapInstance.setZoom(isMobile ? 14 : 15);
         return;
       }
 
@@ -264,7 +266,7 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
     }
-  }, [devices, zones, mapInstance, isScriptLoaded, userLocation]);
+  }, [devices, zones, mapInstance, isScriptLoaded, userLocation, isMobile]);
 
   const onPolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     console.log("Polygon drawing completed");
@@ -474,7 +476,7 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[700px] w-full" />
+          <Skeleton className={`w-full ${isMobile ? 'h-[400px]' : 'h-[700px]'}`} />
         </CardContent>
       </Card>
     );
@@ -530,32 +532,34 @@ const MapView: React.FC<MapViewProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Mobile-first layout - Map first, then controls below */}
       <div className="flex flex-col gap-4">
-        <Card className="flex-1">
-          <CardHeader>
+        {/* Map Card - Full width on mobile */}
+        <Card className="w-full">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Field Map - Satellite View</CardTitle>
-                <CardDescription className="text-sm">
+                <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>Field Map - Satellite View</CardTitle>
+                <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
                   {userLocation ? 'Your current location' : 'Manage your fields and devices'}
                 </CardDescription>
               </div>
               {userLocation && (
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">Your Location</span>
+                <div className={`flex items-center text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>
+                  <MapPin className={`${isMobile ? 'h-3 w-3' : 'h-3 w-3'} mr-1`} />
+                  {!isMobile && <span>Your Location</span>}
                 </div>
               )}
             </div>
           </CardHeader>
-          <CardContent className="p-3 lg:p-6">
+          <CardContent className={`${isMobile ? 'p-2' : 'p-3 lg:p-6'}`}>
             <LoadScript 
               googleMapsApiKey={googleMapsApiKey} 
               libraries={libraries}
               onLoad={onScriptLoad}
               onError={onScriptError}
               loadingElement={
-                <div className="flex items-center justify-center h-[700px]">
+                <div className={`flex items-center justify-center ${isMobile ? 'h-[400px]' : 'h-[700px]'}`}>
                   <Loader2 className="h-8 w-8 animate-spin" />
                   <span className="ml-2">Loading map...</span>
                 </div>
@@ -563,16 +567,18 @@ const MapView: React.FC<MapViewProps> = ({
             >
               {isScriptLoaded && window.google && window.google.maps ? (
                 <GoogleMap
-                  mapContainerStyle={containerStyle}
+                  mapContainerStyle={getMobileContainerStyle(isMobile)}
                   center={mapCenter}
-                  zoom={userLocation ? 15 : 14}
+                  zoom={userLocation ? (isMobile ? 14 : 15) : (isMobile ? 13 : 14)}
                   onLoad={onMapLoad}
                   onClick={handleMapClick}
                   options={{
                     streetViewControl: false,
-                    mapTypeControl: false,
-                    fullscreenControl: false,
-                    mapTypeId: window.google.maps.MapTypeId.SATELLITE
+                    mapTypeControl: !isMobile,
+                    fullscreenControl: !isMobile,
+                    zoomControl: true,
+                    mapTypeId: window.google.maps.MapTypeId.SATELLITE,
+                    gestureHandling: isMobile ? 'cooperative' : 'auto'
                   }}
                 >
                   {/* User location marker */}
@@ -581,7 +587,7 @@ const MapView: React.FC<MapViewProps> = ({
                       position={userLocation}
                       icon={{
                         url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                        scaledSize: new window.google.maps.Size(32, 32)
+                        scaledSize: new window.google.maps.Size(isMobile ? 24 : 32, isMobile ? 24 : 32)
                       }}
                       title="Your Location"
                     />
@@ -638,7 +644,7 @@ const MapView: React.FC<MapViewProps> = ({
                   )}
                 </GoogleMap>
               ) : (
-                <div className="flex items-center justify-center h-[700px]">
+                <div className={`flex items-center justify-center ${isMobile ? 'h-[400px]' : 'h-[700px]'}`}>
                   <Loader2 className="h-8 w-8 animate-spin" />
                   <span className="ml-2">Preparing map...</span>
                 </div>
@@ -647,14 +653,15 @@ const MapView: React.FC<MapViewProps> = ({
           </CardContent>
         </Card>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Controls - Stacked on mobile, grid on desktop */}
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Zone Selection Card */}
           <Card>
-            <CardHeader>
-              <CardTitle>Zones</CardTitle>
-              <CardDescription>Select or create field zones</CardDescription>
+            <CardHeader className={`${isMobile ? 'pb-3' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-base' : ''}`}>Zones</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>Select or create field zones</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <Select value={selectedZone || 'all'} onValueChange={setSelectedZone}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a zone" />
@@ -669,34 +676,34 @@ const MapView: React.FC<MapViewProps> = ({
                 </SelectContent>
               </Select>
               
-              <div className="mt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsAddingDevice(false);
-                    if (drawingManager && isScriptLoaded && window.google) {
-                      drawingManager.setDrawingMode(window.google.maps.drawing.OverlayType.POLYGON);
-                    }
-                  }}
-                  className="w-full"
-                  disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
-                >
-                  Draw New Zone
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsAddingDevice(false);
+                  if (drawingManager && isScriptLoaded && window.google) {
+                    drawingManager.setDrawingMode(window.google.maps.drawing.OverlayType.POLYGON);
+                  }
+                }}
+                className="w-full"
+                disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
+                size={isMobile ? "sm" : "default"}
+              >
+                <Map className="mr-2 h-4 w-4" />
+                Draw New Zone
+              </Button>
             </CardContent>
           </Card>
           
-          {/* Device Placement Card */}
+          {/* Device Placement Card - Hide when device from route */}
           {!newDevice && (
             <Card>
-              <CardHeader>
-                <CardTitle>Add Device</CardTitle>
-                <CardDescription>Place new devices on the map</CardDescription>
+              <CardHeader className={`${isMobile ? 'pb-3' : ''}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : ''}`}>Add Device</CardTitle>
+                <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>Place new devices on the map</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="deviceType">Device Type</Label>
+                  <Label htmlFor="deviceType" className={`${isMobile ? 'text-xs' : ''}`}>Device Type</Label>
                   <Select value={newDeviceType} onValueChange={(value) => setNewDeviceType(value as DeviceType)}>
                     <SelectTrigger id="deviceType">
                       <SelectValue placeholder="Select type" />
@@ -712,7 +719,7 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="deviceName">Device Name (Optional)</Label>
+                  <Label htmlFor="deviceName" className={`${isMobile ? 'text-xs' : ''}`}>Device Name (Optional)</Label>
                   <Input
                     id="deviceName"
                     value={newDeviceName}
@@ -730,6 +737,7 @@ const MapView: React.FC<MapViewProps> = ({
                     }
                   }}
                   disabled={isNamingZone || isAddingDevice || !isScriptLoaded}
+                  size={isMobile ? "sm" : "default"}
                 >
                   {isAddingDevice ? 'Click on Map to Place' : 'Place Device on Map'}
                 </Button>
@@ -739,6 +747,7 @@ const MapView: React.FC<MapViewProps> = ({
                     variant="outline"
                     className="w-full"
                     onClick={() => setIsAddingDevice(false)}
+                    size={isMobile ? "sm" : "default"}
                   >
                     Cancel
                   </Button>
@@ -750,19 +759,19 @@ const MapView: React.FC<MapViewProps> = ({
           {/* Device from route state */}
           {newDevice && (
             <Card>
-              <CardHeader>
-                <CardTitle>Place Device</CardTitle>
-                <CardDescription>Click on the map to place your new device</CardDescription>
+              <CardHeader className={`${isMobile ? 'pb-3' : ''}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : ''}`}>Place Device</CardTitle>
+                <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>Click on the map to place your new device</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Device:</span>
-                    <Badge variant="outline">{newDevice.name}</Badge>
+                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Device:</span>
+                    <Badge variant="outline" className={`${isMobile ? 'text-xs' : ''}`}>{newDevice.name}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Type:</span>
-                    <Badge variant="secondary">
+                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Type:</span>
+                    <Badge variant="secondary" className={`${isMobile ? 'text-xs' : ''}`}>
                       {newDevice.type.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                     </Badge>
                   </div>
@@ -772,6 +781,7 @@ const MapView: React.FC<MapViewProps> = ({
                     variant="outline"
                     className="w-full"
                     onClick={() => navigate('/devices')}
+                    size={isMobile ? "sm" : "default"}
                   >
                     Cancel
                   </Button>
@@ -782,15 +792,15 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Zone Naming Dialog - Enhanced with all fields */}
           {isNamingZone && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Zone Details</CardTitle>
-                <CardDescription>Provide information about your zone</CardDescription>
+            <Card className={`${isMobile ? 'col-span-full' : ''}`}>
+              <CardHeader className={`${isMobile ? 'pb-3' : ''}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : ''}`}>Zone Details</CardTitle>
+                <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>Provide information about your zone</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label htmlFor="zoneName">Zone Name</Label>
+                    <Label htmlFor="zoneName" className={`${isMobile ? 'text-xs' : ''}`}>Zone Name</Label>
                     <Input
                       id="zoneName"
                       value={newZoneName}
@@ -800,7 +810,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="zoneDescription">Description (Optional)</Label>
+                    <Label htmlFor="zoneDescription" className={`${isMobile ? 'text-xs' : ''}`}>Description (Optional)</Label>
                     <Input
                       id="zoneDescription"
                       value={newZoneDescription}
@@ -809,77 +819,91 @@ const MapView: React.FC<MapViewProps> = ({
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="moistureThreshold">Soil Moisture Threshold (%)</Label>
-                    <Input
-                      id="moistureThreshold"
-                      type="number"
-                      value={soilMoistureThreshold}
-                      onChange={(e) => setSoilMoistureThreshold(parseInt(e.target.value) || 30)}
-                      min="0"
-                      max="100"
-                    />
+                  <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    <div className="space-y-2">
+                      <Label htmlFor="moistureThreshold" className={`${isMobile ? 'text-xs' : ''}`}>Soil Moisture Threshold (%)</Label>
+                      <Input
+                        id="moistureThreshold"
+                        type="number"
+                        value={soilMoistureThreshold}
+                        onChange={(e) => setSoilMoistureThreshold(parseInt(e.target.value) || 30)}
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="soilType" className={`${isMobile ? 'text-xs' : ''}`}>Soil Type</Label>
+                      <Select value={soilType} onValueChange={setSoilType}>
+                        <SelectTrigger id="soilType">
+                          <SelectValue placeholder="Select soil type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {soilTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    <div className="space-y-2">
+                      <Label htmlFor="cropType" className={`${isMobile ? 'text-xs' : ''}`}>Primary Crop Type</Label>
+                      <Input
+                        id="cropType"
+                        value={cropType}
+                        onChange={(e) => setCropType(e.target.value)}
+                        placeholder="e.g. Wheat, Corn, Soybeans"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="irrigationMethod" className={`${isMobile ? 'text-xs' : ''}`}>Irrigation Method</Label>
+                      <Select value={irrigationMethod} onValueChange={setIrrigationMethod}>
+                        <SelectTrigger id="irrigationMethod">
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {irrigationMethods.map((method) => (
+                            <SelectItem key={method.value} value={method.value}>
+                              {method.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="soilType">Soil Type</Label>
-                    <Select value={soilType} onValueChange={setSoilType}>
-                      <SelectTrigger id="soilType">
-                        <SelectValue placeholder="Select soil type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {soilTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cropType">Primary Crop Type</Label>
-                    <Input
-                      id="cropType"
-                      value={cropType}
-                      onChange={(e) => setCropType(e.target.value)}
-                      placeholder="e.g. Wheat, Corn, Soybeans"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="irrigationMethod">Irrigation Method</Label>
-                    <Select value={irrigationMethod} onValueChange={setIrrigationMethod}>
-                      <SelectTrigger id="irrigationMethod">
-                        <SelectValue placeholder="Select method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {irrigationMethods.map((method) => (
-                          <SelectItem key={method.value} value={method.value}>
-                            {method.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Label htmlFor="notes" className={`${isMobile ? 'text-xs' : ''}`}>Additional Notes</Label>
                     <Textarea
                       id="notes"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Enter any additional information"
-                      className="min-h-[80px]"
+                      className={`${isMobile ? 'min-h-[60px]' : 'min-h-[80px]'}`}
                     />
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={cancelZoneCreation}>
+              <CardFooter className={`flex ${isMobile ? 'flex-col gap-2' : 'justify-between'}`}>
+                <Button 
+                  variant="outline" 
+                  onClick={cancelZoneCreation}
+                  className={`${isMobile ? 'w-full order-2' : ''}`}
+                  size={isMobile ? "sm" : "default"}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleZoneCreate} disabled={!newZoneName}>
+                <Button 
+                  onClick={handleZoneCreate} 
+                  disabled={!newZoneName}
+                  className={`${isMobile ? 'w-full order-1' : ''}`}
+                  size={isMobile ? "sm" : "default"}
+                >
                   Save Zone
                 </Button>
               </CardFooter>

@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const containerStyle = {
   width: '100%',
-  height: '600px' // Increased from 400px for bigger map
+  height: '600px'
 };
 
 const libraries: ("drawing" | "places" | "geometry" | "visualization")[] = ["drawing", "places", "geometry"];
@@ -174,8 +174,10 @@ const MapView: React.FC<MapViewProps> = ({
     console.log("Map loaded successfully");
     setMapInstance(map);
     
-    // Set map to satellite view only
-    map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+    // Only set map type if google is available
+    if (typeof google !== 'undefined' && google.maps && google.maps.MapTypeId) {
+      map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+    }
   }, []);
 
   const onDrawingManagerLoad = useCallback((drawingManager: google.maps.drawing.DrawingManager) => {
@@ -185,7 +187,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Handle edit zone from route state
   useEffect(() => {
-    if (editZoneId && isScriptLoaded && mapInstance) {
+    if (editZoneId && isScriptLoaded && mapInstance && typeof google !== 'undefined') {
       const zoneToEdit = zones.find(zone => zone.id === editZoneId);
       if (zoneToEdit) {
         setSelectedZone(editZoneId);
@@ -204,7 +206,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Handle create zone from route state
   useEffect(() => {
-    if (createZone && drawingManager && isScriptLoaded) {
+    if (createZone && drawingManager && isScriptLoaded && typeof google !== 'undefined') {
       setNewZoneName(createZone.name || '');
       setNewZoneDescription(createZone.description || '');
       setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
@@ -221,7 +223,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Set initial map center based on user location, then device/zone locations
   useEffect(() => {
-    if (isScriptLoaded && mapInstance) {
+    if (isScriptLoaded && mapInstance && typeof google !== 'undefined') {
       // If we have user location, use it first
       if (userLocation) {
         mapInstance.setCenter(userLocation);
@@ -373,17 +375,19 @@ const MapView: React.FC<MapViewProps> = ({
         lng: e.latLng.lng()
       };
       
-      // Check if the click is within any zone
+      // Check if the click is within any zone (only if google is available)
       let targetZoneId: string | undefined;
-      for (const zone of zones) {
-        if (zone.boundaryCoordinates.length > 0) {
-          const polygon = new google.maps.Polygon({
-            paths: zone.boundaryCoordinates
-          });
-          
-          if (google.maps.geometry.poly.containsLocation(e.latLng, polygon)) {
-            targetZoneId = zone.id;
-            break;
+      if (typeof google !== 'undefined' && google.maps && google.maps.geometry) {
+        for (const zone of zones) {
+          if (zone.boundaryCoordinates.length > 0) {
+            const polygon = new google.maps.Polygon({
+              paths: zone.boundaryCoordinates
+            });
+            
+            if (google.maps.geometry.poly.containsLocation(e.latLng, polygon)) {
+              targetZoneId = zone.id;
+              break;
+            }
           }
         }
       }
@@ -536,18 +540,7 @@ const MapView: React.FC<MapViewProps> = ({
             </div>
           </CardHeader>
           <CardContent className="p-3 lg:p-6">
-            <LoadScript 
-              googleMapsApiKey={googleMapsApiKey} 
-              libraries={libraries}
-              onLoad={onScriptLoad}
-              onError={onScriptError}
-              loadingElement={
-                <div className="flex items-center justify-center h-[600px]">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="ml-2">Loading map...</span>
-                </div>
-              }
-            >
+            {isScriptLoaded ? (
               <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={mapCenter}
@@ -558,11 +551,11 @@ const MapView: React.FC<MapViewProps> = ({
                   streetViewControl: false,
                   mapTypeControl: false,
                   fullscreenControl: false,
-                  mapTypeId: google.maps.MapTypeId.SATELLITE
+                  mapTypeId: typeof google !== 'undefined' && google.maps ? google.maps.MapTypeId.SATELLITE : undefined
                 }}
               >
                 {/* User location marker */}
-                {isScriptLoaded && userLocation && (
+                {userLocation && typeof google !== 'undefined' && google.maps && (
                   <Marker
                     position={userLocation}
                     icon={{
@@ -574,7 +567,7 @@ const MapView: React.FC<MapViewProps> = ({
                 )}
 
                 {/* Zone Polygons */}
-                {isScriptLoaded && zones.map((zone) => (
+                {zones.map((zone) => (
                   <Polygon
                     key={zone.id}
                     paths={zone.boundaryCoordinates}
@@ -592,7 +585,7 @@ const MapView: React.FC<MapViewProps> = ({
                 ))}
                 
                 {/* Device Markers */}
-                {isScriptLoaded && devices.map((device) => (
+                {devices.map((device) => (
                   <Marker
                     key={device.id}
                     position={device.location}
@@ -607,23 +600,34 @@ const MapView: React.FC<MapViewProps> = ({
                 ))}
                 
                 {/* Drawing Manager for creating zones */}
-                {isScriptLoaded && (
-                  <DrawingManager
-                    onLoad={onDrawingManagerLoad}
-                    onPolygonComplete={onPolygonComplete}
-                    options={{
-                      drawingControl: !isAddingDevice && !isNamingZone,
-                      drawingControlOptions: {
-                        position: google.maps.ControlPosition.TOP_CENTER,
-                        drawingModes: [
-                          google.maps.drawing.OverlayType.POLYGON,
-                        ],
-                      },
-                    }}
-                  />
-                )}
+                <DrawingManager
+                  onLoad={onDrawingManagerLoad}
+                  onPolygonComplete={onPolygonComplete}
+                  options={{
+                    drawingControl: !isAddingDevice && !isNamingZone,
+                    drawingControlOptions: {
+                      position: typeof google !== 'undefined' && google.maps ? google.maps.ControlPosition.TOP_CENTER : undefined,
+                      drawingModes: typeof google !== 'undefined' && google.maps ? [
+                        google.maps.drawing.OverlayType.POLYGON,
+                      ] : [],
+                    },
+                  }}
+                />
               </GoogleMap>
-            </LoadScript>
+            ) : (
+              <LoadScript 
+                googleMapsApiKey={googleMapsApiKey} 
+                libraries={libraries}
+                onLoad={onScriptLoad}
+                onError={onScriptError}
+                loadingElement={
+                  <div className="flex items-center justify-center h-[600px]">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <span className="ml-2">Loading map...</span>
+                  </div>
+                }
+              />
+            )}
           </CardContent>
         </Card>
         
@@ -654,7 +658,7 @@ const MapView: React.FC<MapViewProps> = ({
                   variant="outline" 
                   onClick={() => {
                     setIsAddingDevice(false);
-                    if (drawingManager && isScriptLoaded) {
+                    if (drawingManager && isScriptLoaded && typeof google !== 'undefined') {
                       drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
                     }
                   }}

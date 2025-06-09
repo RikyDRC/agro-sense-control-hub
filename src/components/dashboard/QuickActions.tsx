@@ -24,8 +24,8 @@ import { useDevices } from '@/hooks/useDevices';
 import { Device, Zone, DeviceStatus, IrrigationStatus } from '@/types';
 
 const QuickActions: React.FC = () => {
-  const { data: zones = [] } = useZones();
-  const { data: devices = [] } = useDevices();
+  const { zones = [] } = useZones();
+  const { devices = [] } = useDevices();
 
   const handleAction = (action: string) => {
     toast.success(`${action} command sent successfully`);

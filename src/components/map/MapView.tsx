@@ -174,10 +174,8 @@ const MapView: React.FC<MapViewProps> = ({
     console.log("Map loaded successfully");
     setMapInstance(map);
     
-    // Only set map type if google is available
-    if (typeof google !== 'undefined' && google.maps && google.maps.MapTypeId) {
-      map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-    }
+    // Set map type to satellite
+    map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
   }, []);
 
   const onDrawingManagerLoad = useCallback((drawingManager: google.maps.drawing.DrawingManager) => {
@@ -187,7 +185,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Handle edit zone from route state
   useEffect(() => {
-    if (editZoneId && isScriptLoaded && mapInstance && typeof google !== 'undefined') {
+    if (editZoneId && isScriptLoaded && mapInstance) {
       const zoneToEdit = zones.find(zone => zone.id === editZoneId);
       if (zoneToEdit) {
         setSelectedZone(editZoneId);
@@ -206,7 +204,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Handle create zone from route state
   useEffect(() => {
-    if (createZone && drawingManager && isScriptLoaded && typeof google !== 'undefined') {
+    if (createZone && drawingManager && isScriptLoaded) {
       setNewZoneName(createZone.name || '');
       setNewZoneDescription(createZone.description || '');
       setSoilMoistureThreshold(createZone.soilMoistureThreshold || 30);
@@ -223,7 +221,7 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Set initial map center based on user location, then device/zone locations
   useEffect(() => {
-    if (isScriptLoaded && mapInstance && typeof google !== 'undefined') {
+    if (isScriptLoaded && mapInstance) {
       // If we have user location, use it first
       if (userLocation) {
         mapInstance.setCenter(userLocation);
@@ -375,19 +373,17 @@ const MapView: React.FC<MapViewProps> = ({
         lng: e.latLng.lng()
       };
       
-      // Check if the click is within any zone (only if google is available)
+      // Check if the click is within any zone
       let targetZoneId: string | undefined;
-      if (typeof google !== 'undefined' && google.maps && google.maps.geometry) {
-        for (const zone of zones) {
-          if (zone.boundaryCoordinates.length > 0) {
-            const polygon = new google.maps.Polygon({
-              paths: zone.boundaryCoordinates
-            });
-            
-            if (google.maps.geometry.poly.containsLocation(e.latLng, polygon)) {
-              targetZoneId = zone.id;
-              break;
-            }
+      for (const zone of zones) {
+        if (zone.boundaryCoordinates.length > 0) {
+          const polygon = new google.maps.Polygon({
+            paths: zone.boundaryCoordinates
+          });
+          
+          if (google.maps.geometry.poly.containsLocation(e.latLng, polygon)) {
+            targetZoneId = zone.id;
+            break;
           }
         }
       }
@@ -551,11 +547,11 @@ const MapView: React.FC<MapViewProps> = ({
                   streetViewControl: false,
                   mapTypeControl: false,
                   fullscreenControl: false,
-                  mapTypeId: typeof google !== 'undefined' && google.maps ? google.maps.MapTypeId.SATELLITE : undefined
+                  mapTypeId: google.maps.MapTypeId.SATELLITE
                 }}
               >
                 {/* User location marker */}
-                {userLocation && typeof google !== 'undefined' && google.maps && (
+                {userLocation && (
                   <Marker
                     position={userLocation}
                     icon={{
@@ -606,10 +602,10 @@ const MapView: React.FC<MapViewProps> = ({
                   options={{
                     drawingControl: !isAddingDevice && !isNamingZone,
                     drawingControlOptions: {
-                      position: typeof google !== 'undefined' && google.maps ? google.maps.ControlPosition.TOP_CENTER : undefined,
-                      drawingModes: typeof google !== 'undefined' && google.maps ? [
+                      position: google.maps.ControlPosition.TOP_CENTER,
+                      drawingModes: [
                         google.maps.drawing.OverlayType.POLYGON,
-                      ] : [],
+                      ],
                     },
                   }}
                 />
@@ -658,7 +654,7 @@ const MapView: React.FC<MapViewProps> = ({
                   variant="outline" 
                   onClick={() => {
                     setIsAddingDevice(false);
-                    if (drawingManager && isScriptLoaded && typeof google !== 'undefined') {
+                    if (drawingManager && isScriptLoaded) {
                       drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
                     }
                   }}

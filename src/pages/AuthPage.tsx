@@ -35,7 +35,7 @@ const AuthPage = () => {
       } 
       
       // For farmers, check subscription status
-      if (subscription && subscription.status === 'active') {
+      if (subscription && (subscription.status === 'active' || subscription.status === 'trial')) {
         navigate('/dashboard');
       } else {
         // If no active subscription, send to subscription plans
@@ -119,7 +119,7 @@ const AuthPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">AgroSmart</h1>
+          <h1 className="text-3xl font-bold">AgroSense Hub</h1>
           <p className="text-muted-foreground">Smart irrigation and farm management</p>
         </div>
 
@@ -186,7 +186,7 @@ const AuthPage = () => {
                 <CardHeader>
                   <CardTitle>Create Account</CardTitle>
                   <CardDescription>
-                    Join AgroSmart to start managing your farm
+                    Join AgroSense Hub to start managing your farm
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Clock, Mail } from 'lucide-react';
+import { CheckCircle, Clock, Mail, LayoutDashboard } from 'lucide-react';
 
 const SubscriptionPendingPage = () => {
   const navigate = useNavigate();
@@ -36,17 +36,30 @@ const SubscriptionPendingPage = () => {
                     <ul className="mt-2 text-sm text-blue-800 space-y-1">
                       <li>• Our team will review your request within 24-48 hours</li>
                       <li>• We'll contact you via phone or email to verify your information</li>
-                      <li>• Once approved, you'll receive access to your dashboard</li>
-                      <li>• You'll be able to set up payment and start using all features</li>
+                      <li>• Once approved, you'll receive full access to all premium features</li>
+                      <li>• You'll be able to set up payment and start using unlimited features</li>
                     </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-start space-x-3">
+                  <LayoutDashboard className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div className="text-left">
+                    <h3 className="font-semibold text-green-900">Access Your Dashboard</h3>
+                    <p className="mt-2 text-sm text-green-800">
+                      While waiting for approval, you can access your dashboard in view-only mode. 
+                      Explore the platform and prepare your farm data for when your account becomes fully active.
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
                 <p className="text-sm text-amber-800">
-                  <strong>Note:</strong> While waiting for approval, you can explore our platform documentation 
-                  and prepare your farm data for when your account becomes active.
+                  <strong>Note:</strong> Your account is currently in view-only mode with limited features. 
+                  Once approved, you'll have full access to all premium features without any restrictions.
                 </p>
               </div>
             </div>
@@ -61,9 +74,10 @@ const SubscriptionPendingPage = () => {
               </Button>
               <Button 
                 className="flex-1"
-                onClick={() => navigate('/subscription/plans')}
+                onClick={() => navigate('/dashboard')}
               >
-                View Other Plans
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Access My Dashboard
               </Button>
             </div>
           </CardContent>

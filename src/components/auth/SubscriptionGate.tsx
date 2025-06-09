@@ -50,50 +50,50 @@ const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
     return <>{children}</>;
   }
 
-  // Check if farmer has an active subscription (including free tier)
-  if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trial')) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-muted/30 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-amber-600">Subscription Required</CardTitle>
-            <CardDescription>
-              You need an active subscription to access the dashboard.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">
-              Please choose a subscription plan to continue using AgroSense Hub and gain access to all features.
-            </p>
-            
-            {/* Show current limits */}
-            <div className="space-y-2 mb-4">
-              <p className="text-sm font-medium">Your current limits:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <Badge variant="outline">Zones: {limits.maxZones === Infinity ? '∞' : limits.maxZones}</Badge>
-                <Badge variant="outline">Devices: {limits.maxDevices === Infinity ? '∞' : limits.maxDevices}</Badge>
-                <Badge variant="outline">Crops: {limits.maxCrops === Infinity ? '∞' : limits.maxCrops}</Badge>
-                <Badge variant={limits.hasAutomation ? "default" : "secondary"}>
-                  Automation: {limits.hasAutomation ? 'Yes' : 'No'}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => navigate('/')}>
-              Return to Home
-            </Button>
-            <Button onClick={() => navigate('/subscription/plans')}>
-              View Subscription Plans
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
+  // Check if farmer has an active subscription or pending approval
+  if (subscription && (subscription.status === 'active' || subscription.status === 'trial')) {
+    return <>{children}</>;
   }
 
-  // User has an active subscription, allow access
-  return <>{children}</>;
+  // If user doesn't have a subscription, redirect to plans page
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-muted/30 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-amber-600">Subscription Required</CardTitle>
+          <CardDescription>
+            You need an active subscription to access the dashboard.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">
+            Please choose a subscription plan to continue using AgroSense Hub and gain access to all features.
+          </p>
+          
+          {/* Show current limits */}
+          <div className="space-y-2 mb-4">
+            <p className="text-sm font-medium">Your current limits:</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Badge variant="outline">Zones: {limits.maxZones === Infinity ? '∞' : limits.maxZones}</Badge>
+              <Badge variant="outline">Devices: {limits.maxDevices === Infinity ? '∞' : limits.maxDevices}</Badge>
+              <Badge variant="outline">Crops: {limits.maxCrops === Infinity ? '∞' : limits.maxCrops}</Badge>
+              <Badge variant={limits.hasAutomation ? "default" : "secondary"}>
+                Automation: {limits.hasAutomation ? 'Yes' : 'No'}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" onClick={() => navigate('/')}>
+            Return to Home
+          </Button>
+          <Button onClick={() => navigate('/subscription/plans')}>
+            View Subscription Plans
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
 };
 
 export default SubscriptionGate;

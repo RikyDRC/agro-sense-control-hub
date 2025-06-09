@@ -121,6 +121,45 @@ const SubscriptionPlansPage: React.FC = () => {
     }
   };
 
+  const createFreeTierSubscription = async (planId: string) => {
+    try {
+      if (!user) throw new Error('User not authenticated');
+
+      // Create subscription request (will be auto-approved for free tier)
+      const { error: requestError } = await supabase
+        .from('subscription_requests')
+        .insert({
+          user_id: user.id,
+          plan_id: planId,
+          approval_status: 'approved'
+        });
+
+      if (requestError) throw requestError;
+
+      // Create active subscription directly
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: user.id,
+          plan_id: planId,
+          status: 'active',
+          start_date: new Date().toISOString(),
+          end_date: null // Free tier doesn't expire
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Refresh subscription data
+      await refreshSubscription();
+      
+      toast.success('Welcome! Your free tier access has been activated.');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error creating free tier subscription:', error);
+      toast.error('Failed to activate free tier. Please try again.');
+    }
+  };
+
   const handleAddPlan = () => {
     setEditingPlan(null);
     setShowPlanForm(true);
@@ -233,9 +272,9 @@ const SubscriptionPlansPage: React.FC = () => {
     setSubscribing(true);
     
     try {
-      // For free tier, redirect to contact form (will be auto-approved)
+      // For free tier, create subscription directly
       if (selectedPlan.name === 'Free Tier' || selectedPlan.price === 0) {
-        navigate(`/contact?planId=${planId}`);
+        await createFreeTierSubscription(planId);
         return;
       }
 

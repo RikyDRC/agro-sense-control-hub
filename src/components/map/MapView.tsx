@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Device, DeviceStatus, DeviceType, Zone, GeoLocation, IrrigationStatus } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle, MapPin } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const containerStyle = {
   width: '100%',
-  height: '600px'
+  height: '400px' // Reduced height for mobile
 };
 
 const libraries: ("drawing" | "places" | "geometry" | "visualization")[] = ["drawing", "places", "geometry"];
@@ -69,6 +69,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 35.6895, lng: 139.6917 });
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
+  const [locationLoading, setLocationLoading] = useState(true);
   
   const polygonRefs = useRef<{[key: string]: google.maps.Polygon | null}>({});
   const markerRefs = useRef<{[key: string]: google.maps.Marker | null}>({});
@@ -83,9 +84,17 @@ const MapView: React.FC<MapViewProps> = ({
   const [notes, setNotes] = useState('');
   const [isNamingZone, setIsNamingZone] = useState(false);
 
-  // Get user's current location
+  // Get user's current location with better error handling
   useEffect(() => {
+    setLocationLoading(true);
+    
     if (navigator.geolocation) {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      };
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const location = {
@@ -94,22 +103,23 @@ const MapView: React.FC<MapViewProps> = ({
           };
           setUserLocation(location);
           setMapCenter(location);
+          setLocationLoading(false);
           console.log("User location detected:", location);
         },
         (error) => {
-          console.warn("Could not get user location:", error);
+          console.warn("Could not get user location:", error.message);
+          setLocationLoading(false);
           // Keep default location if geolocation fails
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        }
+        options
       );
+    } else {
+      console.warn("Geolocation is not supported by this browser");
+      setLocationLoading(false);
     }
   }, []);
 
-  // Fetch the Google Maps API key from platform_config
+  // Fetch the Google Maps API key from platform_config with better error handling
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -122,17 +132,15 @@ const MapView: React.FC<MapViewProps> = ({
           
         if (error) {
           console.error("Error fetching Google Maps API key:", error);
-          setApiKeyError("Failed to load Google Maps API key. Please try again later.");
-          toast.error("Failed to load Google Maps API key");
-        } else if (data) {
-          console.log("Google Maps API key loaded successfully");
+          setApiKeyError("Failed to load Google Maps configuration. Please contact support.");
+        } else if (data && data.value && data.value !== "YOUR_GOOGLE_MAPS_API_KEY") {
           setGoogleMapsApiKey(data.value);
         } else {
-          setApiKeyError("Google Maps API key not found in platform configuration.");
+          setApiKeyError("Google Maps is not configured. Please contact your administrator.");
         }
       } catch (err: any) {
         console.error("Exception fetching Google Maps API key:", err);
-        setApiKeyError("An unexpected error occurred while loading the map.");
+        setApiKeyError("Unable to load map configuration.");
       } finally {
         setApiKeyLoading(false);
       }
@@ -159,6 +167,7 @@ const MapView: React.FC<MapViewProps> = ({
   const onScriptError = useCallback((error: Error) => {
     console.error("Error loading Google Maps script:", error);
     setScriptLoadError(error);
+    setApiKeyError("Failed to load Google Maps. Please check your internet connection and try again.");
   }, []);
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
@@ -439,51 +448,48 @@ const MapView: React.FC<MapViewProps> = ({
   };
 
   // If API key is loading, show loading skeleton
-  if (apiKeyLoading) {
+  if (apiKeyLoading || locationLoading) {
     return (
       <Card>
         <CardHeader>
-          <Skeleton className="h-8 w-1/2" />
-          <Skeleton className="h-4 w-full mt-2" />
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading map...</span>
+          </div>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[600px] w-full" />
+          <Skeleton className="h-[400px] w-full" />
         </CardContent>
       </Card>
     );
   }
   
-  // If there was an error fetching the API key, show error message
-  if (apiKeyError) {
+  // If there was an error, show error message with retry option
+  if (apiKeyError || scriptLoadError) {
     return (
       <Alert variant="destructive" className="mb-4">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {apiKeyError}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // If script failed to load, show error message
-  if (scriptLoadError) {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Failed to load Google Maps API. Please check your API key and try again.
+        <AlertDescription className="flex items-center justify-between">
+          <span>{apiKeyError || "Failed to load map"}</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
         </AlertDescription>
       </Alert>
     );
   }
 
   // If no API key is set, show a message
-  if (!googleMapsApiKey || googleMapsApiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+  if (!googleMapsApiKey) {
     return (
       <Alert variant="default" className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Google Maps API key is not configured. Please contact your administrator to set up the Google Maps API key.
+          Map is not available. Please contact your administrator to configure Google Maps.
         </AlertDescription>
       </Alert>
     );
@@ -513,25 +519,31 @@ const MapView: React.FC<MapViewProps> = ({
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Field Map</CardTitle>
-                <CardDescription>
-                  {userLocation ? 'Showing your current location' : 'Manage your fields, zones, and device placement'}
+                <CardTitle className="text-lg">Field Map</CardTitle>
+                <CardDescription className="text-sm">
+                  {userLocation ? 'Your current location' : 'Manage your fields and devices'}
                 </CardDescription>
               </div>
               {userLocation && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  Your Location
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  <span className="hidden sm:inline">Your Location</span>
                 </div>
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 lg:p-6">
             <LoadScript 
               googleMapsApiKey={googleMapsApiKey} 
               libraries={libraries}
               onLoad={onScriptLoad}
               onError={onScriptError}
+              loadingElement={
+                <div className="flex items-center justify-center h-[400px]">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <span className="ml-2">Loading map...</span>
+                </div>
+              }
             >
               <GoogleMap
                 mapContainerStyle={containerStyle}
@@ -539,6 +551,11 @@ const MapView: React.FC<MapViewProps> = ({
                 zoom={userLocation ? 15 : 14}
                 onLoad={onMapLoad}
                 onClick={handleMapClick}
+                options={{
+                  streetViewControl: false,
+                  mapTypeControl: false,
+                  fullscreenControl: false,
+                }}
               >
                 {/* User location marker */}
                 {isScriptLoaded && userLocation && (

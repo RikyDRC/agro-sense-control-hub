@@ -30,16 +30,20 @@ const PlanList: React.FC<PlanListProps> = ({
   const { profile, subscription, isRoleSuperAdmin, isRoleAdmin, isRoleFarmer } = useAuth();
   const navigate = useNavigate();
   
+  // Filter to only show free and premium plans
+  const filteredPlans = plans.filter(plan => 
+    plan.name.toLowerCase() === 'free' || plan.name.toLowerCase() === 'premium'
+  );
+  
   // Get user role with fallback for when profile is not available
   const getUserRole = () => {
     if (profile) {
       return profile.role;
     }
-    // Default to no specific role if we can't determine it
     return '';
   };
 
-  if (plans.length === 0) {
+  if (filteredPlans.length === 0) {
     return (
       <Alert>
         <Info className="h-4 w-4" />
@@ -57,7 +61,7 @@ const PlanList: React.FC<PlanListProps> = ({
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Subscription Plans</h1>
           <p className="text-muted-foreground">
-            Choose the plan that best fits your farming needs
+            Choose between our Free and Premium plans
           </p>
         </div>
         
@@ -112,8 +116,8 @@ const PlanList: React.FC<PlanListProps> = ({
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {plans.map((plan) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {filteredPlans.map((plan) => (
           <PlanCard
             key={plan.id}
             id={plan.id}
@@ -133,7 +137,6 @@ const PlanList: React.FC<PlanListProps> = ({
         ))}
       </div>
 
-      {/* Navigation buttons at the bottom */}
       <div className="flex justify-center gap-4 pt-6 border-t">
         <Button variant="outline" onClick={() => navigate('/')}>
           Return to Home

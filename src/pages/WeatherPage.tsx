@@ -1,21 +1,23 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   CloudSun, Sun, Cloud, CloudRain, CloudLightning, Snowflake, CloudFog, 
   ThermometerSun, Droplets, Wind, Calendar, RefreshCw, Umbrella, 
-  AlertTriangle 
+  AlertTriangle, Loader2, MapPin
 } from 'lucide-react';
 import { WeatherCondition, WeatherForecast } from '@/types';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
+import { getWeatherData, getHistoricalWeatherData } from '@/services/weatherService';
+import { toast } from '@/components/ui/sonner';
 
 // Mock data
 const currentDate = new Date();
@@ -117,80 +119,201 @@ const getWeatherIcon = (condition: WeatherCondition, size: number = 24) => {
   }
 };
 
-interface WeatherAlertInfo {
-  id: string;
-  title: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-  severity: 'low' | 'medium' | 'high';
-}
-
-const mockWeatherAlerts: WeatherAlertInfo[] = [
-  {
-    id: '1',
-    title: 'Heavy Rain Warning',
-    description: 'Heavy rain expected with potential for localized flooding in low-lying areas.',
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-    severity: 'medium'
-  },
-  {
-    id: '2',
-    title: 'Strong Wind Advisory',
-    description: 'Winds of 20-30 mph with gusts up to 45 mph expected.',
-    startTime: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    severity: 'low'
-  }
-];
-
-const getSeverityColor = (severity: string) => {
-  switch (severity) {
-    case 'low':
-      return 'bg-yellow-500';
-    case 'medium':
-      return 'bg-orange-500';
-    case 'high':
-      return 'bg-red-500';
+const getWeatherDescription = (condition: WeatherCondition) => {
+  switch (condition) {
+    case WeatherCondition.SUNNY:
+      return 'Sunny';
+    case WeatherCondition.CLOUDY:
+      return 'Cloudy';
+    case WeatherCondition.RAINY:
+      return 'Rainy';
+    case WeatherCondition.STORMY:
+      return 'Stormy';
+    case WeatherCondition.SNOWY:
+      return 'Snowy';
+    case WeatherCondition.FOGGY:
+      return 'Foggy';
+    case WeatherCondition.PARTLY_CLOUDY:
+      return 'Partly Cloudy';
     default:
-      return 'bg-blue-500';
+      return 'Unknown';
   }
 };
 
-const WeatherPage: React.FC = () => {
-  const [currentWeather, setCurrentWeather] = useState<WeatherForecast>(mockCurrentWeather);
-  const [forecast, setForecast] = useState<WeatherForecast[]>(mockForecast);
-  const [historicalTab, setHistoricalTab] = useState<'week' | 'month' | 'year'>('week');
-  const [historicalData, setHistoricalData] = useState(mockHistoricalData);
-  const [alerts, setAlerts] = useState<WeatherAlertInfo[]>(mockWeatherAlerts);
-  const [isLoading, setIsLoading] = useState(false);
+const formatDateRange = (startTime: string, endTime: string) => {
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  
+  return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+          ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+};
 
-  const handleRefreshWeather = () => {
+const WeatherPage: React.FC = () => {
+  const [currentWeather, setCurrentWeather] = useState<WeatherForecast | null>(null);
+  const [forecast, setForecast] = useState<WeatherForecast[]>([]);
+  const [historicalTab, setHistoricalTab] = useState<'week' | 'month' | 'year'>('week');
+  const [historicalData, setHistoricalData] = useState<any>({ week: [], month: [], year: [] });
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Get user location and fetch weather data
+  useEffect(() => {
+    const getUserLocationAndWeather = async () => {
+      setWeatherLoading(true);
+      setWeatherError(null);
+
+      try {
+        // Get user location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const location = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              };
+              setUserLocation(location);
+              
+              try {
+                // Fetch current weather and forecast
+                const weatherData = await getWeatherData(location.lat, location.lng);
+                setCurrentWeather(weatherData.current);
+                setForecast(weatherData.forecast);
+                
+                // Fetch historical data
+                await fetchHistoricalData(location.lat, location.lng);
+                
+                toast.success('Weather data loaded successfully');
+              } catch (weatherErr: any) {
+                console.error('Error fetching weather data:', weatherErr);
+                setWeatherError('Unable to load weather data. Please try again later.');
+                toast.error('Failed to load weather data');
+              }
+              
+              setWeatherLoading(false);
+            },
+            (error) => {
+              console.warn('Geolocation error:', error);
+              setWeatherError('Location access required for weather data. Please enable location services.');
+              setWeatherLoading(false);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 300000
+            }
+          );
+        } else {
+          setWeatherError('Geolocation is not supported by this browser');
+          setWeatherLoading(false);
+        }
+      } catch (error) {
+        console.error('Error in weather initialization:', error);
+        setWeatherError('Failed to initialize weather service');
+        setWeatherLoading(false);
+      }
+    };
+
+    getUserLocationAndWeather();
+  }, []);
+
+  const fetchHistoricalData = async (lat: number, lng: number) => {
+    try {
+      const today = new Date();
+      
+      // Fetch week data
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - 7);
+      const weekData = await getHistoricalWeatherData(
+        lat, lng, 
+        weekStart.toISOString().split('T')[0], 
+        today.toISOString().split('T')[0]
+      );
+      
+      // Fetch month data
+      const monthStart = new Date(today);
+      monthStart.setDate(today.getDate() - 30);
+      const monthData = await getHistoricalWeatherData(
+        lat, lng,
+        monthStart.toISOString().split('T')[0],
+        today.toISOString().split('T')[0]
+      );
+      
+      setHistoricalData({
+        week: weekData,
+        month: monthData,
+        year: monthData // Using month data for year as well to avoid too many API calls
+      });
+    } catch (error) {
+      console.error('Error fetching historical data:', error);
+      toast.error('Failed to load historical weather data');
+    }
+  };
+
+  const handleRefreshWeather = async () => {
+    if (!userLocation) {
+      toast.error('Location not available');
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setCurrentWeather({
-        ...mockCurrentWeather,
-        temperature: {
-          ...mockCurrentWeather.temperature,
-          current: Math.floor(Math.random() * 10) + 20
-        },
-        humidity: Math.floor(Math.random() * 30) + 50
-      });
-      setForecast(generateMockForecast());
+    try {
+      const weatherData = await getWeatherData(userLocation.lat, userLocation.lng);
+      setCurrentWeather(weatherData.current);
+      setForecast(weatherData.forecast);
+      await fetchHistoricalData(userLocation.lat, userLocation.lng);
+      toast.success('Weather data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing weather:', error);
+      toast.error('Failed to refresh weather data');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const formatDateRange = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    
-    return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
-            ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  };
+  // Show loading state
+  if (weatherLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading weather data...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Show error state
+  if (weatherError) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Weather</h1>
+              <p className="text-muted-foreground">Monitor current conditions, forecasts, and weather alerts</p>
+            </div>
+          </div>
+          
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Weather Data Unavailable</AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              <span>{weatherError}</span>
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -198,7 +321,13 @@ const WeatherPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Weather</h1>
-            <p className="text-muted-foreground">Monitor current conditions, forecasts, and weather alerts</p>
+            <p className="text-muted-foreground">Real-time weather data from Open-Meteo</p>
+            {userLocation && (
+              <div className="flex items-center text-sm text-muted-foreground mt-1">
+                <MapPin className="h-4 w-4 mr-1" />
+                Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+              </div>
+            )}
           </div>
           <Button 
             variant="outline" 
@@ -210,261 +339,173 @@ const WeatherPage: React.FC = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Current Weather Card */}
-          <Card className="col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle>Current Conditions</CardTitle>
-              <CardDescription>
-                {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-4 space-y-4">
-                <div className="text-center">
-                  {getWeatherIcon(currentWeather.condition, 64)}
-                  <h3 className="text-lg font-medium mt-2">
-                    {currentWeather.condition.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                  </h3>
-                </div>
+        {currentWeather && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Current Weather Card */}
+            <Card className="col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle>Current Conditions</CardTitle>
+                <CardDescription>
+                  {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-4 space-y-4">
+                  <div className="text-center">
+                    {getWeatherIcon(currentWeather.condition, 64)}
+                    <h3 className="text-lg font-medium mt-2">
+                      {getWeatherDescription(currentWeather.condition)}
+                    </h3>
+                  </div>
 
-                <div className="flex flex-col items-center">
-                  <span className="text-5xl font-bold">
-                    {currentWeather.temperature.current}°C
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Feels like {currentWeather.temperature.current! - 1}°C
-                  </span>
-                </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-5xl font-bold">
+                      {Math.round(currentWeather.temperature.current || 0)}°C
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      Feels like {Math.round((currentWeather.temperature.current || 0) - 1)}°C
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2 mt-4">
-                  <div className="flex items-center">
-                    <ThermometerSun className="h-4 w-4 mr-2 text-orange-500" />
-                    <span className="text-sm">
-                      High: {currentWeather.temperature.max}°C
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <ThermometerSun className="h-4 w-4 mr-2 text-blue-500" />
-                    <span className="text-sm">
-                      Low: {currentWeather.temperature.min}°C
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Droplets className="h-4 w-4 mr-2 text-blue-500" />
-                    <span className="text-sm">
-                      Humidity: {currentWeather.humidity}%
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Wind className="h-4 w-4 mr-2 text-green-500" />
-                    <span className="text-sm">
-                      Wind: {currentWeather.windSpeed} km/h
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Umbrella className="h-4 w-4 mr-2 text-blue-600" />
-                    <span className="text-sm">
-                      Rain: {currentWeather.precipitation.probability}%
-                    </span>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-2 mt-4">
+                    <div className="flex items-center">
+                      <ThermometerSun className="h-4 w-4 mr-2 text-orange-500" />
+                      <span className="text-sm">
+                        High: {Math.round(currentWeather.temperature.max)}°C
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <ThermometerSun className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm">
+                        Low: {Math.round(currentWeather.temperature.min)}°C
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <Droplets className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm">
+                        Humidity: {Math.round(currentWeather.humidity)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <Wind className="h-4 w-4 mr-2 text-green-500" />
+                      <span className="text-sm">
+                        Wind: {Math.round(currentWeather.windSpeed)} km/h
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <Umbrella className="h-4 w-4 mr-2 text-blue-600" />
+                      <span className="text-sm">
+                        Rain: {Math.round(currentWeather.precipitation.probability)}%
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* 7-Day Forecast Card */}
-          <Card className="col-span-1 lg:col-span-2">
+            {/* 7-Day Forecast Card */}
+            <Card className="col-span-1 lg:col-span-2">
+              <CardHeader>
+                <CardTitle>7-Day Forecast</CardTitle>
+                <CardDescription>Weekly weather outlook powered by Open-Meteo</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                  {forecast.slice(0, 6).map((day, index) => (
+                    <div 
+                      key={index}
+                      className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/60"
+                    >
+                      <span className="text-sm font-medium">
+                        {new Date(day.date).toLocaleDateString([], { weekday: 'short' })}
+                      </span>
+                      <div className="my-2">
+                        {getWeatherIcon(day.condition, 36)}
+                      </div>
+                      <div className="text-sm font-medium flex justify-between w-full">
+                        <span className="text-red-500">{Math.round(day.temperature.max)}°</span>
+                        <span className="text-blue-500">{Math.round(day.temperature.min)}°</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-center gap-1">
+                        <Umbrella className="h-3 w-3 text-blue-600" />
+                        <span className="text-xs">{Math.round(day.precipitation.probability)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Historical Data Charts */}
+        {historicalData.week.length > 0 && (
+          <Card>
             <CardHeader>
-              <CardTitle>7-Day Forecast</CardTitle>
-              <CardDescription>Weekly weather outlook for your location</CardDescription>
+              <CardTitle>Historical Weather Data</CardTitle>
+              <CardDescription>View trends for temperature, humidity, and precipitation</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                {forecast.map((day, index) => (
-                  <div 
-                    key={index}
-                    className={`flex flex-col items-center p-3 rounded-lg 
-                              ${index === 0 ? 'bg-primary/10' : 'hover:bg-muted/60'}`}
-                  >
-                    <span className="text-sm font-medium">
-                      {index === 0 
-                        ? 'Today' 
-                        : new Date(day.date).toLocaleDateString([], { weekday: 'short' })}
-                    </span>
-                    <div className="my-2">
-                      {getWeatherIcon(day.condition, 36)}
-                    </div>
-                    <div className="text-sm font-medium flex justify-between w-full">
-                      <span className="text-red-500">{day.temperature.max}°</span>
-                      <span className="text-blue-500">{day.temperature.min}°</span>
-                    </div>
-                    <div className="mt-1 flex items-center justify-center gap-1">
-                      <Umbrella className="h-3 w-3 text-blue-600" />
-                      <span className="text-xs">{day.precipitation.probability}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Tabs defaultValue="week" value={historicalTab} onValueChange={(value) => setHistoricalTab(value as any)}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="week">Past Week</TabsTrigger>
+                  <TabsTrigger value="month">Past Month</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="week" className="space-y-4">
+                  <h3 className="text-lg font-medium">Temperature Trends (°C)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={historicalData.week}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="temperature" stroke="#e11d48" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+
+                  <h3 className="text-lg font-medium mt-8">Precipitation (mm)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={historicalData.week}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="precipitation" fill="#3b82f6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </TabsContent>
+                
+                <TabsContent value="month">
+                  <h3 className="text-lg font-medium">Temperature Trends (°C)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={historicalData.month}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="temperature" stroke="#e11d48" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
-        </div>
+        )}
 
-        {/* Historical Data and Charts */}
+        {/* Weather Alerts - Keep existing mock data for now */}
         <Card>
           <CardHeader>
-            <CardTitle>Historical Weather Data</CardTitle>
-            <CardDescription>View trends for temperature, humidity, and precipitation</CardDescription>
+            <CardTitle>Weather Alerts</CardTitle>
+            <CardDescription>No active weather alerts at this time</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="week" value={historicalTab} onValueChange={(value) => setHistoricalTab(value as any)}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="week">Past Week</TabsTrigger>
-                <TabsTrigger value="month">Past Month</TabsTrigger>
-                <TabsTrigger value="year">Past Year</TabsTrigger>
-              </TabsList>
-              <TabsContent value="week" className="space-y-4">
-                <h3 className="text-lg font-medium">Temperature Trends (°C)</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={historicalData.week}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="temperature" stroke="#e11d48" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-
-                <h3 className="text-lg font-medium mt-8">Precipitation (mm)</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={historicalData.week}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="precipitation" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </TabsContent>
-              <TabsContent value="month">
-                <h3 className="text-lg font-medium">Temperature Trends (°C)</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={historicalData.month}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="temperature" stroke="#e11d48" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </TabsContent>
-              <TabsContent value="year">
-                <h3 className="text-lg font-medium">Temperature Trends (°C)</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={historicalData.year}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="temperature" stroke="#e11d48" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Weather Alerts */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Weather Alerts</CardTitle>
-                <CardDescription>Important weather warnings and advisories</CardDescription>
-              </div>
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by severity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Alerts</SelectItem>
-                  <SelectItem value="high">High Severity</SelectItem>
-                  <SelectItem value="medium">Medium Severity</SelectItem>
-                  <SelectItem value="low">Low Severity</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">All weather conditions are normal.</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            {alerts.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No active weather alerts at this time.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {alerts.map((alert) => (
-                  <div 
-                    key={alert.id}
-                    className="border rounded-lg p-4 flex items-start gap-4"
-                  >
-                    <div>
-                      <AlertTriangle className={`h-6 w-6 ${getSeverityColor(alert.severity)} rounded-full p-1 text-white`} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{alert.title}</h3>
-                        <Badge className={getSeverityColor(alert.severity)}>
-                          {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          {formatDateRange(alert.startTime, alert.endTime)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

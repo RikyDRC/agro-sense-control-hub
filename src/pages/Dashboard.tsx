@@ -150,23 +150,23 @@ const Dashboard: React.FC = () => {
         <DashboardStats />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div>
+            <QuickActions />
+          </div>
           <div className="lg:col-span-2">
             <SensorReadingsChart />
-          </div>
-          <div>
-            <DeviceStatusList devices={mockDevices} />
           </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div>
+            <DeviceStatusList devices={mockDevices} />
+          </div>
           <div className="lg:col-span-2">
             <WeatherWidget 
               currentWeather={mockCurrentWeather} 
               forecast={mockForecast} 
             />
-          </div>
-          <div>
-            <QuickActions />
           </div>
         </div>
       </div>

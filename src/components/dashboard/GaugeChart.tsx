@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,8 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
   size = 'md',
   className
 }) => {
+  const { t } = useTranslation('dashboard');
+  
   const percentage = Math.min((value / max) * 100, 100);
   const circumference = 2 * Math.PI * 45;
   const strokeDasharray = circumference;
@@ -50,7 +52,6 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
       <CardContent className="flex flex-col items-center">
         <div className={cn("relative", sizeClasses[size])}>
           <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
-            {/* Background circle */}
             <circle
               cx="50"
               cy="50"
@@ -60,7 +61,6 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
               fill="none"
               className="opacity-20"
             />
-            {/* Progress circle */}
             <circle
               cx="50"
               cy="50"
@@ -81,7 +81,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
         </div>
         <div className="mt-2 text-center">
           <span className="text-sm text-muted-foreground">
-            {percentage.toFixed(1)}% of {max}{unit}
+            {percentage.toFixed(1)}% {t('widgets.gaugeChart.of')} {max}{unit}
           </span>
         </div>
       </CardContent>

@@ -6,7 +6,17 @@
     "totalDevices": "Appareils totaux",
     "activeZones": "Zones actives",
     "avgMoisture": "Humidité moy.",
-    "systemHealth": "État du système"
+    "systemHealth": "État du système",
+    "waterUsage": "Consommation d'eau",
+    "totalToday": "Total aujourd'hui",
+    "activePumps": "Pompes actives",
+    "currentlyRunning": "Actuellement en cours",
+    "nextScheduled": "Prochaine programmation",
+    "zoneIrrigation": "Irrigation de zone",
+    "noZonesConfigured": "Aucune zone configurée",
+    "last24Hours": "Dernières 24 heures",
+    "runningNow": "En cours",
+    "none": "Aucune"
   },
   "widgets": {
     "soilMoisture": {
@@ -15,7 +25,21 @@
     },
     "systemHealth": {
       "title": "État du système",
-      "description": "État général du système"
+      "description": "État général du système",
+      "networkConnectivity": "Connectivité réseau",
+      "deviceUptime": "Temps de fonctionnement",
+      "dataQuality": "Qualité des données",
+      "batteryHealth": "État des batteries",
+      "irrigationEfficiency": "Efficacité d'irrigation",
+      "network": "Réseau",
+      "devicesOnline": "appareils en ligne",
+      "averageUptime": "Temps de fonctionnement moyen",
+      "sensorAccuracy": "Précision des capteurs",
+      "averageBatteryLevel": "Niveau de batterie moyen",
+      "systemEfficiency": "Efficacité du système",
+      "excellent": "Excellent",
+      "good": "Bon",
+      "needsAttention": "Nécessite attention"
     },
     "waterUsage": {
       "title": "Consommation d'eau",
@@ -27,19 +51,45 @@
     },
     "alerts": {
       "title": "Alertes système",
+      "recentAlerts": "Alertes récentes",
+      "systemAlertsNotifications": "Alertes système et notifications",
       "noAlerts": "Aucune alerte active",
-      "viewAll": "Voir toutes les alertes"
+      "noRecentAlerts": "Aucune alerte récente",
+      "systemRunningSmooth": "Votre système fonctionne correctement",
+      "viewAll": "Voir toutes les alertes",
+      "viewAllAlerts": "Voir tout"
     },
     "recentActivity": {
       "title": "Activité récente",
-      "noActivity": "Aucune activité récente"
+      "latestSystemActions": "Dernières actions et événements du système",
+      "noActivity": "Aucune activité récente",
+      "noRecentActivity": "Aucune activité récente",
+      "startUsingSystem": "Commencez à utiliser votre système pour voir l'activité",
+      "viewHistory": "Voir l'historique"
     },
     "quickActions": {
       "title": "Actions rapides",
+      "commonAutomationTasks": "Tâches d'automatisation et horaires courants",
       "startIrrigation": "Démarrer l'irrigation",
       "stopIrrigation": "Arrêter l'irrigation",
       "checkSensors": "Vérifier les capteurs",
-      "generateReport": "Générer un rapport"
+      "generateReport": "Générer un rapport",
+      "create": "Créer",
+      "startEmergencyIrrigation": "Démarrer l'irrigation d'urgence",
+      "waterAllZones": "Arroser toutes les zones pendant 10 minutes",
+      "morningSchedule": "Horaire du matin",
+      "startDailyMorning": "Démarrer la routine matinale quotidienne",
+      "refreshAllSensors": "Actualiser tous les capteurs",
+      "updateAllDevices": "Mettre à jour toutes les lectures d'appareils",
+      "energySavingMode": "Mode économie d'énergie",
+      "optimizePower": "Optimiser la consommation d'énergie",
+      "weekendSchedule": "Horaire de fin de semaine",
+      "activateWeekend": "Activer le plan d'irrigation de fin de semaine",
+      "active": "Actif",
+      "zones": "zones",
+      "ongoing": "En cours",
+      "actionCompleted": "Action terminée avec succès",
+      "failedToExecute": "Échec de l'exécution de l'action"
     },
     "automation": {
       "title": "Automatisation rapide",
@@ -55,7 +105,10 @@
     "predictiveAnalytics": {
       "title": "Recommandations IA",
       "subtitle": "Analyses intelligentes et prédictions pour votre ferme",
+      "aiRecommendations": "Recommandations IA",
+      "smartInsights": "Analyses intelligentes et prédictions pour votre ferme",
       "confidence": "de confiance",
+      "confident": "de confiance",
       "types": {
         "irrigation": "Irrigation",
         "weather": "Météo",
@@ -74,8 +127,36 @@
         "maintain": "Maintenir",
         "updatePlan": "Mettre à jour le plan",
         "schedule": "Programmer"
-      }
+      },
+      "noRecommendations": "Aucune recommandation disponible",
+      "systemAnalyzing": "Le système analyse vos données"
+    },
+    "deviceStatus": {
+      "title": "État des appareils",
+      "statusAndBattery": "État et niveaux de batterie de vos appareils de terrain",
+      "noDevicesFound": "Aucun appareil trouvé",
+      "addDevice": "Ajouter un appareil",
+      "lastReading": "Dernière lecture",
+      "lastUpdated": "Dernière mise à jour",
+      "refresh": "Actualiser",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "maintenance": "Maintenance",
+      "alert": "Alerte"
+    },
+    "gaugeChart": {
+      "of": "de"
     }
   },
-  "loading": "Chargement des données du tableau de bord..."
+  "loading": "Chargement des données du tableau de bord...",
+  "mobileDashboard": {
+    "devices": "Appareils",
+    "alerts": "Alertes",
+    "health": "État",
+    "water": "Eau",
+    "overview": "Vue d'ensemble",
+    "charts": "Graphiques",
+    "activity": "Activité",
+    "insights": "Aperçus"
+  }
 }

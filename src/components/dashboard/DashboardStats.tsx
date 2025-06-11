@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropletIcon, ThermometerIcon, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -66,16 +66,15 @@ interface DashboardStatsProps {
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, readings }) => {
-  // Calculate real statistics from data with better accuracy
+  const { t } = useTranslation('dashboard');
+
   const calculateWaterUsage = () => {
     const activePumps = devices.filter(d => 
       d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE
     );
     
-    // Estimate water usage based on active pumps and their typical flow rates
     const totalUsage = activePumps.reduce((total, pump) => {
-      // Assume each pump uses 50L/hour on average
-      const hoursActive = 8; // Simplified - could be calculated from pump runtime
+      const hoursActive = 8;
       return total + (50 * hoursActive);
     }, 0);
     
@@ -83,7 +82,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
   };
 
   const calculateAverageMoisture = () => {
-    // Get recent moisture readings (last 24 hours)
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
@@ -108,31 +106,26 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
   };
 
   const getNextScheduled = () => {
-    // This should eventually integrate with irrigation schedules
     const activeZones = zones.filter(zone => zone.irrigationStatus === 'active');
     const inactiveZones = zones.filter(zone => zone.irrigationStatus === 'inactive');
     
     if (activeZones.length > 0) {
-      return 'Running Now';
+      return t('stats.runningNow');
     } else if (inactiveZones.length > 0) {
-      return '2h 15m'; // Placeholder for next schedule
+      return '2h 15m';
     }
-    return 'None';
+    return t('stats.none');
   };
 
-  // Calculate trends based on recent data
   const calculateWaterTrend = () => {
-    // Simplified trend calculation - positive means increased usage
     const activePumps = devices.filter(d => d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE);
     return activePumps.length > 2 ? { value: 12, isPositive: false } : { value: 8, isPositive: true };
   };
 
   const calculateMoistureTrend = () => {
-    // Check if average moisture is increasing or decreasing
     const moistureReadings = readings.filter(r => r.unit === '%');
     if (moistureReadings.length < 2) return { value: 0, isPositive: true };
     
-    // Compare recent vs older readings
     const recent = moistureReadings.slice(0, Math.floor(moistureReadings.length / 2));
     const older = moistureReadings.slice(Math.floor(moistureReadings.length / 2));
     
@@ -146,35 +139,35 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard 
-        title="Water Usage" 
+        title={t('stats.waterUsage')} 
         value={calculateWaterUsage()} 
-        description="Total today" 
+        description={t('stats.totalToday')} 
         icon={<DropletIcon className="h-full w-full" />}
         trend={calculateWaterTrend()}
         className="border-agro-blue"
         colorClass="bg-agro-blue-light/30 text-agro-blue-dark"
       />
       <StatCard 
-        title="Avg. Soil Moisture" 
+        title={t('stats.avgMoisture')} 
         value={calculateAverageMoisture()} 
-        description="Last 24 hours" 
+        description={t('stats.last24Hours')} 
         icon={<ThermometerIcon className="h-full w-full" />}
         trend={calculateMoistureTrend()}
         className="border-agro-green"
         colorClass="bg-agro-green-light/30 text-agro-green-dark"
       />
       <StatCard 
-        title="Active Pumps" 
+        title={t('stats.activePumps')} 
         value={getActivePumps()} 
-        description="Currently running" 
+        description={t('stats.currentlyRunning')} 
         icon={<Zap className="h-full w-full" />}
         className="border-agro-status-warning"
         colorClass="bg-amber-100 text-amber-700"
       />
       <StatCard 
-        title="Next Scheduled" 
+        title={t('stats.nextScheduled')} 
         value={getNextScheduled()} 
-        description={zones.length > 0 ? "Zone irrigation" : "No zones configured"} 
+        description={zones.length > 0 ? t('stats.zoneIrrigation') : t('stats.noZonesConfigured')} 
         icon={<Clock className="h-full w-full" />}
         className="border-agro-status-info"
         colorClass="bg-blue-100 text-blue-700"

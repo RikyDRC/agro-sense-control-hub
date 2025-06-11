@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -55,16 +55,16 @@ const getStatusColor = (status: DeviceStatus) => {
   }
 };
 
-const getStatusText = (status: DeviceStatus) => {
+const getStatusText = (status: DeviceStatus, t: any) => {
   switch (status) {
     case DeviceStatus.ONLINE:
-      return "Online";
+      return t('widgets.deviceStatus.online');
     case DeviceStatus.OFFLINE:
-      return "Offline";
+      return t('widgets.deviceStatus.offline');
     case DeviceStatus.MAINTENANCE:
-      return "Maintenance";
+      return t('widgets.deviceStatus.maintenance');
     case DeviceStatus.ALERT:
-      return "Alert";
+      return t('widgets.deviceStatus.alert');
     default:
       return "Unknown";
   }
@@ -77,17 +77,19 @@ const getBatteryColorClass = (level: number) => {
 };
 
 const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className }) => {
+  const { t } = useTranslation('dashboard');
+
   return (
     <Card className={cn("h-full shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Device Status</CardTitle>
-            <CardDescription>Status and battery levels of your field devices</CardDescription>
+            <CardTitle>{t('widgets.deviceStatus.title')}</CardTitle>
+            <CardDescription>{t('widgets.deviceStatus.statusAndBattery')}</CardDescription>
           </div>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <RefreshCw className="h-4 w-4" />
-            <span className="sr-only">Refresh</span>
+            <span className="sr-only">{t('widgets.deviceStatus.refresh')}</span>
           </Button>
         </div>
       </CardHeader>
@@ -112,8 +114,8 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
                   <h4 className="font-medium text-sm">{device.name}</h4>
                   <p className="text-xs text-muted-foreground">
                     {device.lastReading !== undefined ? 
-                      `Last reading: ${device.lastReading}` : 
-                      `Last updated: ${new Date(device.lastUpdated).toLocaleString()}`
+                      `${t('widgets.deviceStatus.lastReading')}: ${device.lastReading}` : 
+                      `${t('widgets.deviceStatus.lastUpdated')}: ${new Date(device.lastUpdated).toLocaleString()}`
                     }
                   </p>
                 </div>
@@ -134,7 +136,7 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
                   "text-white",
                   getStatusColor(device.status)
                 )}>
-                  {getStatusText(device.status)}
+                  {getStatusText(device.status, t)}
                 </Badge>
               </div>
             </div>
@@ -143,9 +145,9 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
           {devices.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Activity className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">No devices found</p>
+              <p className="text-muted-foreground">{t('widgets.deviceStatus.noDevicesFound')}</p>
               <Button variant="outline" size="sm" className="mt-2">
-                Add Device
+                {t('widgets.deviceStatus.addDevice')}
               </Button>
             </div>
           )}

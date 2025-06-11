@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,7 @@ interface QuickAutomationPanelProps {
 }
 
 const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }) => {
+  const { t } = useTranslation('dashboard');
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const executeAction = async (actionId: string, actionFn: () => void) => {
@@ -41,9 +42,9 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       actionFn();
-      toast.success('Action completed successfully');
+      toast.success(t('widgets.quickActions.actionCompleted'));
     } catch (error) {
-      toast.error('Failed to execute action');
+      toast.error(t('widgets.quickActions.failedToExecute'));
     } finally {
       setLoadingAction(null);
     }
@@ -52,8 +53,8 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
   const quickActions: QuickAction[] = [
     {
       id: '1',
-      name: 'Start Emergency Irrigation',
-      description: 'Water all zones for 10 minutes',
+      name: t('widgets.quickActions.startEmergencyIrrigation'),
+      description: t('widgets.quickActions.waterAllZones'),
       icon: <Droplet className="h-4 w-4" />,
       type: 'irrigation',
       estimatedDuration: '10 min',
@@ -62,8 +63,8 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
     },
     {
       id: '2',
-      name: 'Morning Schedule',
-      description: 'Start daily morning routine',
+      name: t('widgets.quickActions.morningSchedule'),
+      description: t('widgets.quickActions.startDailyMorning'),
       icon: <Clock className="h-4 w-4" />,
       type: 'schedule',
       isActive: true,
@@ -72,8 +73,8 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
     },
     {
       id: '3',
-      name: 'Refresh All Sensors',
-      description: 'Update all device readings',
+      name: t('widgets.quickActions.refreshAllSensors'),
+      description: t('widgets.quickActions.updateAllDevices'),
       icon: <RefreshCw className="h-4 w-4" />,
       type: 'device',
       estimatedDuration: '2 min',
@@ -81,17 +82,17 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
     },
     {
       id: '4',
-      name: 'Energy Saving Mode',
-      description: 'Optimize power consumption',
+      name: t('widgets.quickActions.energySavingMode'),
+      description: t('widgets.quickActions.optimizePower'),
       icon: <Zap className="h-4 w-4" />,
       type: 'automation',
-      estimatedDuration: 'Ongoing',
+      estimatedDuration: t('widgets.quickActions.ongoing'),
       action: () => console.log('Activating energy saving')
     },
     {
       id: '5',
-      name: 'Weekend Schedule',
-      description: 'Activate weekend irrigation plan',
+      name: t('widgets.quickActions.weekendSchedule'),
+      description: t('widgets.quickActions.activateWeekend'),
       icon: <Calendar className="h-4 w-4" />,
       type: 'schedule',
       estimatedDuration: '2 days',
@@ -116,15 +117,15 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
           <div>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-500" />
-              Quick Actions
+              {t('widgets.quickActions.title')}
             </CardTitle>
             <CardDescription>
-              Common automation tasks and schedules
+              {t('widgets.quickActions.commonAutomationTasks')}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm">
             <Plus className="h-4 w-4 mr-1" />
-            Create
+            {t('widgets.quickActions.create')}
           </Button>
         </div>
       </CardHeader>
@@ -147,7 +148,7 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
                       {action.name}
                       {action.isActive && (
                         <Badge variant="secondary" className="text-xs">
-                          Active
+                          {t('widgets.quickActions.active')}
                         </Badge>
                       )}
                     </h4>
@@ -160,7 +161,7 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
                       </span>
                       {action.zones && (
                         <span className="text-xs text-muted-foreground">
-                          📍 {action.zones.length} zones
+                          📍 {action.zones.length} {t('widgets.quickActions.zones')}
                         </span>
                       )}
                     </div>

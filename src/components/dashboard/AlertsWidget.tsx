@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,7 @@ const getSeverityColor = (severity: string) => {
 };
 
 const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
+  const { t } = useTranslation('dashboard');
   const unreadCount = alerts.filter(alert => !alert.isRead).length;
   const recentAlerts = alerts.slice(0, 5);
 
@@ -63,7 +64,7 @@ const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-red-500" />
-              Recent Alerts
+              {t('widgets.alerts.recentAlerts')}
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {unreadCount}
@@ -71,11 +72,11 @@ const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
               )}
             </CardTitle>
             <CardDescription>
-              System alerts and notifications
+              {t('widgets.alerts.systemAlertsNotifications')}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm">
-            View All
+            {t('widgets.alerts.viewAllAlerts')}
           </Button>
         </div>
       </CardHeader>
@@ -120,8 +121,8 @@ const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-              <p className="text-muted-foreground">No recent alerts</p>
-              <p className="text-sm text-muted-foreground/70">Your system is running smoothly</p>
+              <p className="text-muted-foreground">{t('widgets.alerts.noRecentAlerts')}</p>
+              <p className="text-sm text-muted-foreground/70">{t('widgets.alerts.systemRunningSmooth')}</p>
             </div>
           )}
         </div>

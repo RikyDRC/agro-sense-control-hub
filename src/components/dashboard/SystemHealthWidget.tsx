@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -37,6 +37,8 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
   zones, 
   className 
 }) => {
+  const { t } = useTranslation('dashboard');
+
   const calculateSystemHealth = (): SystemHealthMetrics => {
     if (devices.length === 0) {
       return {
@@ -57,9 +59,9 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
       ? devicesWithBattery.reduce((sum, d) => sum + (d.batteryLevel || 0), 0) / devicesWithBattery.length
       : 100;
 
-    const deviceUptime = networkConnectivity; // Simplified calculation
-    const dataQuality = Math.min(networkConnectivity + 10, 100); // Simplified
-    const irrigationEfficiency = zones.length > 0 ? 85 : 0; // Simplified
+    const deviceUptime = networkConnectivity;
+    const dataQuality = Math.min(networkConnectivity + 10, 100);
+    const irrigationEfficiency = zones.length > 0 ? 85 : 0;
 
     const overallHealth = Math.round(
       (networkConnectivity * 0.3 + 
@@ -95,34 +97,34 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
 
   const healthItems = [
     {
-      label: 'Network',
+      label: t('widgets.systemHealth.network'),
       value: metrics.networkConnectivity,
       icon: <Wifi className="h-4 w-4" />,
-      description: `${devices.filter(d => d.status === DeviceStatus.ONLINE).length}/${devices.length} devices online`
+      description: `${devices.filter(d => d.status === DeviceStatus.ONLINE).length}/${devices.length} ${t('widgets.systemHealth.devicesOnline')}`
     },
     {
-      label: 'Device Uptime',
+      label: t('widgets.systemHealth.deviceUptime'),
       value: metrics.deviceUptime,
       icon: <Activity className="h-4 w-4" />,
-      description: 'Average uptime'
+      description: t('widgets.systemHealth.averageUptime')
     },
     {
-      label: 'Data Quality',
+      label: t('widgets.systemHealth.dataQuality'),
       value: metrics.dataQuality,
       icon: <Database className="h-4 w-4" />,
-      description: 'Sensor accuracy'
+      description: t('widgets.systemHealth.sensorAccuracy')
     },
     {
-      label: 'Battery Health',
+      label: t('widgets.systemHealth.batteryHealth'),
       value: metrics.batteryHealth,
       icon: <Battery className="h-4 w-4" />,
-      description: 'Average battery level'
+      description: t('widgets.systemHealth.averageBatteryLevel')
     },
     {
-      label: 'Irrigation',
+      label: t('widgets.systemHealth.irrigationEfficiency'),
       value: metrics.irrigationEfficiency,
       icon: <Droplet className="h-4 w-4" />,
-      description: 'System efficiency'
+      description: t('widgets.systemHealth.systemEfficiency')
     }
   ];
 
@@ -133,10 +135,10 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-blue-500" />
-              System Health
+              {t('widgets.systemHealth.title')}
             </CardTitle>
             <CardDescription>
-              Overall system performance and status
+              {t('widgets.systemHealth.description')}
             </CardDescription>
           </div>
           <div className="text-right">
@@ -145,11 +147,11 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
             </div>
             <div className="flex items-center text-xs text-muted-foreground">
               {metrics.overallHealth >= 80 ? (
-                <><TrendingUp className="h-3 w-3 mr-1 text-green-500" /> Excellent</>
+                <><TrendingUp className="h-3 w-3 mr-1 text-green-500" /> {t('widgets.systemHealth.excellent')}</>
               ) : metrics.overallHealth >= 60 ? (
-                <><TrendingUp className="h-3 w-3 mr-1 text-yellow-500" /> Good</>
+                <><TrendingUp className="h-3 w-3 mr-1 text-yellow-500" /> {t('widgets.systemHealth.good')}</>
               ) : (
-                <><TrendingDown className="h-3 w-3 mr-1 text-red-500" /> Needs Attention</>
+                <><TrendingDown className="h-3 w-3 mr-1 text-red-500" /> {t('widgets.systemHealth.needsAttention')}</>
               )}
             </div>
           </div>

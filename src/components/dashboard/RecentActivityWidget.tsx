@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -78,6 +78,7 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   activities, 
   className 
 }) => {
+  const { t } = useTranslation('dashboard');
   const recentActivities = activities.slice(0, 8);
 
   return (
@@ -87,14 +88,14 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-indigo-500" />
-              Recent Activity
+              {t('widgets.recentActivity.title')}
             </CardTitle>
             <CardDescription>
-              Latest system actions and events
+              {t('widgets.recentActivity.latestSystemActions')}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm">
-            View History
+            {t('widgets.recentActivity.viewHistory')}
           </Button>
         </div>
       </CardHeader>
@@ -157,8 +158,8 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Activity className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">No recent activity</p>
-              <p className="text-sm text-muted-foreground/70">Start using your system to see activity</p>
+              <p className="text-muted-foreground">{t('widgets.recentActivity.noRecentActivity')}</p>
+              <p className="text-sm text-muted-foreground/70">{t('widgets.recentActivity.startUsingSystem')}</p>
             </div>
           )}
         </div>

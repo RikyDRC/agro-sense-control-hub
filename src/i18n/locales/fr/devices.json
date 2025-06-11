@@ -1,6 +1,7 @@
 
 {
   "title": "Appareils",
+  "subtitle": "Gérez vos capteurs de terrain et équipements d'irrigation",
   "addDevice": "Ajouter un appareil",
   "editDevice": "Modifier l'appareil",
   "deviceStatus": "État de l'appareil",
@@ -8,11 +9,27 @@
   "lastSeen": "Vu pour la dernière fois",
   "batteryLevel": "Niveau de batterie",
   "signalStrength": "Force du signal",
+  "refresh": "Actualiser",
+  "table": "Tableau",
+  "cards": "Cartes",
+  "allDevices": "Tous les appareils",
+  "moisture": "Humidité",
+  "temperature": "Température",
+  "valves": "Valves",
+  "pumps": "Pompes",
+  "device": "Appareil",
+  "type": "Type",
+  "zone": "Zone",
+  "status": "État",
+  "battery": "Batterie",
+  "lastUpdated": "Dernière mise à jour",
+  "actions": "Actions",
   "types": {
     "sensor": "Capteur",
     "pump": "Pompe",
     "valve": "Valve",
-    "controller": "Contrôleur"
+    "controller": "Contrôleur",
+    "moistureSensor": "Capteur d'humidité"
   },
   "status": {
     "online": "En ligne",

@@ -1,0 +1,21 @@
+
+{
+  "title": "Irrigation Automation",
+  "subtitle": "Manage your automated irrigation rules and schedules",
+  "engineRunning": "Engine Running",
+  "testRulesNow": "Test Rules Now",
+  "searchPlaceholder": "Search automation rules, schedules...",
+  "allStatus": "All Status",
+  "allTypes": "All Types",
+  "rules": "Rules",
+  "schedules": "Schedules",
+  "history": "History",
+  "automationRules": "Automation Rules",
+  "createRule": "Create Rule",
+  "noRulesFound": "No automation rules found",
+  "createFirstRule": "Create Your First Rule",
+  "noSchedulesFound": "No schedules found",
+  "createFirstSchedule": "Create Your First Schedule",
+  "noHistoryFound": "No history found",
+  "startAutomation": "Start using automation to see history"
+}

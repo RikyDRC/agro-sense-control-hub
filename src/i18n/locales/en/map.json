@@ -1,0 +1,26 @@
+
+{
+  "title": "Field Map",
+  "subtitle": "Visualize and manage your fields, zones, and devices",
+  "refresh": "Refresh",
+  "fieldMappingGuide": "Field Mapping Guide",
+  "mappingInstructions": "Draw zones by selecting the polygon tool, then place devices within zones. Drag existing devices to reposition them.",
+  "fieldMapHybridView": "Field Map - Hybrid View",
+  "currentLocationShown": "Your current location shown",
+  "yourLocation": "Your Location",
+  "mapView": "Map View",
+  "viewType": "View Type",
+  "hybridBest": "Hybrid (Best)",
+  "myLocation": "My Location",
+  "zones": "Zones",
+  "selectOrCreateZones": "Select or create field zones",
+  "allZones": "All Zones",
+  "drawNewZone": "Draw New Zone",
+  "addDevice": "Add Device",
+  "placeNewDevices": "Place new devices on the map",
+  "deviceType": "Device Type",
+  "moistureSensor": "Moisture Sensor",
+  "deviceNameOptional": "Device Name (Optional)",
+  "newMoistureSensor": "New moisture sensor",
+  "placeDeviceOnMap": "Place Device on Map"
+}

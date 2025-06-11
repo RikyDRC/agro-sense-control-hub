@@ -1,0 +1,29 @@
+
+{
+  "title": "Weather",
+  "subtitle": "Real-time weather data from Open-Meteo",
+  "location": "Location",
+  "refreshData": "Refresh Data",
+  "currentConditions": "Current Conditions",
+  "partlyCloudy": "Partly Cloudy",
+  "feelsLike": "Feels like",
+  "high": "High",
+  "low": "Low",
+  "humidity": "Humidity",
+  "wind": "Wind",
+  "rain": "Rain",
+  "forecast7Day": "7-Day Forecast",
+  "weeklyOutlook": "Weekly weather outlook powered by Open-Meteo",
+  "weatherAlerts": "Weather Alerts",
+  "noActiveAlerts": "No active weather alerts at this time",
+  "normalConditions": "All weather conditions are normal.",
+  "days": {
+    "monday": "Mon",
+    "tuesday": "Tue",
+    "wednesday": "Wed",
+    "thursday": "Thu",
+    "friday": "Fri",
+    "saturday": "Sat",
+    "sunday": "Sun"
+  }
+}

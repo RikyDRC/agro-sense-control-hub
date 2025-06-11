@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,7 @@ interface APIKeySettingsProps {
 }
 
 const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
+  const { t } = useTranslation('connectivity');
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
   const [newKeyName, setNewKeyName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +68,7 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
     if (!newKeyName.trim()) {
       toast({
         title: "Error",
-        description: 'Please enter a name for the API key',
+        description: t('noApiKeys'),
         variant: "destructive"
       });
       return;
@@ -76,7 +78,6 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       setLoading(true);
       const newKey = generateApiKey();
       
-      // Type cast here too
       const { error } = await supabase
         .from('device_api_keys')
         .insert({
@@ -94,7 +95,6 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
       setNewKeyName('');
       loadApiKeys();
       
-      // Show the new key automatically
       setTimeout(() => {
         setShowKeys(prev => ({
           ...prev,
@@ -206,19 +206,19 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            API Key Management
+            {t('apiKeyManagement')}
           </CardTitle>
           <CardDescription>
-            API keys allow your IoT devices to securely connect to your dashboard
+            {t('apiKeyDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="name">New API Key Name</Label>
+            <Label htmlFor="name">{t('newApiKeyName')}</Label>
             <div className="flex space-x-2">
               <Input
                 id="name"
-                placeholder="e.g., Greenhouse Sensors"
+                placeholder={t('apiKeyPlaceholder')}
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
               />
@@ -226,18 +226,18 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
                 onClick={createApiKey} 
                 disabled={loading || !newKeyName.trim()}
               >
-                Create Key
+                {t('createKey')}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Your API Keys</Label>
+            <Label>{t('yourApiKeys')}</Label>
             {loading ? (
               <div className="text-center py-4">Loading API keys...</div>
             ) : apiKeys.length === 0 ? (
               <div className="text-sm text-muted-foreground py-4">
-                No API keys created yet. Create your first key above.
+                {t('noApiKeys')}
               </div>
             ) : (
               <div className="space-y-3">
@@ -302,24 +302,24 @@ const APIKeySettings: React.FC<APIKeySettingsProps> = ({ userId }) => {
         </CardContent>
         <CardFooter className="flex-col items-start space-y-2">
           <p className="text-xs text-muted-foreground">
-            <strong>Security note:</strong> Store these keys securely. They provide access to your farm data.
+            <strong>{t('securityNote')}</strong>
           </p>
           <p className="text-xs text-muted-foreground">
-            Example usage: <code className="bg-muted p-1 rounded">curl -H "Authorization: Bearer YOUR_API_KEY" https://api.example.com/data</code>
+            {t('exampleUsage')} <code className="bg-muted p-1 rounded">curl -H "Authorization: Bearer YOUR_API_KEY" https://api.example.com/data</code>
           </p>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Device Integration Guide</CardTitle>
+          <CardTitle>{t('deviceIntegrationGuide')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium">HTTP REST API</h4>
+              <h4 className="font-medium">{t('httpRestApi')}</h4>
               <p className="text-sm text-muted-foreground">
-                Use your API key in the Authorization header when making requests to our REST API.
+                {t('restApiDescription')}
               </p>
               <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-x-auto">
 {`// Example with Arduino/ESP8266

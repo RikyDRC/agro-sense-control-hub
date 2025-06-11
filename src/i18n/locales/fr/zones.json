@@ -1,0 +1,24 @@
+
+{
+  "title": "Zones",
+  "subtitle": "Gérez vos zones de terrain et paramètres d'irrigation",
+  "refresh": "Actualiser",
+  "openMap": "Ouvrir la carte",
+  "addZone": "Ajouter une zone",
+  "editZone": "Modifier la zone",
+  "zoneDetails": "Détails de la zone",
+  "zoneName": "Nom de la zone",
+  "description": "Description",
+  "areaSize": "Superficie",
+  "soilType": "Type de sol",
+  "cropType": "Type de culture",
+  "irrigationMethod": "Méthode d'irrigation",
+  "soilMoistureThreshold": "Seuil d'humidité du sol",
+  "notes": "Notes",
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif",
+    "irrigating": "En irrigation",
+    "scheduled": "Programmé"
+  }
+}

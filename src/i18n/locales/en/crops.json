@@ -1,0 +1,19 @@
+
+{
+  "title": "Crops Management",
+  "subtitle": "Track and manage crop information, planting schedules, and growth stages",
+  "export": "Export",
+  "addCrop": "Add Crop",
+  "totalCrops": "Total Crops",
+  "upcomingPlantings": "upcoming plantings",
+  "growthStages": "Growth Stages",
+  "zonesCoverage": "Zones Coverage",
+  "zonesWithActiveCrops": "Zones with active crops",
+  "searchPlaceholder": "Search crops by name or variety...",
+  "search": "Search",
+  "currentCrops": "Current Crops",
+  "upcomingPlantingsTab": "Upcoming Plantings",
+  "harvested": "Harvested",
+  "noActiveCrops": "No active crops found",
+  "addFirstCrop": "Add Your First Crop"
+}

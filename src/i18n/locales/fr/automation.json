@@ -1,0 +1,21 @@
+
+{
+  "title": "Automatisation d'irrigation",
+  "subtitle": "Gérez vos règles et horaires d'irrigation automatisés",
+  "engineRunning": "Moteur en marche",
+  "testRulesNow": "Tester les règles maintenant",
+  "searchPlaceholder": "Rechercher les règles d'automatisation, horaires...",
+  "allStatus": "Tous les états",
+  "allTypes": "Tous les types",
+  "rules": "Règles",
+  "schedules": "Horaires",
+  "history": "Historique",
+  "automationRules": "Règles d'automatisation",
+  "createRule": "Créer une règle",
+  "noRulesFound": "Aucune règle d'automatisation trouvée",
+  "createFirstRule": "Créez votre première règle",
+  "noSchedulesFound": "Aucun horaire trouvé",
+  "createFirstSchedule": "Créez votre premier horaire",
+  "noHistoryFound": "Aucun historique trouvé",
+  "startAutomation": "Commencez à utiliser l'automatisation pour voir l'historique"
+}

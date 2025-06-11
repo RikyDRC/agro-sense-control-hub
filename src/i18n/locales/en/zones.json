@@ -1,0 +1,24 @@
+
+{
+  "title": "Zones",
+  "subtitle": "Manage your field zones and irrigation settings",
+  "refresh": "Refresh",
+  "openMap": "Open Map",
+  "addZone": "Add Zone",
+  "editZone": "Edit Zone",
+  "zoneDetails": "Zone Details",
+  "zoneName": "Zone Name",
+  "description": "Description",
+  "areaSize": "Area Size",
+  "soilType": "Soil Type",
+  "cropType": "Crop Type",
+  "irrigationMethod": "Irrigation Method",
+  "soilMoistureThreshold": "Soil Moisture Threshold",
+  "notes": "Notes",
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "irrigating": "Irrigating",
+    "scheduled": "Scheduled"
+  }
+}

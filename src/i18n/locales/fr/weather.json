@@ -1,0 +1,29 @@
+
+{
+  "title": "Météo",
+  "subtitle": "Données météorologiques en temps réel d'Open-Meteo",
+  "location": "Emplacement",
+  "refreshData": "Actualiser les données",
+  "currentConditions": "Conditions actuelles",
+  "partlyCloudy": "Partiellement nuageux",
+  "feelsLike": "Ressenti",
+  "high": "Max",
+  "low": "Min",
+  "humidity": "Humidité",
+  "wind": "Vent",
+  "rain": "Pluie",
+  "forecast7Day": "Prévisions 7 jours",
+  "weeklyOutlook": "Prévisions hebdomadaires fournies par Open-Meteo",
+  "weatherAlerts": "Alertes météo",
+  "noActiveAlerts": "Aucune alerte météo active pour le moment",
+  "normalConditions": "Toutes les conditions météorologiques sont normales.",
+  "days": {
+    "monday": "Lun",
+    "tuesday": "Mar",
+    "wednesday": "Mer",
+    "thursday": "Jeu",
+    "friday": "Ven",
+    "saturday": "Sam",
+    "sunday": "Dim"
+  }
+}

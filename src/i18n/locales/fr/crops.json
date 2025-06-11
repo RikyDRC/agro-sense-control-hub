@@ -1,0 +1,19 @@
+
+{
+  "title": "Gestion des cultures",
+  "subtitle": "Suivez et gérez les informations sur les cultures, les horaires de plantation et les stades de croissance",
+  "export": "Exporter",
+  "addCrop": "Ajouter une culture",
+  "totalCrops": "Total des cultures",
+  "upcomingPlantings": "plantations à venir",
+  "growthStages": "Stades de croissance",
+  "zonesCoverage": "Couverture des zones",
+  "zonesWithActiveCrops": "Zones avec cultures actives",
+  "searchPlaceholder": "Rechercher les cultures par nom ou variété...",
+  "search": "Rechercher",
+  "currentCrops": "Cultures actuelles",
+  "upcomingPlantingsTab": "Plantations à venir",
+  "harvested": "Récoltées",
+  "noActiveCrops": "Aucune culture active trouvée",
+  "addFirstCrop": "Ajoutez votre première culture"
+}

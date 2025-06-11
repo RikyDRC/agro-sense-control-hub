@@ -1,0 +1,26 @@
+
+{
+  "title": "Carte du terrain",
+  "subtitle": "Visualisez et gérez vos champs, zones et appareils",
+  "refresh": "Actualiser",
+  "fieldMappingGuide": "Guide de cartographie du terrain",
+  "mappingInstructions": "Dessinez des zones en sélectionnant l'outil polygone, puis placez les appareils dans les zones. Faites glisser les appareils existants pour les repositionner.",
+  "fieldMapHybridView": "Carte du terrain - Vue hybride",
+  "currentLocationShown": "Votre emplacement actuel affiché",
+  "yourLocation": "Votre emplacement",
+  "mapView": "Vue carte",
+  "viewType": "Type de vue",
+  "hybridBest": "Hybride (Meilleur)",
+  "myLocation": "Ma position",
+  "zones": "Zones",
+  "selectOrCreateZones": "Sélectionnez ou créez des zones de terrain",
+  "allZones": "Toutes les zones",
+  "drawNewZone": "Dessiner une nouvelle zone",
+  "addDevice": "Ajouter un appareil",
+  "placeNewDevices": "Placez de nouveaux appareils sur la carte",
+  "deviceType": "Type d'appareil",
+  "moistureSensor": "Capteur d'humidité",
+  "deviceNameOptional": "Nom de l'appareil (Optionnel)",
+  "newMoistureSensor": "Nouveau capteur d'humidité",
+  "placeDeviceOnMap": "Placer l'appareil sur la carte"
+}

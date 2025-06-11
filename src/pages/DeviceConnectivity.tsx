@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +13,7 @@ import QRCodeLinking from '@/components/device-connectivity/QRCodeLinking';
 
 const DeviceConnectivity: React.FC = () => {
   const { user, loading } = useAuth();
+  const { t } = useTranslation('connectivity');
 
   if (loading) {
     return (
@@ -29,23 +31,23 @@ const DeviceConnectivity: React.FC = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Device Connectivity</h1>
-          <p className="text-muted-foreground">Configure how your IoT devices connect to the dashboard</p>
+          <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
 
         <Alert className="bg-muted/50">
           <InfoIcon className="h-4 w-4" />
-          <AlertTitle>Getting Started</AlertTitle>
+          <AlertTitle>{t('gettingStarted')}</AlertTitle>
           <AlertDescription>
-            Choose a connectivity method that suits your devices. You can use API Keys for REST API integration, MQTT for real-time communication, or QR Codes for quick device linking.
+            {t('gettingStartedDescription')}
           </AlertDescription>
         </Alert>
 
         <Tabs defaultValue="api-keys" className="space-y-4">
           <TabsList className="grid grid-cols-3 md:w-[400px]">
-            <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-            <TabsTrigger value="mqtt">MQTT</TabsTrigger>
-            <TabsTrigger value="qr-code">QR Code</TabsTrigger>
+            <TabsTrigger value="api-keys">{t('apiKeys')}</TabsTrigger>
+            <TabsTrigger value="mqtt">{t('mqtt')}</TabsTrigger>
+            <TabsTrigger value="qr-code">{t('qrCode')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="api-keys" className="space-y-4">

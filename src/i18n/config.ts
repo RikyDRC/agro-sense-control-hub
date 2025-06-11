@@ -10,6 +10,12 @@ import enAuth from './locales/en/auth.json';
 import enDevices from './locales/en/devices.json';
 import enSettings from './locales/en/settings.json';
 import enNavigation from './locales/en/navigation.json';
+import enZones from './locales/en/zones.json';
+import enAutomation from './locales/en/automation.json';
+import enCrops from './locales/en/crops.json';
+import enWeather from './locales/en/weather.json';
+import enMap from './locales/en/map.json';
+import enConnectivity from './locales/en/connectivity.json';
 
 import frCommon from './locales/fr/common.json';
 import frDashboard from './locales/fr/dashboard.json';
@@ -17,6 +23,12 @@ import frAuth from './locales/fr/auth.json';
 import frDevices from './locales/fr/devices.json';
 import frSettings from './locales/fr/settings.json';
 import frNavigation from './locales/fr/navigation.json';
+import frZones from './locales/fr/zones.json';
+import frAutomation from './locales/fr/automation.json';
+import frCrops from './locales/fr/crops.json';
+import frWeather from './locales/fr/weather.json';
+import frMap from './locales/fr/map.json';
+import frConnectivity from './locales/fr/connectivity.json';
 
 const resources = {
   en: {
@@ -26,6 +38,12 @@ const resources = {
     devices: enDevices,
     settings: enSettings,
     navigation: enNavigation,
+    zones: enZones,
+    automation: enAutomation,
+    crops: enCrops,
+    weather: enWeather,
+    map: enMap,
+    connectivity: enConnectivity,
   },
   fr: {
     common: frCommon,
@@ -34,6 +52,12 @@ const resources = {
     devices: frDevices,
     settings: frSettings,
     navigation: frNavigation,
+    zones: frZones,
+    automation: frAutomation,
+    crops: frCrops,
+    weather: frWeather,
+    map: frMap,
+    connectivity: frConnectivity,
   },
 };
 

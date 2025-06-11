@@ -1,6 +1,7 @@
 
 {
   "title": "Devices",
+  "subtitle": "Manage your field sensors and irrigation equipment",
   "addDevice": "Add Device",
   "editDevice": "Edit Device",
   "deviceStatus": "Device Status",
@@ -8,11 +9,27 @@
   "lastSeen": "Last Seen",
   "batteryLevel": "Battery Level",
   "signalStrength": "Signal Strength",
+  "refresh": "Refresh",
+  "table": "Table",
+  "cards": "Cards",
+  "allDevices": "All Devices",
+  "moisture": "Moisture",
+  "temperature": "Temperature",
+  "valves": "Valves",
+  "pumps": "Pumps",
+  "device": "Device",
+  "type": "Type",
+  "zone": "Zone",
+  "status": "Status",
+  "battery": "Battery",
+  "lastUpdated": "Last Updated",
+  "actions": "Actions",
   "types": {
     "sensor": "Sensor",
     "pump": "Pump",
     "valve": "Valve",
-    "controller": "Controller"
+    "controller": "Controller",
+    "moistureSensor": "Moisture Sensor"
   },
   "status": {
     "online": "Online",

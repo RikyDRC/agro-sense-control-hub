@@ -16,6 +16,8 @@ import enCrops from './locales/en/crops.json';
 import enWeather from './locales/en/weather.json';
 import enMap from './locales/en/map.json';
 import enConnectivity from './locales/en/connectivity.json';
+import enLanding from './locales/en/landing.json';
+import enSubscription from './locales/en/subscription.json';
 
 import frCommon from './locales/fr/common.json';
 import frDashboard from './locales/fr/dashboard.json';
@@ -29,6 +31,8 @@ import frCrops from './locales/fr/crops.json';
 import frWeather from './locales/fr/weather.json';
 import frMap from './locales/fr/map.json';
 import frConnectivity from './locales/fr/connectivity.json';
+import frLanding from './locales/fr/landing.json';
+import frSubscription from './locales/fr/subscription.json';
 
 const resources = {
   en: {
@@ -44,6 +48,8 @@ const resources = {
     weather: enWeather,
     map: enMap,
     connectivity: enConnectivity,
+    landing: enLanding,
+    subscription: enSubscription,
   },
   fr: {
     common: frCommon,
@@ -58,6 +64,8 @@ const resources = {
     weather: frWeather,
     map: frMap,
     connectivity: frConnectivity,
+    landing: frLanding,
+    subscription: frSubscription,
   },
 };
 

@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const LandingPage = () => {
+  const { t } = useTranslation('landing');
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
@@ -30,10 +32,10 @@ const LandingPage = () => {
         </div>
         <div className="flex items-center gap-4">
           <Link to="/auth" className="text-sm font-medium hover:text-agro-green">
-            Sign In
+            {t('navigation.signIn')}
           </Link>
           <Button asChild size="sm" className="bg-agro-green hover:bg-agro-green-dark">
-            <Link to="/subscription/plans">Get Started</Link>
+            <Link to="/subscription/plans">{t('navigation.getStarted')}</Link>
           </Button>
         </div>
       </header>
@@ -45,18 +47,18 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0 md:pr-8">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Grow Smarter with IoT-Powered Farming
+                {t('hero.title')}
               </h1>
               <p className="mt-6 text-lg text-gray-600 max-w-2xl">
-                Take control of your irrigation system and monitor your crops in real-time with our advanced IoT sensors and intuitive dashboard.
+                {t('hero.subtitle')}
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Button asChild className="bg-agro-green hover:bg-agro-green-dark" size="lg">
-                  <Link to="/subscription/plans">Start Free Trial</Link>
+                  <Link to="/subscription/plans">{t('hero.getStarted')}</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
                   <a href="#how-it-works">
-                    See How It Works <ArrowRight className="ml-2 h-4 w-4" />
+                    {t('hero.seeDemo')} <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
               </div>
@@ -75,9 +77,9 @@ const LandingPage = () => {
         <section id="how-it-works" className="px-6 lg:px-8 py-16 md:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How It Works</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t('howItWorks.title')}</h2>
               <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                Our smart agriculture system connects your farm to the cloud, giving you real-time control and insights
+                {t('howItWorks.subtitle')}
               </p>
             </div>
 
@@ -85,20 +87,20 @@ const LandingPage = () => {
               {[
                 {
                   step: '01',
-                  title: 'Collect Data',
-                  description: 'IoT sensors installed across your farm continuously monitor soil moisture, temperature, humidity, and more.',
+                  title: t('howItWorks.steps.collect.title'),
+                  description: t('howItWorks.steps.collect.description'),
                   icon: <ThermometerIcon className="h-10 w-10 text-agro-green" />
                 },
                 {
                   step: '02',
-                  title: 'Analyze & Decide',
-                  description: 'Our system processes the data and provides smart recommendations or takes automated actions based on your settings.',
+                  title: t('howItWorks.steps.analyze.title'),
+                  description: t('howItWorks.steps.analyze.description'),
                   icon: <BarChart className="h-10 w-10 text-agro-green" />
                 },
                 {
                   step: '03',
-                  title: 'Control & Monitor',
-                  description: 'You can view all data and control your irrigation system remotely through our intuitive dashboard.',
+                  title: t('howItWorks.steps.control.title'),
+                  description: t('howItWorks.steps.control.description'),
                   icon: <Smartphone className="h-10 w-10 text-agro-green" />
                 }
               ].map((item, index) => (
@@ -124,42 +126,42 @@ const LandingPage = () => {
         <section className="px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Key Features</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t('features.title')}</h2>
               <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                Our platform provides everything you need to optimize your farming operations
+                {t('features.subtitle')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 {
-                  title: 'Real-Time Sensor Data',
-                  description: 'View soil moisture, temperature, humidity and other critical data in real-time.',
+                  title: t('features.list.realTimeData.title'),
+                  description: t('features.list.realTimeData.description'),
                   icon: <ThermometerIcon className="h-10 w-10 text-agro-green" />
                 },
                 {
-                  title: 'Automated Watering',
-                  description: 'Set up rules to automatically trigger irrigation based on sensor readings.',
+                  title: t('features.list.automatedWatering.title'),
+                  description: t('features.list.automatedWatering.description'),
                   icon: <Droplet className="h-10 w-10 text-agro-green" />
                 },
                 {
-                  title: 'Remote Valve Control',
-                  description: 'Manually control your irrigation system from anywhere at any time.',
+                  title: t('features.list.remoteControl.title'),
+                  description: t('features.list.remoteControl.description'),
                   icon: <Smartphone className="h-10 w-10 text-agro-green" />
                 },
                 {
-                  title: 'Weather Integration',
-                  description: 'Incorporate local weather forecasts into your irrigation decisions.',
+                  title: t('features.list.weatherIntegration.title'),
+                  description: t('features.list.weatherIntegration.description'),
                   icon: <Cloud className="h-10 w-10 text-agro-green" />
                 },
                 {
-                  title: 'Smart Alerts',
-                  description: 'Receive notifications when readings fall outside of optimal ranges.',
+                  title: t('features.list.smartAlerts.title'),
+                  description: t('features.list.smartAlerts.description'),
                   icon: <Bell className="h-10 w-10 text-agro-green" />
                 },
                 {
-                  title: 'Energy Efficiency',
-                  description: 'Optimize your water and energy usage with our smart algorithms.',
+                  title: t('features.list.energyEfficiency.title'),
+                  description: t('features.list.energyEfficiency.description'),
                   icon: <Zap className="h-10 w-10 text-agro-green" />
                 }
               ].map((feature, index) => (
@@ -181,9 +183,9 @@ const LandingPage = () => {
         <section className="px-6 lg:px-8 py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Dashboard Preview</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t('dashboard.title')}</h2>
               <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-                Get a glimpse of our intuitive interface designed for farmers
+                {t('dashboard.subtitle')}
               </p>
             </div>
 
@@ -509,7 +511,7 @@ const LandingPage = () => {
               <span className="text-white text-xl font-semibold">AgroSmart</span>
             </div>
             <p className="text-sm">
-              Intelligent irrigation and farm management solutions powered by IoT technology
+              {t('footer.description')}
             </p>
             <div className="mt-4 flex space-x-4">
               {['facebook', 'twitter', 'instagram', 'linkedin'].map((social) => (
@@ -524,7 +526,7 @@ const LandingPage = () => {
           </div>
           
           <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.product')}</h3>
             <ul className="space-y-2">
               {['Features', 'How It Works', 'Pricing', 'Use Cases', 'Integrations'].map((item) => (
                 <li key={item}>
@@ -537,7 +539,7 @@ const LandingPage = () => {
           </div>
           
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               {['Documentation', 'API', 'Support', 'Blog', 'Partners'].map((item) => (
                 <li key={item}>
@@ -550,7 +552,7 @@ const LandingPage = () => {
           </div>
           
           <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               {['About', 'Team', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
                 <li key={item}>
@@ -563,13 +565,13 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-gray-800 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center">
-          <p>© {new Date().getFullYear()} AgroSmart. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} AgroSmart. {t('footer.copyright')}</p>
           <div className="mt-4 md:mt-0">
-            <a href="#" className="hover:text-white">Privacy</a>
+            <a href="#" className="hover:text-white">{t('footer.privacy')}</a>
             <span className="mx-2">·</span>
-            <a href="#" className="hover:text-white">Terms</a>
+            <a href="#" className="hover:text-white">{t('footer.terms')}</a>
             <span className="mx-2">·</span>
-            <a href="#" className="hover:text-white">Cookies</a>
+            <a href="#" className="hover:text-white">{t('footer.cookies')}</a>
           </div>
         </div>
       </footer>

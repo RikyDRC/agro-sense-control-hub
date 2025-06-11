@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { toast } from '@/components/ui/sonner';
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('auth');
   const { signIn, signUp, session, loading, subscription, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('signin');
   const [email, setEmail] = useState('');
@@ -110,7 +112,7 @@ const AuthPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>Loading...</p>
+        <p>{t('common:buttons.loading')}</p>
       </div>
     );
   }
@@ -126,14 +128,14 @@ const AuthPage = () => {
         <Card>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn}>
                 <CardHeader>
-                  <CardTitle>Welcome Back</CardTitle>
+                  <CardTitle>{t('welcomeBack')}</CardTitle>
                   <CardDescription>
                     Sign in to your account to continue
                   </CardDescription>
@@ -146,7 +148,7 @@ const AuthPage = () => {
                     </Alert>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('email')}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -157,7 +159,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('password')}</Label>
                     <Input
                       id="password"
                       type="password"
@@ -173,7 +175,7 @@ const AuthPage = () => {
                       <span>Signing in...</span>
                     ) : (
                       <>
-                        <LogIn className="mr-2 h-4 w-4" /> Sign In
+                        <LogIn className="mr-2 h-4 w-4" /> {t('signIn')}
                       </>
                     )}
                   </Button>
@@ -184,9 +186,9 @@ const AuthPage = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp}>
                 <CardHeader>
-                  <CardTitle>Create Account</CardTitle>
+                  <CardTitle>{t('createAccount')}</CardTitle>
                   <CardDescription>
-                    Join AgroSense Hub to start managing your farm
+                    {t('getStarted')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -217,7 +219,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">{t('email')}</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -228,7 +230,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password">{t('password')}</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -247,7 +249,7 @@ const AuthPage = () => {
                       <span>Creating account...</span>
                     ) : (
                       <>
-                        <UserPlus className="mr-2 h-4 w-4" /> Create Account
+                        <UserPlus className="mr-2 h-4 w-4" /> {t('createAccount')}
                       </>
                     )}
                   </Button>

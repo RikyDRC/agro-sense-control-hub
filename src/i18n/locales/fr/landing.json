@@ -1,0 +1,220 @@
+
+{
+  "hero": {
+    "title": "Cultivez plus intelligemment avec l'agriculture IoT",
+    "subtitle": "Prenez le contrôle de votre système d'irrigation et surveillez vos cultures en temps réel avec nos capteurs IoT avancés et notre tableau de bord intuitif.",
+    "getStarted": "Commencer",
+    "seeDemo": "Voir la démo"
+  },
+  "navigation": {
+    "signIn": "Se connecter",
+    "getStarted": "Commencer"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche",
+    "subtitle": "Notre système d'agriculture intelligente connecte votre ferme au cloud, vous donnant un contrôle et des informations en temps réel",
+    "steps": {
+      "collect": {
+        "title": "Collecter les données",
+        "description": "Les capteurs IoT installés dans votre ferme surveillent en permanence l'humidité du sol, la température, l'humidité et plus encore."
+      },
+      "analyze": {
+        "title": "Analyser et décider",
+        "description": "Notre système traite les données et fournit des recommandations intelligentes ou prend des actions automatisées basées sur vos paramètres."
+      },
+      "control": {
+        "title": "Contrôler et surveiller",
+        "description": "Vous pouvez visualiser toutes les données et contrôler votre système d'irrigation à distance grâce à notre tableau de bord intuitif."
+      }
+    }
+  },
+  "features": {
+    "title": "Fonctionnalités clés",
+    "subtitle": "Notre plateforme fournit tout ce dont vous avez besoin pour optimiser vos opérations agricoles",
+    "list": {
+      "realTimeData": {
+        "title": "Données de capteurs en temps réel",
+        "description": "Visualisez l'humidité du sol, la température, l'humidité et d'autres données critiques en temps réel."
+      },
+      "automatedWatering": {
+        "title": "Arrosage automatisé",
+        "description": "Configurez des règles pour déclencher automatiquement l'irrigation basée sur les lectures des capteurs."
+      },
+      "remoteControl": {
+        "title": "Contrôle de vannes à distance",
+        "description": "Contrôlez manuellement votre système d'irrigation de n'importe où et à tout moment."
+      },
+      "weatherIntegration": {
+        "title": "Intégration météorologique",
+        "description": "Incorporez les prévisions météorologiques locales dans vos décisions d'irrigation."
+      },
+      "smartAlerts": {
+        "title": "Alertes intelligentes",
+        "description": "Recevez des notifications lorsque les lectures sortent des plages optimales."
+      },
+      "energyEfficiency": {
+        "title": "Efficacité énergétique",
+        "description": "Optimisez votre consommation d'eau et d'énergie avec nos algorithmes intelligents."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Aperçu du tableau de bord",
+    "subtitle": "Découvrez notre interface intuitive conçue pour les agriculteurs"
+  },
+  "benefits": {
+    "title": "Avantages pour les agriculteurs",
+    "subtitle": "Voyez comment notre système aide les agriculteurs du monde entier",
+    "saveTime": {
+      "title": "Gagner du temps",
+      "description": "Réduisez les inspections manuelles et automatisez les tâches d'irrigation routinières.",
+      "stat": "70%",
+      "statLabel": "moins de temps consacré à la gestion de l'irrigation"
+    },
+    "reduceWater": {
+      "title": "Réduire la consommation d'eau",
+      "description": "Optimisez la consommation d'eau avec l'irrigation de précision.",
+      "stat": "30%",
+      "statLabel": "économies d'eau moyennes"
+    },
+    "improveCrops": {
+      "title": "Améliorer la santé des cultures",
+      "description": "Maintenez des conditions de croissance optimales pour des plantes plus saines.",
+      "stat": "25%",
+      "statLabel": "augmentation du rendement des cultures"
+    }
+  },
+  "testimonials": {
+    "title": "Ce que disent les agriculteurs",
+    "subtitle": "Écoutez les agriculteurs qui utilisent notre système quotidiennement",
+    "testimonial1": {
+      "quote": "Ce système a complètement transformé ma façon de gérer l'irrigation. Je peux enfin prendre des week-ends !",
+      "author": "John Wilson",
+      "role": "Cultivateur de blé, Kansas"
+    },
+    "testimonial2": {
+      "quote": "Nous avons réduit notre consommation d'eau de 35% tout en améliorant notre rendement. Le retour sur investissement était évident dès la première saison.",
+      "author": "Maria Rodriguez",
+      "role": "Propriétaire de vignoble, Californie"
+    },
+    "testimonial3": {
+      "quote": "Les alertes ont sauvé mes cultures plusieurs fois. Être averti des températures de gel avant qu'elles ne frappent est inestimable.",
+      "author": "David Chen",
+      "role": "Gestionnaire de verger, Washington"
+    }
+  },
+  "pricing": {
+    "title": "Tarification simple et transparente",
+    "subtitle": "Choisissez le plan qui convient à votre exploitation agricole",
+    "starter": {
+      "name": "Débutant",
+      "price": "99$",
+      "period": "/mois",
+      "description": "Parfait pour les petites fermes qui commencent avec l'irrigation intelligente",
+      "features": [
+        "Jusqu'à 5 capteurs",
+        "Contrôles d'irrigation de base",
+        "Rapports hebdomadaires",
+        "Support par email",
+        "Accès application mobile"
+      ]
+    },
+    "professional": {
+      "name": "Professionnel",
+      "price": "199$",
+      "period": "/mois",
+      "description": "Idéal pour les fermes de taille moyenne avec des besoins diversifiés",
+      "features": [
+        "Jusqu'à 20 capteurs",
+        "Règles d'automatisation avancées",
+        "Rapports quotidiens et analyses",
+        "Support prioritaire",
+        "Intégration météorologique",
+        "Accès API"
+      ],
+      "mostPopular": "Le plus populaire"
+    },
+    "enterprise": {
+      "name": "Entreprise",
+      "price": "399$",
+      "period": "/mois",
+      "description": "Solution complète pour les grandes opérations agricoles",
+      "features": [
+        "Capteurs illimités",
+        "Flux de travail d'automatisation personnalisés",
+        "Analyses en temps réel",
+        "Support dédié 24/7",
+        "Comptes utilisateurs multiples",
+        "Intégrations personnalisées",
+        "Support d'installation sur site"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Trouvez des réponses aux questions courantes sur notre plateforme",
+    "tabs": {
+      "general": "Général",
+      "technical": "Technique",
+      "billing": "Facturation"
+    },
+    "general": {
+      "setup": {
+        "question": "Combien de temps faut-il pour configurer le système ?",
+        "answer": "La configuration de base peut être complétée en 1-2 jours, selon la taille de votre ferme et le nombre de capteurs. Notre équipe fournit des guides d'installation complets et un support tout au long du processus."
+      },
+      "technical": {
+        "question": "Ai-je besoin de connaissances techniques pour utiliser la plateforme ?",
+        "answer": "Non, notre plateforme est conçue pour être conviviale et intuitive. Vous n'avez pas besoin d'expertise technique pour surveiller votre ferme ou apporter des ajustements de base à votre système d'irrigation."
+      },
+      "trial": {
+        "question": "Puis-je essayer avant d'acheter ?",
+        "answer": "Oui, nous offrons un essai gratuit de 14 jours qui inclut l'accès à la plupart des fonctionnalités. Vous pouvez également demander une démonstration personnalisée de notre équipe."
+      }
+    },
+    "technical": {
+      "sensors": {
+        "question": "Quels types de capteurs sont compatibles avec votre système ?",
+        "answer": "Notre système est compatible avec une large gamme de capteurs IoT agricoles, y compris les capteurs d'humidité du sol, les capteurs de température, les capteurs d'humidité et plus encore. Nous fournissons nos propres capteurs mais pouvons également intégrer avec des appareils tiers sélectionnés."
+      },
+      "connectivity": {
+        "question": "Ai-je besoin d'une connectivité internet dans mes champs ?",
+        "answer": "Vos capteurs doivent pouvoir transmettre des données à notre plateforme, ce qui nécessite généralement une forme de connectivité. Cela peut être via des réseaux cellulaires, LoRaWAN ou des connexions WiFi selon la configuration de votre ferme."
+      },
+      "accuracy": {
+        "question": "Quelle est la précision des capteurs ?",
+        "answer": "Nos capteurs offrent une précision de pointe avec des marges d'erreur généralement inférieures à 2% pour les lectures d'humidité et ±0,5°C pour les lectures de température. Tous les capteurs sont calibrés avant expédition."
+      }
+    },
+    "billing": {
+      "contracts": {
+        "question": "Y a-t-il des contrats à long terme ?",
+        "answer": "Nous offrons des options de facturation mensuelle et annuelle. Les plans annuels bénéficient d'une remise de 10%, mais aucun contrat à long terme n'est requis - vous pouvez annuler votre abonnement à tout moment."
+      },
+      "updates": {
+        "question": "Les mises à jour logicielles sont-elles incluses dans l'abonnement ?",
+        "answer": "Oui, toutes les mises à jour logicielles et améliorations de la plateforme sont incluses dans votre abonnement sans coût supplémentaire."
+      },
+      "setup": {
+        "question": "Y a-t-il des frais de configuration ?",
+        "answer": "Il n'y a pas de frais de configuration pour notre plateforme logicielle. Cependant, pour les clients Enterprise nécessitant une intégration personnalisée ou un support d'installation sur site, des frais de service supplémentaires peuvent s'appliquer."
+      }
+    }
+  },
+  "cta": {
+    "title": "Prêt à transformer votre agriculture ?",
+    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont déjà amélioré leurs opérations avec nos solutions IoT",
+    "startTrial": "Commencer l'essai gratuit",
+    "signIn": "Se connecter"
+  },
+  "footer": {
+    "description": "Solutions d'irrigation intelligente et de gestion agricole alimentées par la technologie IoT",
+    "product": "Produit",
+    "resources": "Ressources",
+    "company": "Entreprise",
+    "copyright": "Tous droits réservés.",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "cookies": "Cookies"
+  }
+}

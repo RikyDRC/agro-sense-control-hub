@@ -22,7 +22,12 @@
     "filter": "Filtrer",
     "clear": "Effacer",
     "reset": "Réinitialiser",
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "getStarted": "Commencer",
+    "seeDemo": "Voir la démo",
+    "startFreeTrial": "Commencer l'essai gratuit",
+    "seeHowItWorks": "Voir comment ça marche",
+    "selectPlan": "Sélectionner le plan"
   },
   "status": {
     "online": "En ligne",

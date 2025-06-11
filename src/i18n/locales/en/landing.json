@@ -1,0 +1,220 @@
+
+{
+  "hero": {
+    "title": "Grow Smarter with IoT-Powered Farming",
+    "subtitle": "Take control of your irrigation system and monitor your crops in real-time with our advanced IoT sensors and intuitive dashboard.",
+    "getStarted": "Get Started",
+    "seeDemo": "See Demo"
+  },
+  "navigation": {
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Our smart agriculture system connects your farm to the cloud, giving you real-time control and insights",
+    "steps": {
+      "collect": {
+        "title": "Collect Data",
+        "description": "IoT sensors installed across your farm continuously monitor soil moisture, temperature, humidity, and more."
+      },
+      "analyze": {
+        "title": "Analyze & Decide",
+        "description": "Our system processes the data and provides smart recommendations or takes automated actions based on your settings."
+      },
+      "control": {
+        "title": "Control & Monitor",
+        "description": "You can view all data and control your irrigation system remotely through our intuitive dashboard."
+      }
+    }
+  },
+  "features": {
+    "title": "Key Features",
+    "subtitle": "Our platform provides everything you need to optimize your farming operations",
+    "list": {
+      "realTimeData": {
+        "title": "Real-Time Sensor Data",
+        "description": "View soil moisture, temperature, humidity and other critical data in real-time."
+      },
+      "automatedWatering": {
+        "title": "Automated Watering",
+        "description": "Set up rules to automatically trigger irrigation based on sensor readings."
+      },
+      "remoteControl": {
+        "title": "Remote Valve Control",
+        "description": "Manually control your irrigation system from anywhere at any time."
+      },
+      "weatherIntegration": {
+        "title": "Weather Integration",
+        "description": "Incorporate local weather forecasts into your irrigation decisions."
+      },
+      "smartAlerts": {
+        "title": "Smart Alerts",
+        "description": "Receive notifications when readings fall outside of optimal ranges."
+      },
+      "energyEfficiency": {
+        "title": "Energy Efficiency",
+        "description": "Optimize your water and energy usage with our smart algorithms."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard Preview",
+    "subtitle": "Get a glimpse of our intuitive interface designed for farmers"
+  },
+  "benefits": {
+    "title": "Benefits for Farmers",
+    "subtitle": "See how our system helps farmers around the world",
+    "saveTime": {
+      "title": "Save Time",
+      "description": "Reduce manual inspections and automate routine irrigation tasks.",
+      "stat": "70%",
+      "statLabel": "less time spent on irrigation management"
+    },
+    "reduceWater": {
+      "title": "Reduce Water Usage",
+      "description": "Optimize water consumption with precision irrigation.",
+      "stat": "30%",
+      "statLabel": "average water savings"
+    },
+    "improveCrops": {
+      "title": "Improve Crop Health",
+      "description": "Maintain optimal growing conditions for healthier plants.",
+      "stat": "25%",
+      "statLabel": "increase in crop yield"
+    }
+  },
+  "testimonials": {
+    "title": "What Farmers Say",
+    "subtitle": "Hear from the farmers who use our system daily",
+    "testimonial1": {
+      "quote": "This system has completely transformed how I manage irrigation. I can finally take weekends off!",
+      "author": "John Wilson",
+      "role": "Wheat Farmer, Kansas"
+    },
+    "testimonial2": {
+      "quote": "We've reduced our water usage by 35% while improving our crop yield. The ROI was evident within the first season.",
+      "author": "Maria Rodriguez",
+      "role": "Vineyard Owner, California"
+    },
+    "testimonial3": {
+      "quote": "The alerts have saved my crops multiple times. Being notified of freezing temperatures before they hit is invaluable.",
+      "author": "David Chen",
+      "role": "Orchard Manager, Washington"
+    }
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that's right for your farming operation",
+    "starter": {
+      "name": "Starter",
+      "price": "$99",
+      "period": "/month",
+      "description": "Perfect for small farms just getting started with smart irrigation",
+      "features": [
+        "Up to 5 sensors",
+        "Basic irrigation controls",
+        "Weekly reports",
+        "Email support",
+        "Mobile app access"
+      ]
+    },
+    "professional": {
+      "name": "Professional",
+      "price": "$199",
+      "period": "/month",
+      "description": "Ideal for medium-sized farms with diverse needs",
+      "features": [
+        "Up to 20 sensors",
+        "Advanced automation rules",
+        "Daily reports & analytics",
+        "Priority support",
+        "Weather integration",
+        "API access"
+      ],
+      "mostPopular": "Most Popular"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "$399",
+      "period": "/month",
+      "description": "Full-featured solution for large agricultural operations",
+      "features": [
+        "Unlimited sensors",
+        "Custom automation workflows",
+        "Real-time analytics",
+        "24/7 dedicated support",
+        "Multiple user accounts",
+        "Custom integrations",
+        "On-site installation support"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about our platform",
+    "tabs": {
+      "general": "General",
+      "technical": "Technical",
+      "billing": "Billing"
+    },
+    "general": {
+      "setup": {
+        "question": "How long does it take to set up the system?",
+        "answer": "The basic setup can be completed in 1-2 days, depending on the size of your farm and number of sensors. Our team provides comprehensive installation guides and support throughout the process."
+      },
+      "technical": {
+        "question": "Do I need technical knowledge to use the platform?",
+        "answer": "No, our platform is designed to be user-friendly and intuitive. You don't need technical expertise to monitor your farm or make basic adjustments to your irrigation system."
+      },
+      "trial": {
+        "question": "Can I try before I buy?",
+        "answer": "Yes, we offer a 14-day free trial that includes access to most features. You can also request a personalized demo from our team."
+      }
+    },
+    "technical": {
+      "sensors": {
+        "question": "What type of sensors are compatible with your system?",
+        "answer": "Our system is compatible with a wide range of agricultural IoT sensors, including soil moisture sensors, temperature sensors, humidity sensors, and more. We provide our own sensors but can also integrate with selected third-party devices."
+      },
+      "connectivity": {
+        "question": "Do I need internet connectivity in my fields?",
+        "answer": "Your sensors need to be able to transmit data to our platform, which typically requires some form of connectivity. This can be through cellular networks, LoRaWAN, or WiFi connections depending on your farm's setup."
+      },
+      "accuracy": {
+        "question": "How accurate are the sensors?",
+        "answer": "Our sensors provide industry-leading accuracy with error margins typically less than 2% for moisture readings and ±0.5°C for temperature readings. All sensors are calibrated before shipping."
+      }
+    },
+    "billing": {
+      "contracts": {
+        "question": "Are there any long-term contracts?",
+        "answer": "We offer both monthly and annual billing options. Annual plans come with a 10% discount, but there are no long-term contracts required - you can cancel your subscription at any time."
+      },
+      "updates": {
+        "question": "Are software updates included in the subscription?",
+        "answer": "Yes, all software updates and platform improvements are included in your subscription at no additional cost."
+      },
+      "setup": {
+        "question": "Is there a setup fee?",
+        "answer": "There's no setup fee for our software platform. However, for Enterprise customers requiring custom integration or on-site installation support, additional service fees may apply."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Farming?",
+    "subtitle": "Join thousands of farmers who have already improved their operations with our IoT solutions",
+    "startTrial": "Start Free Trial",
+    "signIn": "Sign In"
+  },
+  "footer": {
+    "description": "Intelligent irrigation and farm management solutions powered by IoT technology",
+    "product": "Product",
+    "resources": "Resources",
+    "company": "Company",
+    "copyright": "All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies"
+  }
+}

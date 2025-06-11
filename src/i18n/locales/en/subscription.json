@@ -1,0 +1,50 @@
+
+{
+  "plans": {
+    "title": "Choose Your Plan",
+    "subtitle": "Select the subscription plan that best fits your farming needs",
+    "popular": "Most Popular",
+    "selectPlan": "Select Plan",
+    "currentPlan": "Current Plan",
+    "upgradePlan": "Upgrade Plan",
+    "freeTrial": "Start Free Trial",
+    "features": "Features",
+    "price": "Price",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "billed": "Billed",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "save": "Save 20%"
+  },
+  "pending": {
+    "title": "Request Submitted Successfully!",
+    "subtitle": "Thank you for your interest in AgroSense Hub",
+    "received": "Your subscription request has been received",
+    "whatNext": "What happens next?",
+    "steps": [
+      "Our team will review your request within 24-48 hours",
+      "We'll contact you via phone or email to verify your information",
+      "Once approved, you'll receive full access to all premium features",
+      "You'll be able to set up payment and start using unlimited features"
+    ],
+    "accessDashboard": "Access Your Dashboard",
+    "dashboardDescription": "While waiting for approval, you can access your dashboard in view-only mode. Explore the platform and prepare your farm data for when your account becomes fully active.",
+    "note": "Your account is currently in view-only mode with limited features. Once approved, you'll have full access to all premium features without any restrictions.",
+    "returnHome": "Return to Home",
+    "accessMyDashboard": "Access My Dashboard"
+  },
+  "success": {
+    "title": "Subscription Successful!",
+    "subtitle": "Thank you for subscribing to AgroSense Hub",
+    "processing": "Processing Your Subscription",
+    "pleaseWait": "Please wait while we confirm your subscription",
+    "takingTime": "This might take a few moments...",
+    "activated": "Your subscription has been activated. You now have access to all the features included in your plan.",
+    "goToDashboard": "Go to Dashboard",
+    "verificationIssue": "Subscription Verification Issue",
+    "verificationProblem": "We encountered a problem verifying your subscription",
+    "dontWorry": "Don't worry, if your payment was successful, your subscription will be updated shortly.",
+    "backToPlans": "Back to Plans"
+  }
+}

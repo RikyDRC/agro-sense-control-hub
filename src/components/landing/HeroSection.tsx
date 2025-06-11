@@ -1,11 +1,13 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('landing');
   const { user, subscription } = useAuth();
 
   const handleGetStarted = () => {
@@ -35,11 +37,11 @@ const HeroSection = () => {
       
       <div className="relative z-10 px-4 py-24 md:py-32 lg:py-40 max-w-6xl mx-auto text-center">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-          Grow Smarter with IoT-Powered Farming
+          {t('hero.title')}
         </h1>
         
         <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          Our intelligent irrigation system uses IoT sensors to maximize crop yields while minimizing water usage. Take control of your farm from anywhere.
+          {t('hero.subtitle')}
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
@@ -48,7 +50,7 @@ const HeroSection = () => {
             className="bg-white text-agro-green-dark hover:bg-white/90 text-lg px-8"
             onClick={handleGetStarted}
           >
-            Get Started
+            {t('hero.getStarted')}
           </Button>
           
           <Button 
@@ -60,7 +62,7 @@ const HeroSection = () => {
               demoSection?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
-            See Demo
+            {t('hero.seeDemo')}
           </Button>
         </div>
       </div>

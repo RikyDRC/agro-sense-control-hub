@@ -22,7 +22,12 @@
     "filter": "Filter",
     "clear": "Clear",
     "reset": "Reset",
-    "apply": "Apply"
+    "apply": "Apply",
+    "getStarted": "Get Started",
+    "seeDemo": "See Demo",
+    "startFreeTrial": "Start Free Trial",
+    "seeHowItWorks": "See How It Works",
+    "selectPlan": "Select Plan"
   },
   "status": {
     "online": "Online",

@@ -1,0 +1,50 @@
+
+{
+  "plans": {
+    "title": "Choisissez votre plan",
+    "subtitle": "Sélectionnez le plan d'abonnement qui convient le mieux à vos besoins agricoles",
+    "popular": "Le plus populaire",
+    "selectPlan": "Sélectionner le plan",
+    "currentPlan": "Plan actuel",
+    "upgradePlan": "Améliorer le plan",
+    "freeTrial": "Commencer l'essai gratuit",
+    "features": "Fonctionnalités",
+    "price": "Prix",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "billed": "Facturé",
+    "monthly": "Mensuel",
+    "annually": "Annuel",
+    "save": "Économisez 20%"
+  },
+  "pending": {
+    "title": "Demande soumise avec succès !",
+    "subtitle": "Merci pour votre intérêt pour AgroSense Hub",
+    "received": "Votre demande d'abonnement a été reçue",
+    "whatNext": "Que se passe-t-il ensuite ?",
+    "steps": [
+      "Notre équipe examinera votre demande dans les 24-48 heures",
+      "Nous vous contactons par téléphone ou par email pour vérifier vos informations",
+      "Une fois approuvé, vous recevrez un accès complet à toutes les fonctionnalités premium",
+      "Vous pourrez configurer le paiement et commencer à utiliser les fonctionnalités illimitées"
+    ],
+    "accessDashboard": "Accédez à votre tableau de bord",
+    "dashboardDescription": "En attendant l'approbation, vous pouvez accéder à votre tableau de bord en mode lecture seule. Explorez la plateforme et préparez vos données agricoles pour quand votre compte devient entièrement actif.",
+    "note": "Votre compte est actuellement en mode lecture seule avec des fonctionnalités limitées. Une fois approuvé, vous aurez un accès complet à toutes les fonctionnalités premium sans aucune restriction.",
+    "returnHome": "Retour à l'accueil",
+    "accessMyDashboard": "Accéder à mon tableau de bord"
+  },
+  "success": {
+    "title": "Abonnement réussi !",
+    "subtitle": "Merci de vous être abonné à AgroSense Hub",
+    "processing": "Traitement de votre abonnement",
+    "pleaseWait": "Veuillez patienter pendant que nous confirmons votre abonnement",
+    "takingTime": "Cela peut prendre quelques instants...",
+    "activated": "Votre abonnement a été activé. Vous avez maintenant accès à toutes les fonctionnalités incluses dans votre plan.",
+    "goToDashboard": "Aller au tableau de bord",
+    "verificationIssue": "Problème de vérification d'abonnement",
+    "verificationProblem": "Nous avons rencontré un problème lors de la vérification de votre abonnement",
+    "dontWorry": "Ne vous inquiétez pas, si votre paiement a réussi, votre abonnement sera mis à jour sous peu.",
+    "backToPlans": "Retour aux plans"
+  }
+}

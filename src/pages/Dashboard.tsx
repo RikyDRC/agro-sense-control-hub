@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardStats from '@/components/dashboard/DashboardStats';
@@ -77,7 +76,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Calculate derived metrics for mobile layout
-  const activeDevices = devices.filter(d => d.status === 'ONLINE').length;
+  const activeDevices = devices.filter(d => d.status === 'online').length;
   const unreadAlerts = alerts.filter(a => !a.isRead).length;
   const averageMoisture = readings
     .filter(r => r.unit === '%')
@@ -88,12 +87,12 @@ const Dashboard: React.FC = () => {
 
   const calculateSystemHealth = () => {
     if (devices.length === 0) return 0;
-    const onlineDevices = devices.filter(d => d.status === 'ONLINE');
+    const onlineDevices = devices.filter(d => d.status === 'online');
     return Math.round((onlineDevices.length / devices.length) * 100);
   };
 
   const calculateWaterUsage = () => {
-    const activePumps = devices.filter(d => d.type === 'PUMP' && d.status === 'ONLINE');
+    const activePumps = devices.filter(d => d.type === 'pump' && d.status === 'online');
     const totalUsage = activePumps.length * 50; // Simplified calculation
     return totalUsage > 0 ? `${totalUsage}L` : '0L';
   };

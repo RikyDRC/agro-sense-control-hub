@@ -44,7 +44,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
 
     // Weather-based irrigation prediction
     if (currentWeather) {
-      const willRain = currentWeather.humidity > 70 && currentWeather.description.toLowerCase().includes('rain');
+      const willRain = currentWeather.humidity > 70 && (currentWeather.condition?.toLowerCase().includes('rain') || currentWeather.condition?.toLowerCase().includes('cloud'));
       predictions.push({
         id: '1',
         type: 'irrigation',

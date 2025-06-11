@@ -1,0 +1,71 @@
+
+{
+  "buttons": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "submit": "Soumettre",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "add": "Ajouter",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "view": "Voir",
+    "viewAll": "Voir tout",
+    "loading": "Chargement...",
+    "refresh": "Actualiser",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "clear": "Effacer",
+    "reset": "Réinitialiser",
+    "apply": "Appliquer"
+  },
+  "status": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pending": "En attente",
+    "completed": "Terminé",
+    "failed": "Échec",
+    "success": "Succès",
+    "error": "Erreur",
+    "warning": "Avertissement"
+  },
+  "units": {
+    "celsius": "°C",
+    "fahrenheit": "°F",
+    "percentage": "%",
+    "liters": "L",
+    "gallons": "gal",
+    "meters": "m",
+    "feet": "ft",
+    "hours": "h",
+    "minutes": "min",
+    "seconds": "s"
+  },
+  "time": {
+    "now": "Maintenant",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "tomorrow": "Demain",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "La semaine dernière",
+    "thisMonth": "Ce mois-ci",
+    "lastMonth": "Le mois dernier",
+    "ago": "il y a",
+    "in": "dans"
+  },
+  "messages": {
+    "loading": "Chargement...",
+    "noData": "Aucune donnée disponible",
+    "error": "Une erreur s'est produite",
+    "success": "Opération terminée avec succès",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+    "unsavedChanges": "Vous avez des modifications non sauvegardées. Voulez-vous continuer ?"
+  }
+}

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,8 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
   moistureLevel = 45,
   className
 }) => {
+  const { t } = useTranslation(['dashboard', 'common']);
+
   const generatePredictions = (): Prediction[] => {
     const predictions: Prediction[] = [];
 
@@ -54,7 +57,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
           : `Low humidity (${currentWeather.humidity}%). Increase watering schedule`,
         confidence: willRain ? 85 : 72,
         priority: willRain ? 'medium' : 'high',
-        action: willRain ? 'Adjust Schedule' : 'Start Irrigation',
+        action: willRain ? t('widgets.predictiveAnalytics.actions.adjustSchedule') : t('widgets.predictiveAnalytics.actions.startIrrigation'),
         icon: willRain ? <CloudRain className="h-4 w-4" /> : <Sun className="h-4 w-4" />,
         trend: willRain ? 'down' : 'up'
       });
@@ -69,7 +72,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
         description: `Soil moisture at ${moistureLevel}%. Immediate watering recommended`,
         confidence: 95,
         priority: 'high',
-        action: 'Water Now',
+        action: t('widgets.predictiveAnalytics.actions.waterNow'),
         icon: <Droplet className="h-4 w-4" />,
         trend: 'down'
       });
@@ -81,7 +84,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
         description: `Excellent soil conditions. Save 20% water today`,
         confidence: 88,
         priority: 'low',
-        action: 'Maintain',
+        action: t('widgets.predictiveAnalytics.actions.maintain'),
         icon: <CheckCircle className="h-4 w-4" />,
         trend: 'stable'
       });
@@ -95,7 +98,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
       description: 'Crops entering flowering stage. Adjust nutrient schedule',
       confidence: 78,
       priority: 'medium',
-      action: 'Update Plan',
+      action: t('widgets.predictiveAnalytics.actions.updatePlan'),
       icon: <Leaf className="h-4 w-4" />,
       trend: 'up'
     });
@@ -108,7 +111,7 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
       description: 'Run pumps during off-peak hours to save 25% on electricity',
       confidence: 82,
       priority: 'medium',
-      action: 'Schedule',
+      action: t('widgets.predictiveAnalytics.actions.schedule'),
       icon: <TrendingDown className="h-4 w-4" />,
       trend: 'down'
     });
@@ -152,14 +155,14 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-purple-500" />
-              AI Recommendations
+              {t('widgets.predictiveAnalytics.title')}
             </CardTitle>
             <CardDescription>
-              Smart insights and predictions for your farm
+              {t('widgets.predictiveAnalytics.subtitle')}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm">
-            View All
+            {t('common:buttons.viewAll')}
           </Button>
         </div>
       </CardHeader>
@@ -191,16 +194,16 @@ const PredictiveAnalyticsWidget: React.FC<PredictiveAnalyticsWidgetProps> = ({
                       variant="outline" 
                       className={cn("text-xs", getPriorityColor(prediction.priority))}
                     >
-                      {prediction.priority}
+                      {t(`widgets.predictiveAnalytics.priorities.${prediction.priority}`)}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {prediction.confidence}% confident
+                      {prediction.confidence}% {t('widgets.predictiveAnalytics.confidence')}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <Badge variant="secondary" className="text-xs">
-                    {prediction.type}
+                    {t(`widgets.predictiveAnalytics.types.${prediction.type}`)}
                   </Badge>
                   <Button variant="ghost" size="sm" className="h-6 text-xs">
                     {prediction.action}

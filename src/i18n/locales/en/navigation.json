@@ -1,0 +1,40 @@
+
+{
+  "sidebar": {
+    "main": "Main",
+    "tools": "Tools",
+    "administration": "Administration",
+    "dashboard": "Dashboard",
+    "devices": "Devices",
+    "zones": "Zones",
+    "automation": "Automation",
+    "crops": "Crops",
+    "weather": "Weather",
+    "mapView": "Map View",
+    "deviceConnectivity": "Device Connectivity",
+    "settings": "Settings",
+    "farmersManagement": "Farmers Management",
+    "contactSubmissions": "Contact Submissions",
+    "platformConfig": "Platform Config",
+    "paymentGateways": "Payment Gateways"
+  },
+  "header": {
+    "appName": "AgroSense Hub",
+    "controlHub": "AgroSense Control Hub",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "subscription": "Subscription",
+    "adminControls": "Admin Controls",
+    "logout": "Logout",
+    "toggleTheme": "Toggle theme"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "monitoring": "Monitoring",
+    "insights": "Insights",
+    "charts": "Charts",
+    "alerts": "Alerts",
+    "activity": "Activity"
+  }
+}

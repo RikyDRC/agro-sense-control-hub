@@ -1,0 +1,23 @@
+
+{
+  "title": "Devices",
+  "addDevice": "Add Device",
+  "editDevice": "Edit Device",
+  "deviceStatus": "Device Status",
+  "deviceType": "Device Type",
+  "lastSeen": "Last Seen",
+  "batteryLevel": "Battery Level",
+  "signalStrength": "Signal Strength",
+  "types": {
+    "sensor": "Sensor",
+    "pump": "Pump",
+    "valve": "Valve",
+    "controller": "Controller"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "maintenance": "Maintenance",
+    "error": "Error"
+  }
+}

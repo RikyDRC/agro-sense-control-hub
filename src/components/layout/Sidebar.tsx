@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Smartphone,
@@ -28,30 +29,31 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) => {
   const location = useLocation();
   const { isRoleAdmin, isRoleSuperAdmin } = useAuth();
+  const { t } = useTranslation('navigation');
 
   const mainNavItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/devices', icon: Smartphone, label: 'Devices' },
-    { to: '/zones', icon: MapPin, label: 'Zones' },
-    { to: '/automation', icon: Zap, label: 'Automation' },
-    { to: '/crops', icon: Wheat, label: 'Crops' },
-    { to: '/weather', icon: Cloud, label: 'Weather' },
-    { to: '/map', icon: Map, label: 'Map View' },
+    { to: '/dashboard', icon: LayoutDashboard, label: t('sidebar.dashboard') },
+    { to: '/devices', icon: Smartphone, label: t('sidebar.devices') },
+    { to: '/zones', icon: MapPin, label: t('sidebar.zones') },
+    { to: '/automation', icon: Zap, label: t('sidebar.automation') },
+    { to: '/crops', icon: Wheat, label: t('sidebar.crops') },
+    { to: '/weather', icon: Cloud, label: t('sidebar.weather') },
+    { to: '/map', icon: Map, label: t('sidebar.mapView') },
   ];
 
   const toolsNavItems = [
-    { to: '/device-connectivity', icon: Wifi, label: 'Device Connectivity' },
-    { to: '/settings', icon: Settings, label: 'Settings' },
+    { to: '/device-connectivity', icon: Wifi, label: t('sidebar.deviceConnectivity') },
+    { to: '/settings', icon: Settings, label: t('sidebar.settings') },
   ];
 
   const adminNavItems = [
     ...(isRoleAdmin() || isRoleSuperAdmin() ? [
-      { to: '/admin/farmers', icon: Users, label: 'Farmers Management' },
-      { to: '/admin/contact-submissions', icon: MessageSquare, label: 'Contact Submissions' }
+      { to: '/admin/farmers', icon: Users, label: t('sidebar.farmersManagement') },
+      { to: '/admin/contact-submissions', icon: MessageSquare, label: t('sidebar.contactSubmissions') }
     ] : []),
     ...(isRoleSuperAdmin() ? [
-      { to: '/admin/config', icon: ShieldCheck, label: 'Platform Config' },
-      { to: '/admin/payments', icon: CreditCard, label: 'Payment Gateways' }
+      { to: '/admin/config', icon: ShieldCheck, label: t('sidebar.platformConfig') },
+      { to: '/admin/payments', icon: CreditCard, label: t('sidebar.paymentGateways') }
     ] : [])
   ];
 
@@ -105,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
               <span className="text-primary-foreground font-bold text-sm">AS</span>
             </div>
           ) : (
-            <h1 className="text-xl font-bold text-gray-900">AgroSense Hub</h1>
+            <h1 className="text-xl font-bold text-gray-900">{t('header.appName')}</h1>
           )}
         </div>
         
@@ -114,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           <div>
             {!isCollapsed && (
               <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                Main
+                {t('sidebar.main')}
               </h3>
             )}
             <div className="space-y-1">
@@ -128,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           <div>
             {!isCollapsed && (
               <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                Tools
+                {t('sidebar.tools')}
               </h3>
             )}
             <div className="space-y-1">
@@ -143,7 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
             <div>
               {!isCollapsed && (
                 <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Administration
+                  {t('sidebar.administration')}
                 </h3>
               )}
               <div className="space-y-1">

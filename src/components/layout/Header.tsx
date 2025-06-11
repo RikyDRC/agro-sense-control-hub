@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Menu, Bell, User, ChevronLeft, ChevronRight, CreditCard, LogOut, Settings, UserCircle, Shield } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -13,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import LanguageSelector from '@/components/ui/language-selector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -23,6 +25,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
   const { user, profile, signOut } = useAuth();
+  const { t } = useTranslation(['navigation', 'common']);
   const isMobile = useIsMobile();
   
   const getInitials = () => {
@@ -54,11 +57,17 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
             {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </Button>
         )}
-        <h1 className="text-lg font-semibold text-gray-800 hidden md:block">AgroSense Control Hub</h1>
-        <h1 className="text-base font-semibold text-gray-800 md:hidden">AgroSense</h1>
+        <h1 className="text-lg font-semibold text-gray-800 hidden md:block">
+          {t('navigation:header.controlHub')}
+        </h1>
+        <h1 className="text-base font-semibold text-gray-800 md:hidden">
+          {t('navigation:header.appName')}
+        </h1>
       </div>
 
       <div className="flex items-center space-x-2 md:space-x-4">
+        <LanguageSelector />
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -69,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('navigation:header.notifications')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-80 overflow-y-auto">
               <DropdownMenuItem className="cursor-pointer py-3">
@@ -123,19 +132,19 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/settings">
-                <UserCircle className="mr-2 h-4 w-4" /> Profile
+                <UserCircle className="mr-2 h-4 w-4" /> {t('navigation:header.profile')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/settings">
-                <Settings className="mr-2 h-4 w-4" /> Settings
+                <Settings className="mr-2 h-4 w-4" /> {t('navigation:sidebar.settings')}
               </Link>
             </DropdownMenuItem>
             
             {profile?.role === 'farmer' && (
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link to="/subscription/plans">
-                  <CreditCard className="mr-2 h-4 w-4" /> Subscription
+                  <CreditCard className="mr-2 h-4 w-4" /> {t('navigation:header.subscription')}
                 </Link>
               </DropdownMenuItem>
             )}
@@ -143,14 +152,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
             {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link to={profile.role === 'super_admin' ? '/admin/config' : '/settings'}>
-                  <Shield className="mr-2 h-4 w-4" /> Admin Controls
+                  <Shield className="mr-2 h-4 w-4" /> {t('navigation:header.adminControls')}
                 </Link>
               </DropdownMenuItem>
             )}
             
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-red-500" onClick={signOut}>
-              <LogOut className="mr-2 h-4 w-4" /> Logout
+              <LogOut className="mr-2 h-4 w-4" /> {t('navigation:header.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

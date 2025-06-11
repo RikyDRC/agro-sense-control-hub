@@ -1,0 +1,81 @@
+
+{
+  "title": "Tableau de bord",
+  "subtitle": "Bienvenue dans votre système de surveillance agricole",
+  "stats": {
+    "totalDevices": "Appareils totaux",
+    "activeZones": "Zones actives",
+    "avgMoisture": "Humidité moy.",
+    "systemHealth": "État du système"
+  },
+  "widgets": {
+    "soilMoisture": {
+      "title": "Humidité du sol",
+      "description": "Moyenne sur toutes les zones"
+    },
+    "systemHealth": {
+      "title": "État du système",
+      "description": "État général du système"
+    },
+    "waterUsage": {
+      "title": "Consommation d'eau",
+      "description": "Consommation actuelle"
+    },
+    "activeDevices": {
+      "title": "Appareils actifs",
+      "description": "Actuellement en ligne"
+    },
+    "alerts": {
+      "title": "Alertes système",
+      "noAlerts": "Aucune alerte active",
+      "viewAll": "Voir toutes les alertes"
+    },
+    "recentActivity": {
+      "title": "Activité récente",
+      "noActivity": "Aucune activité récente"
+    },
+    "quickActions": {
+      "title": "Actions rapides",
+      "startIrrigation": "Démarrer l'irrigation",
+      "stopIrrigation": "Arrêter l'irrigation",
+      "checkSensors": "Vérifier les capteurs",
+      "generateReport": "Générer un rapport"
+    },
+    "automation": {
+      "title": "Automatisation rapide",
+      "schedule": "Programmer l'irrigation",
+      "rules": "Règles d'automatisation",
+      "sensors": "Déclencheurs de capteurs"
+    },
+    "weather": {
+      "title": "Prévisions météo",
+      "currentConditions": "Conditions actuelles",
+      "forecast": "Prévisions"
+    },
+    "predictiveAnalytics": {
+      "title": "Recommandations IA",
+      "subtitle": "Analyses intelligentes et prédictions pour votre ferme",
+      "confidence": "de confiance",
+      "types": {
+        "irrigation": "Irrigation",
+        "weather": "Météo",
+        "crop": "Culture",
+        "resource": "Ressource"
+      },
+      "priorities": {
+        "high": "Élevée",
+        "medium": "Moyenne",
+        "low": "Faible"
+      },
+      "actions": {
+        "adjustSchedule": "Ajuster l'horaire",
+        "startIrrigation": "Démarrer l'irrigation",
+        "waterNow": "Arroser maintenant",
+        "maintain": "Maintenir",
+        "updatePlan": "Mettre à jour le plan",
+        "schedule": "Programmer"
+      }
+    }
+  },
+  "loading": "Chargement des données du tableau de bord..."
+}

@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
@@ -26,6 +28,7 @@ import { useAutomationHistory } from '@/hooks/useAutomationHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation(['dashboard', 'navigation', 'common']);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentWeather, setCurrentWeather] = useState<WeatherForecast | null>(null);
   const [forecast, setForecast] = useState<WeatherForecast[]>([]);
@@ -116,20 +119,20 @@ const Dashboard: React.FC = () => {
               <div className="grid grid-cols-1 gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <GaugeChart
-                    title="Soil Moisture"
+                    title={t('widgets.soilMoisture.title')}
                     value={averageMoisture}
                     max={100}
                     unit="%"
-                    description="Average across all zones"
+                    description={t('widgets.soilMoisture.description')}
                     color="hsl(152, 37%, 38%)"
                     size="sm"
                   />
                   <GaugeChart
-                    title="System Health"
+                    title={t('widgets.systemHealth.title')}
                     value={systemHealth}
                     max={100}
                     unit="%"
-                    description="Overall status"
+                    description={t('widgets.systemHealth.description')}
                     color={systemHealth > 80 ? "hsl(152, 37%, 38%)" : systemHealth > 60 ? "hsl(46, 100%, 50%)" : "hsl(0, 84%, 60%)"}
                     size="sm"
                   />
@@ -170,27 +173,27 @@ const Dashboard: React.FC = () => {
     <DashboardLayout>
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back to your farm monitoring system</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Tabs value={activeView} onValueChange={setActiveView}>
             <TabsList className="grid grid-cols-4">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <Grid3X3 className="h-4 w-4" />
-                Overview
+                {t('navigation:tabs.overview')}
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                Analytics
+                {t('navigation:tabs.analytics')}
               </TabsTrigger>
               <TabsTrigger value="monitoring" className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
-                Monitoring
+                {t('navigation:tabs.monitoring')}
               </TabsTrigger>
               <TabsTrigger value="insights" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Insights
+                {t('navigation:tabs.insights')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -201,7 +204,7 @@ const Dashboard: React.FC = () => {
             className="h-9 w-9 rounded-full"
           >
             <SunMoon className="h-5 w-5" />
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">{t('navigation:header.toggleTheme')}</span>
           </Button>
         </div>
       </div>
@@ -210,7 +213,7 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-muted-foreground">Loading dashboard data...</p>
+            <p className="text-sm text-muted-foreground">{t('loading')}</p>
           </div>
         </div>
       ) : (
@@ -225,19 +228,19 @@ const Dashboard: React.FC = () => {
               <div className="lg:col-span-2 space-y-6">
                 <div className="grid grid-cols-1 gap-4">
                   <GaugeChart
-                    title="Soil Moisture"
+                    title={t('widgets.soilMoisture.title')}
                     value={averageMoisture}
                     max={100}
                     unit="%"
-                    description="Average across all zones"
+                    description={t('widgets.soilMoisture.description')}
                     color="hsl(152, 37%, 38%)"
                   />
                   <GaugeChart
-                    title="System Health"
+                    title={t('widgets.systemHealth.title')}
                     value={systemHealth}
                     max={100}
                     unit="%"
-                    description="Overall system status"
+                    description={t('widgets.systemHealth.description')}
                     color={systemHealth > 80 ? "hsl(152, 37%, 38%)" : systemHealth > 60 ? "hsl(46, 100%, 50%)" : "hsl(0, 84%, 60%)"}
                   />
                 </div>
@@ -287,28 +290,28 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <GaugeChart
-                title="Soil Moisture"
+                title={t('widgets.soilMoisture.title')}
                 value={averageMoisture}
                 max={100}
                 unit="%"
                 color="hsl(152, 37%, 38%)"
               />
               <GaugeChart
-                title="System Health"
+                title={t('widgets.systemHealth.title')}
                 value={systemHealth}
                 max={100}
                 unit="%"
                 color={systemHealth > 80 ? "hsl(152, 37%, 38%)" : "hsl(0, 84%, 60%)"}
               />
               <GaugeChart
-                title="Active Devices"
+                title={t('widgets.activeDevices.title')}
                 value={activeDevices}
                 max={devices.length || 1}
                 unit=""
                 color="hsl(200, 70%, 50%)"
               />
               <GaugeChart
-                title="Water Usage"
+                title={t('widgets.waterUsage.title')}
                 value={parseInt(waterUsage) || 0}
                 max={500}
                 unit="L"

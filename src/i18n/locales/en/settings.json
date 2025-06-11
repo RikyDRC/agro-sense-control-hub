@@ -1,0 +1,31 @@
+
+{
+  "title": "Settings",
+  "profile": {
+    "title": "Profile Settings",
+    "displayName": "Display Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "company": "Company",
+    "location": "Location"
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "emailNotifications": "Email Notifications",
+    "pushNotifications": "Push Notifications",
+    "smsNotifications": "SMS Notifications"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "language": "Language",
+    "timezone": "Timezone",
+    "units": "Measurement Units",
+    "theme": "Theme"
+  },
+  "security": {
+    "title": "Security",
+    "changePassword": "Change Password",
+    "twoFactor": "Two-Factor Authentication",
+    "apiKeys": "API Keys"
+  }
+}

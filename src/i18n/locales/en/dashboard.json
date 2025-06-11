@@ -1,0 +1,81 @@
+
+{
+  "title": "Dashboard",
+  "subtitle": "Welcome back to your farm monitoring system",
+  "stats": {
+    "totalDevices": "Total Devices",
+    "activeZones": "Active Zones",
+    "avgMoisture": "Avg Moisture",
+    "systemHealth": "System Health"
+  },
+  "widgets": {
+    "soilMoisture": {
+      "title": "Soil Moisture",
+      "description": "Average across all zones"
+    },
+    "systemHealth": {
+      "title": "System Health",
+      "description": "Overall system status"
+    },
+    "waterUsage": {
+      "title": "Water Usage",
+      "description": "Current consumption"
+    },
+    "activeDevices": {
+      "title": "Active Devices",
+      "description": "Currently online"
+    },
+    "alerts": {
+      "title": "System Alerts",
+      "noAlerts": "No active alerts",
+      "viewAll": "View all alerts"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "noActivity": "No recent activity"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "startIrrigation": "Start Irrigation",
+      "stopIrrigation": "Stop Irrigation",
+      "checkSensors": "Check Sensors",
+      "generateReport": "Generate Report"
+    },
+    "automation": {
+      "title": "Quick Automation",
+      "schedule": "Schedule Irrigation",
+      "rules": "Automation Rules",
+      "sensors": "Sensor Triggers"
+    },
+    "weather": {
+      "title": "Weather Forecast",
+      "currentConditions": "Current Conditions",
+      "forecast": "Forecast"
+    },
+    "predictiveAnalytics": {
+      "title": "AI Recommendations",
+      "subtitle": "Smart insights and predictions for your farm",
+      "confidence": "confident",
+      "types": {
+        "irrigation": "Irrigation",
+        "weather": "Weather",
+        "crop": "Crop",
+        "resource": "Resource"
+      },
+      "priorities": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "actions": {
+        "adjustSchedule": "Adjust Schedule",
+        "startIrrigation": "Start Irrigation",
+        "waterNow": "Water Now",
+        "maintain": "Maintain",
+        "updatePlan": "Update Plan",
+        "schedule": "Schedule"
+      }
+    }
+  },
+  "loading": "Loading dashboard data..."
+}

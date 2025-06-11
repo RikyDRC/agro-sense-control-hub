@@ -1,0 +1,23 @@
+
+{
+  "title": "Appareils",
+  "addDevice": "Ajouter un appareil",
+  "editDevice": "Modifier l'appareil",
+  "deviceStatus": "État de l'appareil",
+  "deviceType": "Type d'appareil",
+  "lastSeen": "Vu pour la dernière fois",
+  "batteryLevel": "Niveau de batterie",
+  "signalStrength": "Force du signal",
+  "types": {
+    "sensor": "Capteur",
+    "pump": "Pompe",
+    "valve": "Valve",
+    "controller": "Contrôleur"
+  },
+  "status": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "maintenance": "Maintenance",
+    "error": "Erreur"
+  }
+}

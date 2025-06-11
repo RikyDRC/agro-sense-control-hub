@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertTriangle, CheckCircle, XCircle, Clock, Bell } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, XCircle, Clock, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AlertItem {
@@ -29,7 +29,7 @@ const getSeverityIcon = (severity: string) => {
     case 'high':
       return <AlertTriangle className="h-4 w-4 text-orange-500" />;
     case 'medium':
-      return <Alert className="h-4 w-4 text-yellow-500" />;
+      return <AlertCircle className="h-4 w-4 text-yellow-500" />;
     case 'low':
       return <CheckCircle className="h-4 w-4 text-blue-500" />;
     default:

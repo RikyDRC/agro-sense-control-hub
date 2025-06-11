@@ -50,28 +50,23 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
     const now = new Date();
     let startDate: Date;
     let timeFormat: string;
-    let groupBy: string;
 
     switch (timeRange) {
       case 'daily':
         startDate = subHours(now, 24);
         timeFormat = 'HH:mm';
-        groupBy = 'hour';
         break;
       case 'weekly':
         startDate = subDays(now, 7);
-        timeFormat = 'EEE';
-        groupBy = 'day';
+        timeFormat = 'EEE dd';
         break;
       case 'monthly':
         startDate = subDays(now, 30);
-        timeFormat = 'dd';
-        groupBy = 'day';
+        timeFormat = 'MMM dd';
         break;
       default:
         startDate = subHours(now, 24);
         timeFormat = 'HH:mm';
-        groupBy = 'hour';
     }
 
     // Filter readings within the time range
@@ -80,7 +75,7 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
       return isAfter(readingDate, startDate) && isBefore(readingDate, now);
     });
 
-    // Group readings by time period
+    // Group readings by time period with improved categorization
     const groupedData = new Map();
 
     filteredReadings.forEach(reading => {
@@ -98,30 +93,39 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
 
       const group = groupedData.get(timeKey);
       
-      // Categorize readings by sensor type (this would need device info)
-      // For now, we'll assume readings with values 0-100 are moisture, others are temperature
-      if (reading.value >= 0 && reading.value <= 100 && reading.unit === '%') {
+      // Better categorization based on unit and value ranges
+      if (reading.unit === '%' && reading.value >= 0 && reading.value <= 100) {
         group.moisture.push(reading.value);
-      } else if (reading.unit === '°C' || reading.unit === 'C') {
+      } else if (reading.unit === '°C' || reading.unit === 'C' || 
+                 (reading.value > -50 && reading.value < 60 && !reading.unit.includes('%'))) {
         group.temperature.push(reading.value);
-      } else if (reading.unit === 'm/s' || reading.unit === 'km/h') {
+      } else if (reading.unit === 'm/s' || reading.unit === 'km/h' || 
+                 reading.unit.toLowerCase().includes('wind')) {
         group.windSpeed.push(reading.value);
       }
     });
 
-    // Convert to chart format with averages
-    return Array.from(groupedData.values()).map(group => ({
-      time: group.time,
-      moisture: group.moisture.length > 0 ? 
-        (group.moisture.reduce((sum: number, val: number) => sum + val, 0) / group.moisture.length).toFixed(1) : 
-        null,
-      temperature: group.temperature.length > 0 ? 
-        (group.temperature.reduce((sum: number, val: number) => sum + val, 0) / group.temperature.length).toFixed(1) : 
-        null,
-      windSpeed: group.windSpeed.length > 0 ? 
-        (group.windSpeed.reduce((sum: number, val: number) => sum + val, 0) / group.windSpeed.length).toFixed(1) : 
-        null,
-    })).filter(item => item.moisture !== null || item.temperature !== null || item.windSpeed !== null);
+    // Convert to chart format with averages, sorted by time
+    const chartArray = Array.from(groupedData.entries())
+      .map(([timeKey, group]) => ({
+        time: timeKey,
+        moisture: group.moisture.length > 0 ? 
+          parseFloat((group.moisture.reduce((sum: number, val: number) => sum + val, 0) / group.moisture.length).toFixed(1)) : 
+          null,
+        temperature: group.temperature.length > 0 ? 
+          parseFloat((group.temperature.reduce((sum: number, val: number) => sum + val, 0) / group.temperature.length).toFixed(1)) : 
+          null,
+        windSpeed: group.windSpeed.length > 0 ? 
+          parseFloat((group.windSpeed.reduce((sum: number, val: number) => sum + val, 0) / group.windSpeed.length).toFixed(1)) : 
+          null,
+      }))
+      .filter(item => item.moisture !== null || item.temperature !== null || item.windSpeed !== null)
+      .sort((a, b) => {
+        // Simple time-based sorting for display
+        return a.time.localeCompare(b.time);
+      });
+
+    return chartArray;
   }, [readings, timeRange]);
 
   return (
@@ -132,7 +136,7 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
             <CardTitle className="text-lg font-semibold">Sensor Readings</CardTitle>
             <CardDescription>
               {readings.length > 0 ? 
-                `${readings.length} readings from field sensors` : 
+                `${readings.length} readings • ${chartData.length} data points` : 
                 'No sensor data available'
               }
             </CardDescription>
@@ -143,9 +147,9 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
             onValueChange={(value) => setTimeRange(value as 'daily' | 'weekly' | 'monthly')}
           >
             <TabsList className="grid grid-cols-3 h-8">
-              <TabsTrigger value="daily" className="text-xs px-3">Daily</TabsTrigger>
-              <TabsTrigger value="weekly" className="text-xs px-3">Weekly</TabsTrigger>
-              <TabsTrigger value="monthly" className="text-xs px-3">Monthly</TabsTrigger>
+              <TabsTrigger value="daily" className="text-xs px-3">24h</TabsTrigger>
+              <TabsTrigger value="weekly" className="text-xs px-3">7d</TabsTrigger>
+              <TabsTrigger value="monthly" className="text-xs px-3">30d</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -155,7 +159,7 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
           {chartData.length > 0 ? (
             <ChartContainer config={chartConfig} className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                   <XAxis 
                     dataKey="time" 
@@ -164,7 +168,7 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    minTickGap={8}
+                    interval="preserveStartEnd"
                   />
                   <YAxis 
                     stroke="var(--muted-foreground)" 
@@ -180,36 +184,42 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
                     height={30}
                     verticalAlign="bottom"
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="moisture" 
-                    stroke="var(--color-moisture)" 
-                    strokeWidth={2} 
-                    dot={{ r: 2, strokeWidth: 2 }}
-                    activeDot={{ r: 4 }}
-                    name="Soil Moisture"
-                    connectNulls={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="temperature" 
-                    stroke="var(--color-temperature)" 
-                    strokeWidth={2} 
-                    dot={{ r: 2, strokeWidth: 2 }}
-                    activeDot={{ r: 4 }}
-                    name="Temperature"
-                    connectNulls={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="windSpeed" 
-                    stroke="var(--color-windSpeed)" 
-                    strokeWidth={2} 
-                    dot={{ r: 2, strokeWidth: 2 }}
-                    activeDot={{ r: 4 }}
-                    name="Wind Speed"
-                    connectNulls={false}
-                  />
+                  {chartData.some(d => d.moisture !== null) && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="moisture" 
+                      stroke="var(--color-moisture)" 
+                      strokeWidth={2} 
+                      dot={{ r: 2, strokeWidth: 2 }}
+                      activeDot={{ r: 4 }}
+                      name="Soil Moisture (%)"
+                      connectNulls={false}
+                    />
+                  )}
+                  {chartData.some(d => d.temperature !== null) && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="temperature" 
+                      stroke="var(--color-temperature)" 
+                      strokeWidth={2} 
+                      dot={{ r: 2, strokeWidth: 2 }}
+                      activeDot={{ r: 4 }}
+                      name="Temperature (°C)"
+                      connectNulls={false}
+                    />
+                  )}
+                  {chartData.some(d => d.windSpeed !== null) && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="windSpeed" 
+                      stroke="var(--color-windSpeed)" 
+                      strokeWidth={2} 
+                      dot={{ r: 2, strokeWidth: 2 }}
+                      activeDot={{ r: 4 }}
+                      name="Wind Speed (m/s)"
+                      connectNulls={false}
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -218,7 +228,12 @@ const SensorReadingsChart: React.FC<SensorReadingsChartProps> = ({ readings }) =
               <div className="text-center">
                 <Thermometer className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No sensor data available</p>
-                <p className="text-sm text-muted-foreground/70">Add devices and start collecting data to see charts</p>
+                <p className="text-sm text-muted-foreground/70">
+                  {readings.length === 0 
+                    ? "Add devices and start collecting data to see charts"
+                    : "No data in selected time range"
+                  }
+                </p>
               </div>
             </div>
           )}

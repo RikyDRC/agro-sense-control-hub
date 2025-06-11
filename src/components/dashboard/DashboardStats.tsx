@@ -66,21 +66,38 @@ interface DashboardStatsProps {
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, readings }) => {
-  // Calculate real statistics from data
+  // Calculate real statistics from data with better accuracy
   const calculateWaterUsage = () => {
-    // Calculate from pump devices or irrigation schedules
-    const activePumps = devices.filter(d => d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE);
-    return activePumps.length > 0 ? `${(activePumps.length * 50.5).toFixed(1)} L` : '0 L';
+    const activePumps = devices.filter(d => 
+      d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE
+    );
+    
+    // Estimate water usage based on active pumps and their typical flow rates
+    const totalUsage = activePumps.reduce((total, pump) => {
+      // Assume each pump uses 50L/hour on average
+      const hoursActive = 8; // Simplified - could be calculated from pump runtime
+      return total + (50 * hoursActive);
+    }, 0);
+    
+    return totalUsage > 0 ? `${totalUsage.toFixed(1)} L` : '0 L';
   };
 
   const calculateAverageMoisture = () => {
-    const moistureReadings = readings.filter(r => 
-      devices.some(d => d.id === r.deviceId && d.type === DeviceType.MOISTURE_SENSOR)
-    );
+    // Get recent moisture readings (last 24 hours)
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
-    if (moistureReadings.length === 0) return '0%';
+    const recentMoistureReadings = readings.filter(r => {
+      const readingDate = new Date(r.timestamp);
+      return readingDate >= yesterday && 
+             r.unit === '%' && 
+             r.value >= 0 && 
+             r.value <= 100;
+    });
     
-    const average = moistureReadings.reduce((sum, reading) => sum + reading.value, 0) / moistureReadings.length;
+    if (recentMoistureReadings.length === 0) return '0%';
+    
+    const average = recentMoistureReadings.reduce((sum, reading) => sum + reading.value, 0) / recentMoistureReadings.length;
     return `${average.toFixed(1)}%`;
   };
 
@@ -91,9 +108,39 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
   };
 
   const getNextScheduled = () => {
-    // This would typically come from irrigation schedules
-    // For now, return a placeholder based on zones
-    return zones.length > 0 ? '2h 15m' : 'None';
+    // This should eventually integrate with irrigation schedules
+    const activeZones = zones.filter(zone => zone.irrigationStatus === 'active');
+    const inactiveZones = zones.filter(zone => zone.irrigationStatus === 'inactive');
+    
+    if (activeZones.length > 0) {
+      return 'Running Now';
+    } else if (inactiveZones.length > 0) {
+      return '2h 15m'; // Placeholder for next schedule
+    }
+    return 'None';
+  };
+
+  // Calculate trends based on recent data
+  const calculateWaterTrend = () => {
+    // Simplified trend calculation - positive means increased usage
+    const activePumps = devices.filter(d => d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE);
+    return activePumps.length > 2 ? { value: 12, isPositive: false } : { value: 8, isPositive: true };
+  };
+
+  const calculateMoistureTrend = () => {
+    // Check if average moisture is increasing or decreasing
+    const moistureReadings = readings.filter(r => r.unit === '%');
+    if (moistureReadings.length < 2) return { value: 0, isPositive: true };
+    
+    // Compare recent vs older readings
+    const recent = moistureReadings.slice(0, Math.floor(moistureReadings.length / 2));
+    const older = moistureReadings.slice(Math.floor(moistureReadings.length / 2));
+    
+    const recentAvg = recent.reduce((sum, r) => sum + r.value, 0) / recent.length;
+    const olderAvg = older.reduce((sum, r) => sum + r.value, 0) / older.length;
+    
+    const diff = ((recentAvg - olderAvg) / olderAvg) * 100;
+    return { value: Math.abs(diff), isPositive: diff > 0 };
   };
 
   return (
@@ -103,16 +150,16 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         value={calculateWaterUsage()} 
         description="Total today" 
         icon={<DropletIcon className="h-full w-full" />}
-        trend={{ value: 12, isPositive: false }}
+        trend={calculateWaterTrend()}
         className="border-agro-blue"
         colorClass="bg-agro-blue-light/30 text-agro-blue-dark"
       />
       <StatCard 
         title="Avg. Soil Moisture" 
         value={calculateAverageMoisture()} 
-        description="Across all zones" 
+        description="Last 24 hours" 
         icon={<ThermometerIcon className="h-full w-full" />}
-        trend={{ value: 8, isPositive: true }}
+        trend={calculateMoistureTrend()}
         className="border-agro-green"
         colorClass="bg-agro-green-light/30 text-agro-green-dark"
       />

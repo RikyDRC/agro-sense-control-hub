@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardStats from '@/components/dashboard/DashboardStats';
@@ -6,6 +5,9 @@ import SensorReadingsChart from '@/components/dashboard/SensorReadingsChart';
 import DeviceStatusList from '@/components/dashboard/DeviceStatusList';
 import WeatherWidget from '@/components/dashboard/WeatherWidget';
 import QuickActions from '@/components/dashboard/QuickActions';
+import AlertsWidget from '@/components/dashboard/AlertsWidget';
+import SystemHealthWidget from '@/components/dashboard/SystemHealthWidget';
+import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget';
 import { WeatherForecast } from '@/types';
 import { Button } from '@/components/ui/button';
 import { SunMoon } from 'lucide-react';
@@ -14,6 +16,8 @@ import { toast } from '@/components/ui/sonner';
 import { useDevices } from '@/hooks/useDevices';
 import { useZones } from '@/hooks/useZones';
 import { useSensorReadings } from '@/hooks/useSensorReadings';
+import { useAlerts } from '@/hooks/useAlerts';
+import { useAutomationHistory } from '@/hooks/useAutomationHistory';
 
 const Dashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -25,6 +29,8 @@ const Dashboard: React.FC = () => {
   const { devices, loading: devicesLoading } = useDevices();
   const { zones, loading: zonesLoading } = useZones();
   const { readings, loading: readingsLoading } = useSensorReadings();
+  const { alerts, loading: alertsLoading } = useAlerts();
+  const { history: automationHistory, loading: historyLoading } = useAutomationHistory();
   
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -62,7 +68,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Show loading state while data is being fetched
-  const isLoading = devicesLoading || zonesLoading || readingsLoading;
+  const isLoading = devicesLoading || zonesLoading || readingsLoading || alertsLoading || historyLoading;
   
   return (
     <DashboardLayout>
@@ -91,17 +97,32 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
+          {/* Stats Overview */}
           <DashboardStats devices={devices} zones={zones} readings={readings} />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div>
+          {/* Main Content Grid - Mobile First Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left Column - Quick Actions (Mobile: Full width, Desktop: 1 column) */}
+            <div className="lg:col-span-1">
               <QuickActions />
             </div>
-            <div className="lg:col-span-2">
+            
+            {/* Center Column - Charts (Mobile: Full width, Desktop: 2 columns) */}
+            <div className="lg:col-span-2 space-y-6">
               <SensorReadingsChart readings={readings} />
+              
+              {/* System Health Widget */}
+              <SystemHealthWidget devices={devices} zones={zones} />
+            </div>
+            
+            {/* Right Column - Alerts & Activity (Mobile: Full width, Desktop: 1 column) */}
+            <div className="lg:col-span-1 space-y-6">
+              <AlertsWidget alerts={alerts} />
+              <RecentActivityWidget activities={automationHistory} />
             </div>
           </div>
           
+          {/* Bottom Row - Device Status and Weather */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
               <DeviceStatusList devices={devices} />

@@ -10,6 +10,9 @@ const SubscriptionPendingPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('subscription');
 
+  // Properly type and handle the steps array
+  const steps = t('pending.steps', { returnObjects: true }) as string[];
+
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center py-8">
       <div className="container max-w-2xl mx-auto px-4">
@@ -36,7 +39,7 @@ const SubscriptionPendingPage = () => {
                   <div className="text-left">
                     <h3 className="font-semibold text-blue-900">{t('pending.whatNext')}</h3>
                     <ul className="mt-2 text-sm text-blue-800 space-y-1">
-                      {t('pending.steps', { returnObjects: true }).map((step: string, index: number) => (
+                      {Array.isArray(steps) && steps.map((step: string, index: number) => (
                         <li key={index}>• {step}</li>
                       ))}
                     </ul>

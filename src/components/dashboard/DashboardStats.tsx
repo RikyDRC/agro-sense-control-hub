@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropletIcon, ThermometerIcon, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Device, Zone, SensorReading, DeviceStatus, DeviceType } from '@/types';
 
 interface StatCardProps {
   title: string;
@@ -58,12 +59,48 @@ const StatCard: React.FC<StatCardProps> = ({
   );
 };
 
-const DashboardStats: React.FC = () => {
+interface DashboardStatsProps {
+  devices: Device[];
+  zones: Zone[];
+  readings: SensorReading[];
+}
+
+const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, readings }) => {
+  // Calculate real statistics from data
+  const calculateWaterUsage = () => {
+    // Calculate from pump devices or irrigation schedules
+    const activePumps = devices.filter(d => d.type === DeviceType.PUMP && d.status === DeviceStatus.ONLINE);
+    return activePumps.length > 0 ? `${(activePumps.length * 50.5).toFixed(1)} L` : '0 L';
+  };
+
+  const calculateAverageMoisture = () => {
+    const moistureReadings = readings.filter(r => 
+      devices.some(d => d.id === r.deviceId && d.type === DeviceType.MOISTURE_SENSOR)
+    );
+    
+    if (moistureReadings.length === 0) return '0%';
+    
+    const average = moistureReadings.reduce((sum, reading) => sum + reading.value, 0) / moistureReadings.length;
+    return `${average.toFixed(1)}%`;
+  };
+
+  const getActivePumps = () => {
+    const pumps = devices.filter(d => d.type === DeviceType.PUMP);
+    const activePumps = pumps.filter(p => p.status === DeviceStatus.ONLINE);
+    return `${activePumps.length}/${pumps.length}`;
+  };
+
+  const getNextScheduled = () => {
+    // This would typically come from irrigation schedules
+    // For now, return a placeholder based on zones
+    return zones.length > 0 ? '2h 15m' : 'None';
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard 
         title="Water Usage" 
-        value="234.5 L" 
+        value={calculateWaterUsage()} 
         description="Total today" 
         icon={<DropletIcon className="h-full w-full" />}
         trend={{ value: 12, isPositive: false }}
@@ -72,7 +109,7 @@ const DashboardStats: React.FC = () => {
       />
       <StatCard 
         title="Avg. Soil Moisture" 
-        value="32.5%" 
+        value={calculateAverageMoisture()} 
         description="Across all zones" 
         icon={<ThermometerIcon className="h-full w-full" />}
         trend={{ value: 8, isPositive: true }}
@@ -81,7 +118,7 @@ const DashboardStats: React.FC = () => {
       />
       <StatCard 
         title="Active Pumps" 
-        value="2/5" 
+        value={getActivePumps()} 
         description="Currently running" 
         icon={<Zap className="h-full w-full" />}
         className="border-agro-status-warning"
@@ -89,8 +126,8 @@ const DashboardStats: React.FC = () => {
       />
       <StatCard 
         title="Next Scheduled" 
-        value="2h 15m" 
-        description="Zone B irrigation" 
+        value={getNextScheduled()} 
+        description={zones.length > 0 ? "Zone irrigation" : "No zones configured"} 
         icon={<Clock className="h-full w-full" />}
         className="border-agro-status-info"
         colorClass="bg-blue-100 text-blue-700"

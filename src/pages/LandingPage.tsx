@@ -68,9 +68,6 @@ const LandingPage = () => {
             <Link to="/auth" className="text-sm font-medium text-gray-600 hover:text-agro-green transition-colors">
               {t('navigation.signIn')}
             </Link>
-            <Button asChild size="sm" className="bg-agro-green hover:bg-agro-green-dark">
-              <Link to="/subscription/plans">{t('navigation.getStarted')}</Link>
-            </Button>
           </div>
         </div>
       </header>
@@ -106,7 +103,7 @@ const LandingPage = () => {
                     className="bg-agro-green hover:bg-agro-green-dark text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
                     asChild
                   >
-                    <Link to="/subscription/plans">
+                    <Link to="/auth">
                       {t('hero.getStarted')}
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
@@ -151,14 +148,25 @@ const LandingPage = () => {
                       <div className="w-3 h-3 rounded-full bg-yellow-400" />
                       <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
-                    <div className="text-sm font-medium">AgroSense Dashboard</div>
+                    <div className="text-sm font-medium">Smart Technology Hub</div>
                   </div>
                   <img 
                     src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=600&q=80" 
-                    alt="AgroSense Dashboard" 
-                    className="w-full h-auto object-cover"
+                    alt="Smart Technology Circuit Board" 
+                    className="w-full h-auto object-cover animate-pulse"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="bg-white/90 backdrop-blur rounded-lg p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-700 font-medium">AI Processing</span>
+                        <span className="text-agro-green font-bold">Active</span>
+                      </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-agro-green h-1.5 rounded-full w-3/4 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -270,7 +278,7 @@ const LandingPage = () => {
                   className="bg-white text-agro-green-dark hover:bg-gray-100 shadow-lg group"
                   asChild
                 >
-                  <Link to="/subscription/plans">
+                  <Link to="/auth">
                     {t('demo.cta')}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -491,7 +499,7 @@ const LandingPage = () => {
                         )}
                         asChild
                       >
-                        <Link to="/subscription/plans">{t('pricing.selectPlan')}</Link>
+                        <Link to="/auth">{t('pricing.selectPlan')}</Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -516,7 +524,7 @@ const LandingPage = () => {
                   className="bg-white text-agro-green-dark hover:bg-gray-100 shadow-lg group"
                   asChild
                 >
-                  <Link to="/subscription/plans">
+                  <Link to="/auth">
                     {t('cta.startTrial')}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Link>

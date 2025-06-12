@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -52,22 +51,22 @@ const LandingPage = () => {
           
           <div className="flex items-center gap-4">
             <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-gray-600 hover:text-agro-green transition-colors">
+              <Link to="/features" className="text-gray-600 hover:text-agro-green transition-colors">
                 {t('navigation.features')}
-              </a>
-              <a href="#pricing" className="text-gray-600 hover:text-agro-green transition-colors">
+              </Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-agro-green transition-colors">
                 {t('navigation.pricing')}
-              </a>
-              <a href="#about" className="text-gray-600 hover:text-agro-green transition-colors">
+              </Link>
+              <Link to="/about" className="text-gray-600 hover:text-agro-green transition-colors">
                 {t('navigation.about')}
-              </a>
+              </Link>
             </nav>
             
             <LanguageSelector />
             
-            <Link to="/auth" className="text-sm font-medium text-gray-600 hover:text-agro-green transition-colors">
-              {t('navigation.signIn')}
-            </Link>
+            <Button asChild size="sm" className="bg-agro-green hover:bg-agro-green-dark text-white">
+              <Link to="/auth">{t('navigation.signIn')}</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -584,39 +583,30 @@ const LandingPage = () => {
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.product')}</h3>
               <ul className="space-y-2">
-                {['Features', 'Pricing', 'Integrations', 'Documentation'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                <li><Link to="/features" className="text-gray-400 hover:text-white transition-colors">Features</Link></li>
+                <li><Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link to="/integrations" className="text-gray-400 hover:text-white transition-colors">Integrations</Link></li>
+                <li><Link to="/documentation" className="text-gray-400 hover:text-white transition-colors">Documentation</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.company')}</h3>
               <ul className="space-y-2">
-                {['About', 'Blog', 'Careers', 'Contact'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About</Link></li>
+                <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">Blog</Link></li>
+                <li><Link to="/careers" className="text-gray-400 hover:text-white transition-colors">Careers</Link></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.support')}</h3>
               <ul className="space-y-2">
-                {['Help Center', 'Community', 'Status', 'API Docs'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                <li><Link to="/help-center" className="text-gray-400 hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link to="/community" className="text-gray-400 hover:text-white transition-colors">Community</Link></li>
+                <li><Link to="/status" className="text-gray-400 hover:text-white transition-colors">Status</Link></li>
+                <li><Link to="/api-docs" className="text-gray-400 hover:text-white transition-colors">API Docs</Link></li>
               </ul>
             </div>
           </div>

@@ -17,7 +17,7 @@ import AutomationPage from '@/pages/AutomationPage';
 import MapPage from '@/pages/MapPage';
 import WeatherPage from '@/pages/WeatherPage';
 import CropsPage from '@/pages/CropsPage';
-import Sett ingsPage from '@/pages/SettingsPage';
+import SettingsPage from '@/pages/SettingsPage';
 import DeviceConnectivity from '@/pages/DeviceConnectivity';
 import SubscriptionPlansPage from '@/pages/SubscriptionPlansPage';
 import SubscriptionSuccessPage from '@/pages/SubscriptionSuccessPage';

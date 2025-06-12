@@ -1,10 +1,9 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { SubscriptionGate } from '@/components/auth/SubscriptionGate';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import SubscriptionGate from '@/components/auth/SubscriptionGate';
 
 // Pages
 import Index from '@/pages/Index';

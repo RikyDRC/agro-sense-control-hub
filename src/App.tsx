@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
@@ -179,7 +180,7 @@ function App() {
               <Route 
                 path="/admin" 
                 element={
-                  <ProtectedRoute requireAdmin>
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                     <AdminConfigPage />
                   </ProtectedRoute>
                 } 
@@ -188,7 +189,7 @@ function App() {
               <Route 
                 path="/admin/farmers" 
                 element={
-                  <ProtectedRoute requireAdmin>
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                     <FarmersManagementPage />
                   </ProtectedRoute>
                 } 
@@ -197,7 +198,7 @@ function App() {
               <Route 
                 path="/admin/contact-submissions" 
                 element={
-                  <ProtectedRoute requireAdmin>
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                     <ContactSubmissionsPage />
                   </ProtectedRoute>
                 } 
@@ -206,7 +207,7 @@ function App() {
               <Route 
                 path="/admin/payment-gateways" 
                 element={
-                  <ProtectedRoute requireAdmin>
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                     <PaymentGatewaysPage />
                   </ProtectedRoute>
                 } 

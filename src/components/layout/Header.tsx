@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
 
   // Generate a consistent avatar URL based on user data
   const getAvatarUrl = () => {
-    if (profile?.avatar_url) return profile.avatar_url;
+    if (profile?.profile_image) return profile.profile_image;
     if (user?.user_metadata?.avatar_url) return user.user_metadata.avatar_url;
     // Generate a consistent placeholder avatar
     const seed = profile?.email || user?.email || 'user';

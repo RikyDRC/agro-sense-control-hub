@@ -34,6 +34,21 @@ import frConnectivity from './locales/fr/connectivity.json';
 import frLanding from './locales/fr/landing.json';
 import frSubscription from './locales/fr/subscription.json';
 
+import arCommon from './locales/ar/common.json';
+import arDashboard from './locales/ar/dashboard.json';
+import arAuth from './locales/ar/auth.json';
+import arDevices from './locales/ar/devices.json';
+import arSettings from './locales/ar/settings.json';
+import arNavigation from './locales/ar/navigation.json';
+import arZones from './locales/ar/zones.json';
+import arAutomation from './locales/ar/automation.json';
+import arCrops from './locales/ar/crops.json';
+import arWeather from './locales/ar/weather.json';
+import arMap from './locales/ar/map.json';
+import arConnectivity from './locales/ar/connectivity.json';
+import arLanding from './locales/ar/landing.json';
+import arSubscription from './locales/ar/subscription.json';
+
 const resources = {
   en: {
     common: enCommon,
@@ -66,6 +81,22 @@ const resources = {
     connectivity: frConnectivity,
     landing: frLanding,
     subscription: frSubscription,
+  },
+  ar: {
+    common: arCommon,
+    dashboard: arDashboard,
+    auth: arAuth,
+    devices: arDevices,
+    settings: arSettings,
+    navigation: arNavigation,
+    zones: arZones,
+    automation: arAutomation,
+    crops: arCrops,
+    weather: arWeather,
+    map: arMap,
+    connectivity: arConnectivity,
+    landing: arLanding,
+    subscription: arSubscription,
   },
 };
 

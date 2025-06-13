@@ -1,0 +1,138 @@
+
+{
+  "title": "لوحة التحكم",
+  "subtitle": "راقب وأدر نظام الري الذكي الخاص بك",
+  "loading": "جاري التحميل...",
+  "stats": {
+    "waterUsage": "استهلاك المياه",
+    "avgMoisture": "متوسط الرطوبة",
+    "activePumps": "المضخات النشطة",
+    "nextScheduled": "الجدولة التالية",
+    "totalToday": "المجموع اليوم",
+    "last24Hours": "آخر 24 ساعة",
+    "currentlyRunning": "يعمل حالياً",
+    "zoneIrrigation": "ري المنطقة",
+    "noZonesConfigured": "لا توجد مناطق مكونة",
+    "runningNow": "يعمل الآن",
+    "none": "لا يوجد"
+  },
+  "widgets": {
+    "soilMoisture": {
+      "title": "رطوبة التربة",
+      "description": "متوسط مستوى رطوبة التربة"
+    },
+    "systemHealth": {
+      "title": "صحة النظام",
+      "description": "حالة النظام الإجمالية"
+    },
+    "activeDevices": {
+      "title": "الأجهزة النشطة",
+      "description": "الأجهزة المتصلة حالياً"
+    },
+    "waterUsage": {
+      "title": "استهلاك المياه",
+      "description": "الاستهلاك اليومي للمياه"
+    },
+    "sensorReadings": {
+      "title": "قراءات أجهزة الاستشعار",
+      "description": "بيانات أجهزة الاستشعار في الوقت الفعلي",
+      "temperature": "درجة الحرارة",
+      "humidity": "الرطوبة",
+      "soilMoisture": "رطوبة التربة",
+      "noData": "لا توجد بيانات متاحة"
+    },
+    "deviceStatus": {
+      "title": "حالة الأجهزة",
+      "description": "الحالة الحالية لجميع الأجهزة",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "noDevices": "لم يتم العثور على أجهزة"
+    },
+    "weather": {
+      "title": "الطقس",
+      "description": "الظروف الجوية الحالية والتوقعات",
+      "currentConditions": "الظروف الحالية",
+      "forecast": "التوقعات",
+      "humidity": "الرطوبة",
+      "windSpeed": "سرعة الرياح",
+      "visibility": "المدى البصري",
+      "pressure": "الضغط",
+      "uvIndex": "مؤشر الأشعة فوق البنفسجية"
+    },
+    "alerts": {
+      "title": "التنبيهات",
+      "description": "تنبيهات وإشعارات النظام",
+      "noAlerts": "لا توجد تنبيهات",
+      "viewAll": "عرض الكل",
+      "markAsRead": "تحديد كمقروء",
+      "new": "جديد",
+      "critical": "حرج",
+      "warning": "تحذير",
+      "info": "معلومات"
+    },
+    "recentActivity": {
+      "title": "النشاط الأخير",
+      "description": "إجراءات وأحداث النظام الأخيرة",
+      "noActivity": "لا يوجد نشاط حديث",
+      "viewAll": "عرض الكل",
+      "automationTriggered": "تم تشغيل الأتمتة",
+      "irrigationStarted": "بدأ الري",
+      "irrigationStopped": "توقف الري",
+      "deviceConnected": "تم توصي ل الجهاز",
+      "deviceDisconnected": "تم قطع الجهاز",
+      "alertGenerated": "تم إنتاج تنبيه"
+    },
+    "systemHealth": {
+      "title": "صحة النظام",
+      "description": "حالة النظام الإجمالية والأداء",
+      "excellent": "ممتاز",
+      "good": "جيد",
+      "fair": "مقبول",
+      "poor": "ضعيف",
+      "devicesOnline": "الأجهزة المتصلة",
+      "zonesActive": "المناطق النشطة",
+      "lastUpdate": "آخر تحديث"
+    },
+    "quickActions": {
+      "title": "الإجراءات السريعة",
+      "description": "الإجراءات الشائعة والاختصارات",
+      "startIrrigation": "بدء الري",
+      "stopIrrigation": "إيقاف الري",
+      "pauseAll": "إيقاف مؤقت للكل",
+      "resumeAll": "استئناف الكل",
+      "emergencyStop": "إيقاف طارئ",
+      "testAllDevices": "اختبار جميع الأجهزة"
+    },
+    "predictiveAnalytics": {
+      "title": "التحليلات التنبؤية",
+      "description": "رؤى وتوصيات مدعومة بالذكاء الاصطناعي",
+      "recommendation": "التوصية",
+      "wateringRecommended": "الري موصى به",
+      "wateringNotNeeded": "الري غير مطلوب",
+      "optimalTime": "الوقت الأمثل",
+      "weatherImpact": "تأثير الطقس",
+      "moistureProjection": "إسقاط الرطوبة",
+      "nextWatering": "الري التالي"
+    },
+    "quickAutomation": {
+      "title": "الأتمتة السريعة",
+      "description": "عناصر تحكم الأتمتة السريعة",
+      "enableAll": "تفعيل الكل",
+      "disableAll": "تعطيل الكل",
+      "scheduleNow": "جدولة الآن",
+      "pauseSchedules": "إيقاف الجداول مؤقتاً",
+      "resumeSchedules": "استئناف الجداول"
+    }
+  },
+  "quickAutomation": {
+    "title": "الأتمتة السريعة",
+    "enableAllZones": "تفعيل جميع المناطق",
+    "disableAllZones": "تعطيل جميع المناطق",
+    "emergencyStop": "إيقاف طارئ",
+    "testAllDevices": "اختبار جميع الأجهزة",
+    "enabled": "مفعل",
+    "disabled": "معطل",
+    "stopped": "متوقف",
+    "tested": "تم اختباره"
+  }
+}

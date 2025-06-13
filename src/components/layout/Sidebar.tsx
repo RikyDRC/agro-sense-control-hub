@@ -65,13 +65,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
         to={item.to}
         onClick={onNavigate}
         className={cn(
-          'sidebar-nav-item group',
+          'sidebar-nav-item group flex items-center w-full text-left',
           isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5',
-          isActive && 'active'
+          isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
         )}
       >
-        <item.icon className={cn('h-5 w-5', isCollapsed ? '' : 'mr-3')} />
-        {!isCollapsed && <span>{item.label}</span>}
+        <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed ? '' : 'mr-3')} />
+        {!isCollapsed && <span className="truncate">{item.label}</span>}
         {isActive && !isCollapsed && (
           <div className="absolute left-0 top-0 h-full w-1 bg-sidebar-primary rounded-r-full" />
         )}

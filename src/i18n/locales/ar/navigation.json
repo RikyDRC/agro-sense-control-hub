@@ -1,0 +1,42 @@
+
+{
+  "header": {
+    "appName": "نظام الري الذكي",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول"
+  },
+  "sidebar": {
+    "main": "الرئيسي",
+    "tools": "الأدوات",
+    "administration": "الإدارة",
+    "dashboard": "لوحة التحكم",
+    "devices": "الأجهزة",
+    "zones": "المناطق",
+    "automation": "الأتمتة",
+    "crops": "المحاصيل",
+    "weather": "الطقس",
+    "mapView": "عرض الخريطة",
+    "deviceConnectivity": "اتصال الأجهزة",
+    "settings": "الإعدادات",
+    "farmersManagement": "إدارة المزارعين",
+    "contactSubmissions": "طلبات التواصل",
+    "platformConfig": "إعدادات المنصة",
+    "paymentGateways": "بوابات الدفع"
+  },
+  "breadcrumb": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "devices": "الأجهزة",
+    "zones": "المناطق",
+    "automation": "الأتمتة",
+    "crops": "المحاصيل",
+    "weather": "الطقس",
+    "map": "الخريطة",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "admin": "الإدارة"
+  }
+}

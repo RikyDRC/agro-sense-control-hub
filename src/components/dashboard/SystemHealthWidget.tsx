@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -129,7 +130,7 @@ const SystemHealthWidget: React.FC<SystemHealthWidgetProps> = ({
   ];
 
   return (
-    <Card className={cn("shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
+    <Card className={cn("dashboard-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,7 +81,7 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
   const { t } = useTranslation('dashboard');
 
   return (
-    <Card className={cn("h-full shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
+    <Card className={cn("dashboard-card h-full", className)}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
@@ -98,7 +99,7 @@ const DeviceStatusList: React.FC<DeviceStatusListProps> = ({ devices, className 
           {devices.map((device) => (
             <div 
               key={device.id} 
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+              className="flex items-center justify-between p-3 border border-border/60 rounded-lg hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
             >
               <div className="flex items-center gap-3">
                 <div className={cn(

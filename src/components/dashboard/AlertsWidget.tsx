@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,7 +59,7 @@ const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
   const recentAlerts = alerts.slice(0, 5);
 
   return (
-    <Card className={cn("shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
+    <Card className={cn("dashboard-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
@@ -87,8 +88,8 @@ const AlertsWidget: React.FC<AlertsWidgetProps> = ({ alerts, className }) => {
               <div 
                 key={alert.id}
                 className={cn(
-                  "flex items-start gap-3 p-3 rounded-lg border transition-colors hover:bg-muted/50",
-                  !alert.isRead && "bg-muted/30"
+                  "flex items-start gap-3 p-3 rounded-lg border border-border/60 transition-colors hover:bg-muted/50 dark:hover:bg-gray-700/50",
+                  !alert.isRead && "bg-muted/30 dark:bg-gray-700/30"
                 )}
               >
                 <div className="flex-shrink-0 mt-0.5">

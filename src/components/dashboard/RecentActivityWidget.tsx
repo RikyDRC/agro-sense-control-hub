@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,7 +83,7 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   const recentActivities = activities.slice(0, 8);
 
   return (
-    <Card className={cn("shadow-sm hover:shadow-md transition-shadow duration-200", className)}>
+    <Card className={cn("dashboard-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
@@ -105,7 +106,7 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
             recentActivities.map((activity) => (
               <div 
                 key={activity.id}
-                className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex-shrink-0 mt-0.5">
                   <div className={cn(

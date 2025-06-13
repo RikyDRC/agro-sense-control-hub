@@ -131,7 +131,11 @@
   }
 
   .dashboard-card {
-    @apply bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all duration-200;
+    @apply bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border/70 transition-all duration-200 backdrop-blur-sm;
+  }
+
+  .dashboard-card:hover {
+    @apply shadow-lg shadow-primary/5;
   }
 
   .sidebar-nav-item {

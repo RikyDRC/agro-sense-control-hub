@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Globe, Save, Database } from 'lucide-react';
 import { UserSettings } from '@/services/settingsService';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/use-toast';
 
 interface PreferencesSettingsProps {
   settings: UserSettings;
@@ -43,6 +44,19 @@ const PreferencesSettings: React.FC<PreferencesSettingsProps> = ({
       },
     });
   };
+
+  // Apply dark mode to the document
+  useEffect(() => {
+    if (settings.preferences.darkMode) {
+      document.documentElement.classList.add('dark');
+      toast({
+        title: "Dark mode enabled",
+        description: "The interface has been switched to dark theme",
+      });
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [settings.preferences.darkMode]);
 
   return (
     <div className="grid gap-6">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -6,8 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfileForm from '@/components/settings/ProfileForm';
-import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
-import PaymentGatewaysConfig from '@/components/settings/PaymentGatewaysConfig';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import DeviceConnectivitySettings from '@/components/settings/DeviceConnectivitySettings';
@@ -99,7 +96,7 @@ const SettingsPage: React.FC = () => {
     
     return () => clearTimeout(safetyTimer);
   }, [loading, profile, fallbackUserRole]);
-
+  
   // Load user settings
   useEffect(() => {
     if (user) {
@@ -335,10 +332,7 @@ const SettingsPage: React.FC = () => {
           
           <TabsContent value="system">
             <div className="grid gap-6">
-              {hasSuperAdminRights() && <GoogleMapsApiKey />}
-              {hasSuperAdminRights() && <PaymentGatewaysConfig />}
-              
-              {hasAdminRights() && (
+              {hasSuperAdminRights() && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Administrative Controls</CardTitle>

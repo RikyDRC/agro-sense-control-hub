@@ -1,162 +1,138 @@
 
 {
   "title": "Dashboard",
-  "subtitle": "Welcome back to your farm monitoring system",
+  "subtitle": "Monitor and manage your smart irrigation system",
+  "loading": "Loading...",
   "stats": {
-    "totalDevices": "Total Devices",
-    "activeZones": "Active Zones",
-    "avgMoisture": "Avg Moisture",
-    "systemHealth": "System Health",
     "waterUsage": "Water Usage",
-    "totalToday": "Total today",
+    "avgMoisture": "Avg Moisture",
     "activePumps": "Active Pumps",
-    "currentlyRunning": "Currently running",
     "nextScheduled": "Next Scheduled",
+    "totalToday": "Total today",
+    "last24Hours": "Last 24 hours",
+    "currentlyRunning": "Currently running",
     "zoneIrrigation": "Zone irrigation",
     "noZonesConfigured": "No zones configured",
-    "last24Hours": "Last 24 hours",
-    "runningNow": "Running Now",
+    "runningNow": "Running now",
     "none": "None"
   },
   "widgets": {
     "soilMoisture": {
       "title": "Soil Moisture",
-      "description": "Average across all zones"
+      "description": "Average soil moisture level"
     },
     "systemHealth": {
       "title": "System Health",
-      "description": "Overall system status",
-      "networkConnectivity": "Network Connectivity",
-      "deviceUptime": "Device Uptime",
-      "dataQuality": "Data Quality",
-      "batteryHealth": "Battery Health",
-      "irrigationEfficiency": "Irrigation Efficiency",
-      "network": "Network",
-      "devicesOnline": "devices online",
-      "averageUptime": "Average uptime",
-      "sensorAccuracy": "Sensor accuracy",
-      "averageBatteryLevel": "Average battery level",
-      "systemEfficiency": "System efficiency",
-      "excellent": "Excellent",
-      "good": "Good",
-      "needsAttention": "Needs Attention"
-    },
-    "waterUsage": {
-      "title": "Water Usage",
-      "description": "Current consumption"
+      "description": "Overall system status"
     },
     "activeDevices": {
       "title": "Active Devices",
-      "description": "Currently online"
+      "description": "Devices currently online"
     },
-    "alerts": {
-      "title": "System Alerts",
-      "recentAlerts": "Recent Alerts",
-      "systemAlertsNotifications": "System alerts and notifications",
-      "noAlerts": "No active alerts",
-      "noRecentAlerts": "No recent alerts",
-      "systemRunningSmooth": "Your system is running smoothly",
-      "viewAll": "View all alerts",
-      "viewAllAlerts": "View All"
+    "waterUsage": {
+      "title": "Water Usage",
+      "description": "Daily water consumption"
     },
-    "recentActivity": {
-      "title": "Recent Activity",
-      "latestSystemActions": "Latest system actions and events",
-      "noActivity": "No recent activity",
-      "noRecentActivity": "No recent activity",
-      "startUsingSystem": "Start using your system to see activity",
-      "viewHistory": "View History"
-    },
-    "quickActions": {
-      "title": "Quick Actions",
-      "commonAutomationTasks": "Common automation tasks and schedules",
-      "startIrrigation": "Start Irrigation",
-      "stopIrrigation": "Stop Irrigation",
-      "checkSensors": "Check Sensors",
-      "generateReport": "Generate Report",
-      "create": "Create",
-      "startEmergencyIrrigation": "Start Emergency Irrigation",
-      "waterAllZones": "Water all zones for 10 minutes",
-      "morningSchedule": "Morning Schedule",
-      "startDailyMorning": "Start daily morning routine",
-      "refreshAllSensors": "Refresh All Sensors",
-      "updateAllDevices": "Update all device readings",
-      "energySavingMode": "Energy Saving Mode",
-      "optimizePower": "Optimize power consumption",
-      "weekendSchedule": "Weekend Schedule",
-      "activateWeekend": "Activate weekend irrigation plan",
-      "active": "Active",
-      "zones": "zones",
-      "ongoing": "Ongoing",
-      "actionCompleted": "Action completed successfully",
-      "failedToExecute": "Failed to execute action"
-    },
-    "automation": {
-      "title": "Quick Automation",
-      "schedule": "Schedule Irrigation",
-      "rules": "Automation Rules",
-      "sensors": "Sensor Triggers"
-    },
-    "weather": {
-      "title": "Weather Forecast",
-      "currentConditions": "Current Conditions",
-      "forecast": "Forecast"
-    },
-    "predictiveAnalytics": {
-      "title": "AI Recommendations",
-      "subtitle": "Smart insights and predictions for your farm",
-      "aiRecommendations": "AI Recommendations",
-      "smartInsights": "Smart insights and predictions for your farm",
-      "confidence": "confident",
-      "confident": "confident",
-      "types": {
-        "irrigation": "Irrigation",
-        "weather": "Weather",
-        "crop": "Crop",
-        "resource": "Resource"
-      },
-      "priorities": {
-        "high": "High",
-        "medium": "Medium",
-        "low": "Low"
-      },
-      "actions": {
-        "adjustSchedule": "Adjust Schedule",
-        "startIrrigation": "Start Irrigation",
-        "waterNow": "Water Now",
-        "maintain": "Maintain",
-        "updatePlan": "Update Plan",
-        "schedule": "Schedule"
-      },
-      "noRecommendations": "No recommendations available",
-      "systemAnalyzing": "System is analyzing your data"
+    "sensorReadings": {
+      "title": "Sensor Readings",
+      "description": "Real-time sensor data",
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "soilMoisture": "Soil Moisture",
+      "noData": "No data available"
     },
     "deviceStatus": {
       "title": "Device Status",
-      "statusAndBattery": "Status and battery levels of your field devices",
-      "noDevicesFound": "No devices found",
-      "addDevice": "Add Device",
-      "lastReading": "Last reading",
-      "lastUpdated": "Last updated",
-      "refresh": "Refresh",
+      "description": "Current status of all devices",
       "online": "Online",
       "offline": "Offline",
-      "maintenance": "Maintenance",
-      "alert": "Alert"
+      "noDevices": "No devices found"
     },
-    "gaugeChart": {
-      "of": "of"
+    "weather": {
+      "title": "Weather",
+      "description": "Current weather conditions and forecast",
+      "currentConditions": "Current Conditions",
+      "forecast": "Forecast",
+      "humidity": "Humidity",
+      "windSpeed": "Wind Speed",
+      "visibility": "Visibility",
+      "pressure": "Pressure",
+      "uvIndex": "UV Index"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "description": "System alerts and notifications",
+      "noAlerts": "No alerts",
+      "viewAll": "View All",
+      "markAsRead": "Mark as Read",
+      "new": "New",
+      "critical": "Critical",
+      "warning": "Warning",
+      "info": "Info"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "description": "Recent system actions and events",
+      "noActivity": "No recent activity",
+      "viewAll": "View All",
+      "automationTriggered": "Automation triggered",
+      "irrigationStarted": "Irrigation started",
+      "irrigationStopped": "Irrigation stopped",
+      "deviceConnected": "Device connected",
+      "deviceDisconnected": "Device disconnected",
+      "alertGenerated": "Alert generated"
+    },
+    "systemHealth": {
+      "title": "System Health",
+      "description": "Overall system status and performance",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor",
+      "devicesOnline": "Devices Online",
+      "zonesActive": "Zones Active",
+      "lastUpdate": "Last Update"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "description": "Common actions and shortcuts",
+      "startIrrigation": "Start Irrigation",
+      "stopIrrigation": "Stop Irrigation",
+      "pauseAll": "Pause All",
+      "resumeAll": "Resume All",
+      "emergencyStop": "Emergency Stop",
+      "testAllDevices": "Test All Devices"
+    },
+    "predictiveAnalytics": {
+      "title": "Predictive Analytics",
+      "description": "AI-powered insights and recommendations",
+      "recommendation": "Recommendation",
+      "wateringRecommended": "Watering Recommended",
+      "wateringNotNeeded": "Watering Not Needed",
+      "optimalTime": "Optimal Time",
+      "weatherImpact": "Weather Impact",
+      "moistureProjection": "Moisture Projection",
+      "nextWatering": "Next Watering"
+    },
+    "quickAutomation": {
+      "title": "Quick Automation",
+      "description": "Quick automation controls",
+      "enableAll": "Enable All",
+      "disableAll": "Disable All",
+      "scheduleNow": "Schedule Now",
+      "pauseSchedules": "Pause Schedules",
+      "resumeSchedules": "Resume Schedules"
     }
   },
-  "loading": "Loading dashboard data...",
-  "mobileDashboard": {
-    "devices": "Devices",
-    "alerts": "Alerts",
-    "health": "Health",
-    "water": "Water",
-    "overview": "Overview",
-    "charts": "Charts",
-    "activity": "Activity",
-    "insights": "Insights"
+  "quickAutomation": {
+    "title": "Quick Automation",
+    "enableAllZones": "Enable All Zones",
+    "disableAllZones": "Disable All Zones",
+    "emergencyStop": "Emergency Stop",
+    "testAllDevices": "Test All Devices",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "stopped": "Stopped",
+    "tested": "Tested"
   }
 }

@@ -70,8 +70,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           isActive && 'active'
         )}
       >
-        <item.icon className={cn('h-5 w-5 transition-colors', isCollapsed ? '' : 'mr-3')} />
-        {!isCollapsed && <span className="transition-colors">{item.label}</span>}
+        <item.icon className={cn('h-5 w-5', isCollapsed ? '' : 'mr-3')} />
+        {!isCollapsed && <span>{item.label}</span>}
         {isActive && !isCollapsed && (
           <div className="absolute left-0 top-0 h-full w-1 bg-sidebar-primary rounded-r-full" />
         )}
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
         
         <nav className={cn("flex-1 space-y-8", isCollapsed ? "px-2" : "px-3")}>
           {/* Main Navigation */}
-          <div className="slide-in">
+          <div>
             {!isCollapsed && (
               <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                 {t('sidebar.main')}
@@ -133,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           </div>
 
           {/* Tools */}
-          <div className="slide-in" style={{ animationDelay: '0.1s' }}>
+          <div>
             {!isCollapsed && (
               <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                 {t('sidebar.tools')}
@@ -148,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
 
           {/* Admin Section */}
           {adminNavItems.length > 0 && (
-            <div className="slide-in" style={{ animationDelay: '0.2s' }}>
+            <div>
               {!isCollapsed && (
                 <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                   {t('sidebar.administration')}

@@ -13,7 +13,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AutomationHistory } from '@/hooks/useAutomationHistory';
@@ -52,26 +53,26 @@ const getStatusIcon = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'SUCCESS':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300';
     case 'FAILURE':
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300';
     case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
   }
 };
 
 const getTypeColor = (type: string) => {
   switch (type) {
     case 'RULE_TRIGGER':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300';
     case 'SCHEDULE':
-      return 'bg-purple-100 text-purple-800';
+      return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300';
     case 'MANUAL':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
   }
 };
 
@@ -80,87 +81,96 @@ const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   className 
 }) => {
   const { t } = useTranslation('dashboard');
-  const recentActivities = activities.slice(0, 8);
+  const recentActivities = activities.slice(0, 5);
 
   return (
-    <Card className={cn("dashboard-card", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-indigo-500" />
+    <Card className={cn("h-full", className)}>
+      <CardHeader className="pb-4">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950">
+                <Activity className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              </div>
               {t('widgets.recentActivity.title')}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm text-muted-foreground">
               {t('widgets.recentActivity.latestSystemActions')}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          >
             {t('widgets.recentActivity.viewHistory')}
+            <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-3">
           {recentActivities.length > 0 ? (
             recentActivities.map((activity) => (
               <div 
                 key={activity.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-border/50 transition-all duration-200 hover:border-border cursor-pointer group"
               >
                 <div className="flex-shrink-0 mt-0.5">
                   <div className={cn(
-                    "p-1.5 rounded-md",
+                    "p-1.5 rounded-md border",
                     getTypeColor(activity.type)
                   )}>
                     {getActivityIcon(activity.type)}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-foreground">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-foreground leading-tight">
                         {activity.name}
                       </h4>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                         {activity.description}
                       </p>
                       {activity.details && (
-                        <p className="text-xs text-muted-foreground/80 mt-1">
+                        <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-1">
                           {activity.details}
                         </p>
                       )}
                     </div>
-                    <div className="flex flex-col items-end gap-1 ml-2">
+                    <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
                       <Badge 
                         variant="outline" 
-                        className={cn("text-xs", getStatusColor(activity.status))}
+                        className={cn("text-xs font-medium", getStatusColor(activity.status))}
                       >
                         <span className="flex items-center gap-1">
                           {getStatusIcon(activity.status)}
                           {activity.status}
                         </span>
                       </Badge>
-                      <Badge 
-                        variant="secondary" 
-                        className="text-xs"
-                      >
-                        {activity.type.replace('_', ' ')}
-                      </Badge>
                     </div>
                   </div>
                   <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {new Date(activity.timestamp).toLocaleString()}
+                    <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">
+                      {new Date(activity.timestamp).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Activity className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">{t('widgets.recentActivity.noRecentActivity')}</p>
-              <p className="text-sm text-muted-foreground/70">{t('widgets.recentActivity.startUsingSystem')}</p>
+              <div className="p-3 rounded-full bg-muted/50 mb-3">
+                <Activity className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-foreground mb-1">
+                {t('widgets.recentActivity.noActivity')}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('widgets.recentActivity.startUsingSystem')}
+              </p>
             </div>
           )}
         </div>

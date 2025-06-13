@@ -13,7 +13,8 @@ import {
   Zap,
   RefreshCw,
   Plus,
-  Calendar
+  Calendar,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/sonner';
@@ -89,80 +90,84 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
       type: 'automation',
       estimatedDuration: t('widgets.quickActions.ongoing'),
       action: () => console.log('Activating energy saving')
-    },
-    {
-      id: '5',
-      name: t('widgets.quickActions.weekendSchedule'),
-      description: t('widgets.quickActions.activateWeekend'),
-      icon: <Calendar className="h-4 w-4" />,
-      type: 'schedule',
-      estimatedDuration: '2 days',
-      action: () => console.log('Setting weekend schedule')
     }
   ];
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'irrigation': return 'bg-blue-100 text-blue-800';
-      case 'schedule': return 'bg-purple-100 text-purple-800';
-      case 'device': return 'bg-green-100 text-green-800';
-      case 'automation': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'irrigation': 
+        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300';
+      case 'schedule': 
+        return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300';
+      case 'device': 
+        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300';
+      case 'automation': 
+        return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
+      default: 
+        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
     }
   };
 
   return (
-    <Card className={cn("dashboard-card", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-amber-500" />
+    <Card className={cn("h-full", className)}>
+      <CardHeader className="pb-4">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950">
+                <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
               {t('widgets.quickActions.title')}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm text-muted-foreground">
               {t('widgets.quickActions.commonAutomationTasks')}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm">
-            <Plus className="h-4 w-4 mr-1" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          >
+            <Plus className="h-3 w-3 mr-1" />
             {t('widgets.quickActions.create')}
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-3">
           {quickActions.map((action) => (
             <div 
               key={action.id}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg border border-border/50 transition-all duration-200 hover:border-border group"
             >
               <div className="flex-shrink-0">
-                <div className={cn("p-2 rounded-md", getTypeColor(action.type))}>
+                <div className={cn("p-2 rounded-md border", getTypeColor(action.type))}>
                   {action.icon}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
                       {action.name}
                       {action.isActive && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs font-medium">
                           {t('widgets.quickActions.active')}
                         </Badge>
                       )}
                     </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                       {action.description}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        ⏱️ {action.estimatedDuration}
+                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {action.estimatedDuration}
                       </span>
                       {action.zones && (
-                        <span className="text-xs text-muted-foreground">
-                          📍 {action.zones.length} {t('widgets.quickActions.zones')}
+                        <span className="flex items-center gap-1">
+                          <Settings className="h-3 w-3" />
+                          {action.zones.length} {t('widgets.quickActions.zones')}
                         </span>
                       )}
                     </div>
@@ -170,7 +175,7 @@ const QuickAutomationPanel: React.FC<QuickAutomationPanelProps> = ({ className }
                   <Button 
                     variant={action.isActive ? "secondary" : "default"}
                     size="sm" 
-                    className="ml-2"
+                    className="ml-3 flex-shrink-0"
                     disabled={loadingAction === action.id}
                     onClick={() => executeAction(action.id, action.action)}
                   >

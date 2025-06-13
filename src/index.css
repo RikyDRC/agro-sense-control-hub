@@ -111,6 +111,34 @@
   .dark {
     color-scheme: dark;
   }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="rtl"] .rtl\:flex-row-reverse {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .rtl\:text-right {
+    text-align: right;
+  }
+
+  [dir="rtl"] .rtl\:ml-auto {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  [dir="rtl"] .rtl\:mr-auto {
+    margin-right: auto;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .rtl\:space-x-reverse > * + * {
+    margin-left: 0.75rem;
+    margin-right: 0;
+  }
 }
 
 @layer components {
@@ -123,7 +151,7 @@
   }
   
   .hover-scale {
-    @apply hover:scale-[1.02] hover:shadow-lg;
+    @apply hover:scale-[1.02] hover:shadow-lg transition-all duration-200;
   }
   
   .fade-in {
@@ -131,15 +159,15 @@
   }
 
   .dashboard-card {
-    @apply bg-card border border-border/30 shadow-sm hover:shadow-md hover:border-border/50 backdrop-blur-sm;
+    @apply rounded-xl bg-card/95 backdrop-blur-sm border border-border/40 shadow-sm hover:shadow-md hover:border-border/60 transition-all duration-200;
   }
 
   .dashboard-card:hover {
-    @apply shadow-lg shadow-primary/5;
+    @apply shadow-lg shadow-primary/5 border-primary/10;
   }
 
   .sidebar-nav-item {
-    @apply relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium;
+    @apply relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
   }
   
   @keyframes fadeIn {
@@ -150,6 +178,63 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Fixed grid layouts for consistent card sizing */
+  .dashboard-grid {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .dashboard-grid-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dashboard-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .dashboard-grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-grid-2,
+    .dashboard-grid-3,
+    .dashboard-grid-4,
+    .dashboard-grid-6 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-grid-3,
+    .dashboard-grid-4,
+    .dashboard-grid-6 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .dashboard-grid-6 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .dashboard-grid-6 {
+      grid-template-columns: repeat(6, 1fr);
     }
   }
 }

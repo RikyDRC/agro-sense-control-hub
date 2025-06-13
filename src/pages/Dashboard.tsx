@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -28,7 +27,7 @@ import { useAutomationHistory } from '@/hooks/useAutomationHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard: React.FC = () => {
-  const { t } = useTranslation(['dashboard', 'navigation', 'common']);
+  const { t, i18n } = useTranslation(['dashboard', 'navigation', 'common']);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentWeather, setCurrentWeather] = useState<WeatherForecast | null>(null);
   const [forecast, setForecast] = useState<WeatherForecast[]>([]);
@@ -43,6 +42,7 @@ const Dashboard: React.FC = () => {
   const { history: automationHistory, loading: historyLoading } = useAutomationHistory();
   
   const isMobile = useIsMobile();
+  const isRTL = i18n.language === 'ar';
   
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -118,8 +118,8 @@ const Dashboard: React.FC = () => {
                 <DashboardStats devices={devices} zones={zones} readings={readings} />
               </div>
               
-              <div className="grid grid-cols-1 gap-3">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="dashboard-grid dashboard-grid-1 gap-3">
+                <div className="dashboard-grid dashboard-grid-2 gap-3">
                   <div className="dashboard-card p-4 hover-scale fade-in" style={{ animationDelay: '0.1s' }}>
                     <GaugeChart
                       title={t('widgets.soilMoisture.title')}
@@ -181,31 +181,31 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 flex justify-between items-center fade-in">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+      <div className={`mb-6 flex justify-between items-center fade-in ${isRTL ? 'rtl:flex-row-reverse' : ''}`}>
+        <div className={isRTL ? 'rtl:text-right' : ''}>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             {t('title')}
           </h1>
-          <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t('subtitle')}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${isRTL ? 'rtl:space-x-reverse' : ''}`}>
           <Tabs value={activeView} onValueChange={setActiveView}>
             <TabsList className="grid grid-cols-4 bg-muted/50 backdrop-blur-sm">
-              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <Grid3X3 className="h-4 w-4" />
-                {t('navigation:tabs.overview')}
+                <span className="hidden sm:inline">{t('navigation:tabs.overview')}</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <BarChart3 className="h-4 w-4" />
-                {t('navigation:tabs.analytics')}
+                <span className="hidden sm:inline">{t('navigation:tabs.analytics')}</span>
               </TabsTrigger>
-              <TabsTrigger value="monitoring" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="monitoring" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <Activity className="h-4 w-4" />
-                {t('navigation:tabs.monitoring')}
+                <span className="hidden sm:inline">{t('navigation:tabs.monitoring')}</span>
               </TabsTrigger>
-              <TabsTrigger value="insights" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="insights" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <TrendingUp className="h-4 w-4" />
-                {t('navigation:tabs.insights')}
+                <span className="hidden sm:inline">{t('navigation:tabs.insights')}</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -232,16 +232,16 @@ const Dashboard: React.FC = () => {
         <Tabs value={activeView} onValueChange={setActiveView} className="space-y-4">
           <TabsContent value="overview" className="space-y-4">
             {/* Enhanced Stats Overview */}
-            <div className="dashboard-card p-6 fade-in">
+            <div className="dashboard-card p-4 sm:p-6 fade-in">
               <DashboardStats devices={devices} zones={zones} readings={readings} />
             </div>
             
-            {/* Enhanced Overview Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+            {/* Enhanced Overview Grid - Fixed Layout */}
+            <div className="dashboard-grid dashboard-grid-6 gap-4">
               {/* Left Column - Gauges and Quick Actions */}
               <div className="lg:col-span-2 space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="dashboard-card p-6 hover-scale fade-in" style={{ animationDelay: '0.1s' }}>
+                <div className="dashboard-grid dashboard-grid-1 gap-4">
+                  <div className="dashboard-card p-4 sm:p-6 hover-scale fade-in" style={{ animationDelay: '0.1s' }}>
                     <GaugeChart
                       title={t('widgets.soilMoisture.title')}
                       value={averageMoisture}
@@ -251,7 +251,7 @@ const Dashboard: React.FC = () => {
                       color="hsl(142, 76%, 36%)"
                     />
                   </div>
-                  <div className="dashboard-card p-6 hover-scale fade-in" style={{ animationDelay: '0.2s' }}>
+                  <div className="dashboard-card p-4 sm:p-6 hover-scale fade-in" style={{ animationDelay: '0.2s' }}>
                     <GaugeChart
                       title={t('widgets.systemHealth.title')}
                       value={systemHealth}
@@ -289,7 +289,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Bottom Row - Device Status and Weather */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="dashboard-grid dashboard-grid-3 gap-4">
               <div className="dashboard-card hover-scale fade-in" style={{ animationDelay: '0.8s' }}>
                 <DeviceStatusList devices={devices} />
               </div>
@@ -314,17 +314,17 @@ const Dashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="dashboard-grid dashboard-grid-2 gap-4">
               <SensorReadingsChart readings={readings} />
               <SystemHealthWidget devices={devices} zones={zones} />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="dashboard-grid dashboard-grid-4 gap-4">
               <GaugeChart
                 title={t('widgets.soilMoisture.title')}
                 value={averageMoisture}
                 max={100}
                 unit="%"
-                color="hsl(152, 37%, 38%)"
+                color="hsl(152, 37%,        )"
               />
               <GaugeChart
                 title={t('widgets.systemHealth.title')}
@@ -351,7 +351,7 @@ const Dashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="dashboard-grid dashboard-grid-3 gap-4">
               <div className="lg:col-span-2">
                 <RecentActivityWidget activities={automationHistory} />
               </div>
@@ -367,7 +367,7 @@ const Dashboard: React.FC = () => {
               currentWeather={currentWeather || undefined}
               moistureLevel={averageMoisture}
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="dashboard-grid dashboard-grid-2 gap-4">
               <QuickAutomationPanel />
               <SystemHealthWidget devices={devices} zones={zones} />
             </div>

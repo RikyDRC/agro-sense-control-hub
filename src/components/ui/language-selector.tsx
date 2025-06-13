@@ -20,6 +20,7 @@ interface LanguageSelectorProps {
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({
@@ -32,6 +33,15 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   const changeLanguage = (langCode: string) => {
     i18n.changeLanguage(langCode);
+    
+    // Set RTL/LTR direction based on language
+    if (langCode === 'ar') {
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.documentElement.classList.add('rtl');
+    } else {
+      document.documentElement.setAttribute('dir', 'ltr');
+      document.documentElement.classList.remove('rtl');
+    }
   };
 
   return (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropletIcon, ThermometerIcon, Zap, Clock } from 'lucide-react';
+import { DropletIcon, ThermometerIcon, Zap, Clock, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Device, Zone, SensorReading, DeviceStatus, DeviceType } from '@/types';
 
@@ -28,30 +28,36 @@ const StatCard: React.FC<StatCardProps> = ({
   colorClass = "bg-primary/10 text-primary"
 }) => {
   return (
-    <Card className={cn(
-      "transition-all hover:shadow-md", 
-      className
-    )}>
+    <Card className={cn("relative overflow-hidden", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={cn("h-8 w-8 rounded-full p-1.5", colorClass)}>
+        <div className="space-y-1">
+          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+          <div className="text-2xl font-bold text-foreground">{value}</div>
+        </div>
+        <div className={cn("h-10 w-10 rounded-lg p-2", colorClass)}>
           {icon}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+      <CardContent className="pt-0">
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
         {trend && (
           <div className="flex items-center mt-2">
-            <span className={cn(
-              "text-xs font-medium",
-              trend.isPositive ? "text-green-600" : "text-red-600"
+            <div className={cn(
+              "flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded",
+              trend.isPositive 
+                ? "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950" 
+                : "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950"
             )}>
-              {trend.isPositive ? "+" : "-"}{trend.value}%
-            </span>
-            <span className="text-xs text-muted-foreground ml-1">from last week</span>
+              {trend.isPositive ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {trend.value}%
+            </div>
+            <span className="text-xs text-muted-foreground ml-2">from last week</span>
           </div>
         )}
       </CardContent>
@@ -144,7 +150,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         description={t('stats.totalToday')} 
         icon={<DropletIcon className="h-full w-full" />}
         trend={calculateWaterTrend()}
-        colorClass="bg-agro-blue-light/30 text-agro-blue-dark"
+        colorClass="bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
       />
       <StatCard 
         title={t('stats.avgMoisture')} 
@@ -152,21 +158,21 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         description={t('stats.last24Hours')} 
         icon={<ThermometerIcon className="h-full w-full" />}
         trend={calculateMoistureTrend()}
-        colorClass="bg-agro-green-light/30 text-agro-green-dark"
+        colorClass="bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400"
       />
       <StatCard 
         title={t('stats.activePumps')} 
         value={getActivePumps()} 
         description={t('stats.currentlyRunning')} 
         icon={<Zap className="h-full w-full" />}
-        colorClass="bg-amber-100 text-amber-700"
+        colorClass="bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
       />
       <StatCard 
         title={t('stats.nextScheduled')} 
         value={getNextScheduled()} 
         description={zones.length > 0 ? t('stats.zoneIrrigation') : t('stats.noZonesConfigured')} 
         icon={<Clock className="h-full w-full" />}
-        colorClass="bg-blue-100 text-blue-700"
+        colorClass="bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400"
       />
     </div>
   );

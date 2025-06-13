@@ -43,9 +43,16 @@
     },
     "deviceStatus": {
       "title": "حالة الأجهزة",
+      "statusAndBattery": "حالة الجهاز ومستوى البطارية",
       "description": "الحالة الحالية لجميع الأجهزة",
       "online": "متصل",
       "offline": "غير متصل",
+      "maintenance": "صيانة",
+      "alert": "تنبيه",
+      "noDevicesFound": "لم يتم العثور على أجهزة",
+      "addDevice": "إضافة جهاز",
+      "lastReading": "آخر قراءة",
+      "lastUpdated": "آخر تحديث",
       "noDevices": "لم يتم العثور على أجهزة"
     },
     "weather": {
@@ -61,8 +68,13 @@
     },
     "alerts": {
       "title": "التنبيهات",
+      "recentAlerts": "التنبيهات الأخيرة",
+      "systemAlertsNotifications": "تنبيهات وإشعارات النظام",
+      "viewAllAlerts": "عرض جميع التنبيهات",
       "description": "تنبيهات وإشعارات النظام",
       "noAlerts": "لا توجد تنبيهات",
+      "noRecentAlerts": "لا توجد تنبيهات حديثة",
+      "systemRunningSmooth": "النظام يعمل بسلاسة",
       "viewAll": "عرض الكل",
       "markAsRead": "تحديد كمقروء",
       "new": "جديد",
@@ -78,7 +90,7 @@
       "automationTriggered": "تم تشغيل الأتمتة",
       "irrigationStarted": "بدأ الري",
       "irrigationStopped": "توقف الري",
-      "deviceConnected": "تم توصي ل الجهاز",
+      "deviceConnected": "تم توصيل الجهاز",
       "deviceDisconnected": "تم قطع الجهاز",
       "alertGenerated": "تم إنتاج تنبيه"
     },
@@ -96,6 +108,7 @@
     "quickActions": {
       "title": "الإجراءات السريعة",
       "description": "الإجراءات الشائعة والاختصارات",
+      "active": "نشط",
       "startIrrigation": "بدء الري",
       "stopIrrigation": "إيقاف الري",
       "pauseAll": "إيقاف مؤقت للكل",

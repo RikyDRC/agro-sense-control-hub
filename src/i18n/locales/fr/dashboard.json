@@ -43,9 +43,16 @@
     },
     "deviceStatus": {
       "title": "État des appareils",
+      "statusAndBattery": "Statut et niveau de batterie des appareils",
       "description": "État actuel de tous les appareils",
       "online": "En ligne",
       "offline": "Hors ligne",
+      "maintenance": "Maintenance",
+      "alert": "Alerte",
+      "noDevicesFound": "Aucun appareil trouvé",
+      "addDevice": "Ajouter un appareil",
+      "lastReading": "Dernière lecture",
+      "lastUpdated": "Dernière mise à jour",
       "noDevices": "Aucun appareil trouvé"
     },
     "weather": {
@@ -61,8 +68,13 @@
     },
     "alerts": {
       "title": "Alertes",
+      "recentAlerts": "Alertes récentes",
+      "systemAlertsNotifications": "Alertes et notifications du système",
+      "viewAllAlerts": "Voir toutes les alertes",
       "description": "Alertes et notifications du système",
       "noAlerts": "Aucune alerte",
+      "noRecentAlerts": "Aucune alerte récente",
+      "systemRunningSmooth": "Système fonctionne correctement",
       "viewAll": "Voir tout",
       "markAsRead": "Marquer comme lu",
       "new": "Nouveau",
@@ -96,6 +108,7 @@
     "quickActions": {
       "title": "Actions rapides",
       "description": "Actions courantes et raccourcis",
+      "active": "Actif",
       "startIrrigation": "Démarrer l'irrigation",
       "stopIrrigation": "Arrêter l'irrigation",
       "pauseAll": "Tout suspendre",

@@ -43,9 +43,16 @@
     },
     "deviceStatus": {
       "title": "Device Status",
+      "statusAndBattery": "Device status and battery levels",
       "description": "Current status of all devices",
       "online": "Online",
       "offline": "Offline",
+      "maintenance": "Maintenance",
+      "alert": "Alert",
+      "noDevicesFound": "No devices found",
+      "addDevice": "Add Device",
+      "lastReading": "Last reading",
+      "lastUpdated": "Last updated",
       "noDevices": "No devices found"
     },
     "weather": {
@@ -61,8 +68,13 @@
     },
     "alerts": {
       "title": "Alerts",
+      "recentAlerts": "Recent Alerts",
+      "systemAlertsNotifications": "System alerts and notifications",
+      "viewAllAlerts": "View All Alerts",
       "description": "System alerts and notifications",
       "noAlerts": "No alerts",
+      "noRecentAlerts": "No Recent Alerts",
+      "systemRunningSmooth": "System running smoothly",
       "viewAll": "View All",
       "markAsRead": "Mark as Read",
       "new": "New",
@@ -96,6 +108,7 @@
     "quickActions": {
       "title": "Quick Actions",
       "description": "Common actions and shortcuts",
+      "active": "Active",
       "startIrrigation": "Start Irrigation",
       "stopIrrigation": "Stop Irrigation",
       "pauseAll": "Pause All",

@@ -65,15 +65,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
         to={item.to}
         onClick={onNavigate}
         className={cn(
-          'group flex items-center text-sm font-medium rounded-md transition-colors',
-          isCollapsed ? 'justify-center p-3' : 'px-3 py-2',
-          isActive
-            ? 'bg-primary text-primary-foreground'
-            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+          'sidebar-nav-item group',
+          isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5',
+          isActive && 'active'
         )}
       >
-        <item.icon className={cn('h-5 w-5', isCollapsed ? '' : 'mr-3')} />
-        {!isCollapsed && <span>{item.label}</span>}
+        <item.icon className={cn('h-5 w-5 transition-colors', isCollapsed ? '' : 'mr-3')} />
+        {!isCollapsed && <span className="transition-colors">{item.label}</span>}
+        {isActive && !isCollapsed && (
+          <div className="absolute left-0 top-0 h-full w-1 bg-sidebar-primary rounded-r-full" />
+        )}
       </NavLink>
     );
 
@@ -84,8 +85,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
             <TooltipTrigger asChild>
               {content}
             </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{item.label}</p>
+            <TooltipContent side="right" className="bg-sidebar-background border-sidebar-border">
+              <p className="text-sidebar-foreground">{item.label}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -96,26 +97,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-white border-r border-gray-200">
-      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+    <div className="flex h-full w-full flex-col bg-sidebar-background border-r border-sidebar-border shadow-lg">
+      <div className="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto">
         <div className={cn(
-          "flex items-center flex-shrink-0 px-4",
+          "flex items-center flex-shrink-0 px-4 mb-8",
           isCollapsed && "justify-center px-2"
         )}>
           {isCollapsed ? (
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">AS</span>
+            <div className="h-10 w-10 bg-sidebar-primary rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-sidebar-primary-foreground font-bold text-lg">AS</span>
             </div>
           ) : (
-            <h1 className="text-xl font-bold text-gray-900">{t('header.appName')}</h1>
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 bg-sidebar-primary rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-sidebar-primary-foreground font-bold text-lg">AS</span>
+              </div>
+              <h1 className="text-xl font-bold text-sidebar-foreground">{t('header.appName')}</h1>
+            </div>
           )}
         </div>
         
-        <nav className={cn("mt-8 flex-1 space-y-6", isCollapsed ? "px-2" : "px-2")}>
+        <nav className={cn("flex-1 space-y-8", isCollapsed ? "px-2" : "px-3")}>
           {/* Main Navigation */}
-          <div>
+          <div className="slide-in">
             {!isCollapsed && (
-              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                 {t('sidebar.main')}
               </h3>
             )}
@@ -127,9 +133,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           </div>
 
           {/* Tools */}
-          <div>
+          <div className="slide-in" style={{ animationDelay: '0.1s' }}>
             {!isCollapsed && (
-              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                 {t('sidebar.tools')}
               </h3>
             )}
@@ -142,9 +148,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
 
           {/* Admin Section */}
           {adminNavItems.length > 0 && (
-            <div>
+            <div className="slide-in" style={{ animationDelay: '0.2s' }}>
               {!isCollapsed && (
-                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
                   {t('sidebar.administration')}
                 </h3>
               )}

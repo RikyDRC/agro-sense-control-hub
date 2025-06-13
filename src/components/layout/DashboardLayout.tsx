@@ -34,18 +34,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen bg-muted/30 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Mobile overlay */}
       {isMobile && sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300" 
           onClick={closeSidebar}
         />
       )}
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
         isMobile ? "w-64" : sidebarOpen ? "w-64" : "w-20"
       )}>
@@ -53,11 +53,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </div>
       
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+      <div className="flex flex-col flex-1 overflow-hidden min-w-0 bg-background">
         <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
-        <main className="flex-1 overflow-hidden p-3 md:p-6">
+        <main className="flex-1 overflow-hidden p-3 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
           <ScrollArea className="h-full w-full">
-            <div className="min-w-0">
+            <div className="min-w-0 max-w-7xl mx-auto">
               {children}
             </div>
           </ScrollArea>

@@ -6,23 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfileForm from '@/components/settings/ProfileForm';
 import GoogleMapsApiKey from '@/components/settings/GoogleMapsApiKey';
 import PaymentGatewaysConfig from '@/components/settings/PaymentGatewaysConfig';
-import { Globe, BellIcon, Settings as SettingsIcon, ShieldCheck, CreditCard } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import NotificationSettings from '@/components/settings/NotificationSettings';
+import PreferencesSettings from '@/components/settings/PreferencesSettings';
+import DeviceConnectivitySettings from '@/components/settings/DeviceConnectivitySettings';
+import SecuritySettings from '@/components/settings/SecuritySettings';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  InfoIcon, Save, UserIcon, AlertCircle, PlugZap, Database, MapPin, CloudSun, Lock, Shield
-} from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { toast } from "@/components/ui/sonner";
-import { supabase } from '@/integrations/supabase/client';
+import { 
+  AlertCircle, ShieldCheck, CreditCard, Shield, InfoIcon
+} from 'lucide-react';
+import { settingsService, UserSettings, defaultSettings } from '@/services/settingsService';
 
 const SettingsPage: React.FC = () => {
   const { user, profile, subscription, refreshProfile, isRoleSuperAdmin, isRoleAdmin, loading } = useAuth();
@@ -31,6 +28,8 @@ const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [fallbackUserRole, setFallbackUserRole] = useState<'super_admin' | 'admin' | 'farmer' | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettings>(defaultSettings);
+  const [saving, setSaving] = useState(false);
   
   // Improved profile loading logic
   useEffect(() => {
@@ -98,6 +97,35 @@ const SettingsPage: React.FC = () => {
     
     return () => clearTimeout(safetyTimer);
   }, [loading, profile, fallbackUserRole]);
+
+  // Load user settings
+  useEffect(() => {
+    if (user) {
+      loadUserSettings();
+    }
+  }, [user]);
+
+  const loadUserSettings = async () => {
+    if (!user) return;
+    
+    try {
+      const settings = await settingsService.getUserSettings(user.id);
+      setUserSettings(settings);
+    } catch (error) {
+      console.error('Error loading user settings:', error);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!user) return;
+    
+    setSaving(true);
+    try {
+      await settingsService.saveUserSettings(user.id, userSettings);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const hasAdminRights = () => {
     if (profile) {
@@ -208,9 +236,6 @@ const SettingsPage: React.FC = () => {
                   <Skeleton className="h-12 w-full" />
                 </div>
               </CardContent>
-              <CardFooter>
-                <Skeleton className="h-10 w-32" />
-              </CardFooter>
             </Card>
           </div>
         </div>
@@ -270,9 +295,7 @@ const SettingsPage: React.FC = () => {
               ) : (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <UserIcon className="h-5 w-5" /> User Profile
-                    </CardTitle>
+                    <CardTitle>User Profile</CardTitle>
                     <CardDescription>
                       Profile information is currently unavailable
                     </CardDescription>
@@ -287,427 +310,101 @@ const SettingsPage: React.FC = () => {
                       </AlertDescription>
                     </Alert>
                   </CardContent>
-                  <CardFooter>
-                    <Button onClick={() => refreshProfile()}>
-                      Retry Loading Profile
-                    </Button>
-                  </CardFooter>
                 </Card>
               )}
               
-              <div className="grid gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Globe className="h-5 w-5" /> Regional Settings
-                    </CardTitle>
-                    <CardDescription>
-                      Configure regional preferences for your account
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="measurementUnit">Measurement Units</Label>
-                        <Select 
-                          value="metric" 
-                          onValueChange={() => {}}
-                        >
-                          <SelectTrigger id="measurementUnit">
-                            <SelectValue placeholder="Select unit system" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="metric">Metric (°C, mm, km)</SelectItem>
-                            <SelectItem value="imperial">Imperial (°F, in, mi)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="timeZone">Time Zone</Label>
-                        <Select 
-                          value="America/Los_Angeles" 
-                          onValueChange={() => {}}
-                        >
-                          <SelectTrigger id="timeZone">
-                            <SelectValue placeholder="Select time zone" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                            <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                            <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                            <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                            <SelectItem value="Europe/London">GMT/UTC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-end">
-                    <Button>
-                      <Save className="mr-2 h-4 w-4" /> Save Changes
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
+              <PreferencesSettings
+                settings={userSettings}
+                onSettingsChange={setUserSettings}
+                onSave={handleSaveSettings}
+                saving={saving}
+              />
             </div>
           </TabsContent>
           
           <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BellIcon className="h-5 w-5" /> Notification Preferences
-                </CardTitle>
-                <CardDescription>
-                  Configure how and when you receive notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="notifications-enabled">Enable Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Turn on/off all notifications
-                    </p>
-                  </div>
-                  <Switch 
-                    id="notifications-enabled" 
-                    checked={true}
-                    onCheckedChange={() => {}}
-                  />
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Notification Channels</h3>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications">Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications via email
-                      </p>
-                    </div>
-                    <Switch 
-                      id="email-notifications" 
-                      checked={true}
-                      onCheckedChange={() => {}}
-                      disabled={false}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="push-notifications">Push Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive push notifications on your device
-                      </p>
-                    </div>
-                    <Switch 
-                      id="push-notifications" 
-                      checked={false}
-                      onCheckedChange={() => {}}
-                      disabled={false}
-                    />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Alert Settings</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="alertThreshold">Alert Threshold (%)</Label>
-                    <div className="grid grid-cols-4 gap-4 items-center">
-                      <Input 
-                        id="alertThreshold" 
-                        type="number" 
-                        value="15"
-                        onChange={() => {}}
-                        min="5"
-                        max="50"
-                        className="col-span-3"
-                        disabled={false}
-                      />
-                      <Badge>15%</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Receive alerts when moisture levels deviate from ideal by this percentage
-                    </p>
-                  </div>
-                </div>
-                
-                <Alert>
-                  <InfoIcon className="h-4 w-4" />
-                  <AlertTitle>Email Verification</AlertTitle>
-                  <AlertDescription>
-                    To receive email notifications, please ensure your email address is verified.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button>
-                  <Save className="mr-2 h-4 w-4" /> Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
+            <NotificationSettings
+              settings={userSettings}
+              onSettingsChange={setUserSettings}
+              onSave={handleSaveSettings}
+              saving={saving}
+            />
           </TabsContent>
           
           <TabsContent value="system">
             <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5" /> Data Management
-                  </CardTitle>
-                  <CardDescription>
-                    Configure how your data is stored and managed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="dataRetention">Data Retention Period (days)</Label>
-                    <div className="grid grid-cols-4 gap-4 items-center">
-                      <Input 
-                        id="dataRetention" 
-                        type="number" 
-                        value="90"
-                        onChange={() => {}}
-                        min="30"
-                        max="365"
-                        className="col-span-3"
-                      />
-                      <Badge>90 days</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Sensor data older than this will be automatically archived
-                    </p>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium">App Settings</h3>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="dark-mode">Dark Mode</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Enable dark theme for the application
-                        </p>
-                      </div>
-                      <Switch 
-                        id="dark-mode" 
-                        checked={false}
-                        onCheckedChange={() => {}}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button>
-                    <Save className="mr-2 h-4 w-4" /> Save Changes
-                  </Button>
-                </CardFooter>
-              </Card>
-              
               {hasSuperAdminRights() && <GoogleMapsApiKey />}
-              
               {hasSuperAdminRights() && <PaymentGatewaysConfig />}
               
               {hasAdminRights() && (
-                <div className="grid gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <SettingsIcon className="h-5 w-5" /> Administrative Controls
-                      </CardTitle>
-                      <CardDescription>
-                        Access administrative features and settings
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {hasSuperAdminRights() && (
-                          <div className="flex justify-between items-center p-4 border rounded-md">
-                            <div>
-                              <h3 className="font-medium flex items-center">
-                                <ShieldCheck className="h-4 w-4 mr-2 text-red-500" /> 
-                                Platform Configuration
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                Manage API keys, system settings, and user roles
-                              </p>
-                            </div>
-                            <Button onClick={() => navigate('/admin/config')}>
-                              Manage
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {hasSuperAdminRights() && (
-                          <div className="flex justify-between items-center p-4 border rounded-md">
-                            <div>
-                              <h3 className="font-medium flex items-center">
-                                <CreditCard className="h-4 w-4 mr-2 text-blue-500" /> 
-                                Payment Gateways
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                Configure payment processors and checkout options
-                              </p>
-                            </div>
-                            <Button onClick={() => navigate('/admin/payment-gateways')}>
-                              Manage
-                            </Button>
-                          </div>
-                        )}
-                        
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Administrative Controls</CardTitle>
+                    <CardDescription>
+                      Access administrative features and settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {hasSuperAdminRights() && (
                         <div className="flex justify-between items-center p-4 border rounded-md">
                           <div>
                             <h3 className="font-medium flex items-center">
-                              <Shield className="h-4 w-4 mr-2 text-blue-500" /> 
-                              User Management
+                              <ShieldCheck className="h-4 w-4 mr-2 text-red-500" /> 
+                              Platform Configuration
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              View and manage system users
+                              Manage API keys, system settings, and user roles
                             </p>
                           </div>
-                          <Button variant={hasSuperAdminRights() ? "default" : "outline"}>
-                            {hasSuperAdminRights() ? 'Manage' : 'View'}
+                          <Button onClick={() => navigate('/admin/config')}>
+                            Manage
                           </Button>
                         </div>
+                      )}
+                      
+                      {hasSuperAdminRights() && (
+                        <div className="flex justify-between items-center p-4 border rounded-md">
+                          <div>
+                            <h3 className="font-medium flex items-center">
+                              <CreditCard className="h-4 w-4 mr-2 text-blue-500" /> 
+                              Payment Gateways
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Configure payment processors and checkout options
+                            </p>
+                          </div>
+                          <Button onClick={() => navigate('/admin/payment-gateways')}>
+                            Manage
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center p-4 border rounded-md">
+                        <div>
+                          <h3 className="font-medium flex items-center">
+                            <Shield className="h-4 w-4 mr-2 text-blue-500" /> 
+                            User Management
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            View and manage system users
+                          </p>
+                        </div>
+                        <Button variant={hasSuperAdminRights() ? "default" : "outline"}>
+                          {hasSuperAdminRights() ? 'Manage' : 'View'}
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
               
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PlugZap className="h-5 w-5" /> Device Connectivity
-                  </CardTitle>
-                  <CardDescription>
-                    Manage device connection settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="apiKey">API Key</Label>
-                      <div className="flex items-center space-x-2">
-                        <Input 
-                          id="apiKey" 
-                          type="password" 
-                          value="••••••••••••••••••••••••"
-                          disabled
-                          className="font-mono"
-                        />
-                        <Button variant="outline" size="sm">Reveal</Button>
-                        <Button variant="outline" size="sm">Regenerate</Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Used for device integrations and external connections
-                      </p>
-                    </div>
-                    
-                    <Alert className="bg-yellow-50 text-yellow-800 border-yellow-200">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Security Notice</AlertTitle>
-                      <AlertDescription>
-                        Keep your API key secret. If compromised, regenerate it immediately.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                </CardContent>
-              </Card>
+              <DeviceConnectivitySettings />
             </div>
           </TabsContent>
           
           <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5" /> Security Settings
-                </CardTitle>
-                <CardDescription>
-                  Manage account security and authentication options
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <Input id="current-password" type="password" />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input id="new-password" type="password" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm New Password</Label>
-                      <Input id="confirm-password" type="password" />
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-muted-foreground">
-                    Password must be at least 8 characters and include uppercase, lowercase, number, and special character
-                  </p>
-                  
-                  <Button size="sm" className="mt-2">Change Password</Button>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="two-factor">Two-Factor Authentication</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Add an extra layer of security to your account
-                    </p>
-                  </div>
-                  <Switch 
-                    id="two-factor" 
-                    checked={false}
-                    disabled
-                  />
-                </div>
-                
-                <Alert>
-                  <ShieldCheck className="h-4 w-4" />
-                  <AlertTitle>Enhance Your Security</AlertTitle>
-                  <AlertDescription>
-                    We strongly recommend enabling two-factor authentication for additional account protection.
-                  </AlertDescription>
-                </Alert>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Active Sessions</h3>
-                  <div className="rounded-md border p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-sm font-medium">Current Session</p>
-                        <p className="text-xs text-muted-foreground">Started: {new Date().toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">IP: 192.168.1.1</p>
-                      </div>
-                      <Badge>Active</Badge>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm">Log Out All Other Devices</Button>
-                    <Button variant="destructive" size="sm" onClick={() => {}}>Log Out</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SecuritySettings />
           </TabsContent>
           
           <TabsContent value="subscription">
@@ -752,28 +449,6 @@ const SettingsPage: React.FC = () => {
                             )}
                           </div>
                           
-                          <div className="mt-4">
-                            <p className="text-sm font-medium mb-2">Features included:</p>
-                            <ul className="text-sm space-y-1 ml-6 list-disc">
-                              {subscription.plan?.features && Object.entries(subscription.plan.features).map(([key, value]) => {
-                                if (value === true) {
-                                  return (
-                                    <li key={key}>
-                                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                    </li>
-                                  );
-                                } else if (typeof value === 'number') {
-                                  return (
-                                    <li key={key}>
-                                      {value} {key.replace(/_/g, ' ')}
-                                    </li>
-                                  );
-                                }
-                                return null;
-                              })}
-                            </ul>
-                          </div>
-                          
                           <div className="mt-4 flex gap-2">
                             <Button onClick={() => {}}>
                               Manage Subscription
@@ -783,14 +458,6 @@ const SettingsPage: React.FC = () => {
                             </Button>
                           </div>
                         </div>
-                        
-                        <Alert>
-                          <InfoIcon className="h-4 w-4" />
-                          <AlertTitle>Billing Questions?</AlertTitle>
-                          <AlertDescription>
-                            For any billing inquiries, please contact our support team at support@agrosense.com
-                          </AlertDescription>
-                        </Alert>
                       </div>
                     ) : (
                       <div className="space-y-4">

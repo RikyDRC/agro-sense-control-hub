@@ -188,6 +188,15 @@ function App() {
               />
               
               <Route 
+                path="/admin/config" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+                    <AdminConfigPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
                 path="/admin/farmers" 
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
@@ -207,6 +216,15 @@ function App() {
               
               <Route 
                 path="/admin/payment-gateways" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+                    <PaymentGatewaysPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/payments" 
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                     <PaymentGatewaysPage />

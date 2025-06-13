@@ -29,7 +29,7 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <Card className={cn(
-      "transition-all hover:shadow-md border-l-4", 
+      "transition-all hover:shadow-md", 
       className
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -144,7 +144,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         description={t('stats.totalToday')} 
         icon={<DropletIcon className="h-full w-full" />}
         trend={calculateWaterTrend()}
-        className="border-agro-blue"
         colorClass="bg-agro-blue-light/30 text-agro-blue-dark"
       />
       <StatCard 
@@ -153,7 +152,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         description={t('stats.last24Hours')} 
         icon={<ThermometerIcon className="h-full w-full" />}
         trend={calculateMoistureTrend()}
-        className="border-agro-green"
         colorClass="bg-agro-green-light/30 text-agro-green-dark"
       />
       <StatCard 
@@ -161,7 +159,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         value={getActivePumps()} 
         description={t('stats.currentlyRunning')} 
         icon={<Zap className="h-full w-full" />}
-        className="border-agro-status-warning"
         colorClass="bg-amber-100 text-amber-700"
       />
       <StatCard 
@@ -169,7 +166,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ devices, zones, reading
         value={getNextScheduled()} 
         description={zones.length > 0 ? t('stats.zoneIrrigation') : t('stats.noZonesConfigured')} 
         icon={<Clock className="h-full w-full" />}
-        className="border-agro-status-info"
         colorClass="bg-blue-100 text-blue-700"
       />
     </div>

@@ -113,13 +113,13 @@ const Dashboard: React.FC = () => {
           waterUsage={waterUsage}
         >
           <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-            <TabsContent value="overview" className="space-y-4">
+            <TabsContent value="overview" className="space-y-3">
               <div className="dashboard-card p-4 fade-in">
                 <DashboardStats devices={devices} zones={zones} readings={readings} />
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="dashboard-card p-4 hover-scale fade-in" style={{ animationDelay: '0.1s' }}>
                     <GaugeChart
                       title={t('widgets.soilMoisture.title')}
@@ -154,20 +154,20 @@ const Dashboard: React.FC = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="charts" className="space-y-4">
+            <TabsContent value="charts" className="space-y-3">
               <SensorReadingsChart readings={readings} />
               <SystemHealthWidget devices={devices} zones={zones} />
             </TabsContent>
 
-            <TabsContent value="alerts" className="space-y-4">
+            <TabsContent value="alerts" className="space-y-3">
               <AlertsWidget alerts={alerts} />
             </TabsContent>
 
-            <TabsContent value="activity" className="space-y-4">
+            <TabsContent value="activity" className="space-y-3">
               <RecentActivityWidget activities={automationHistory} />
             </TabsContent>
 
-            <TabsContent value="insights" className="space-y-4">
+            <TabsContent value="insights" className="space-y-3">
               <PredictiveAnalyticsWidget 
                 currentWeather={currentWeather || undefined}
                 moistureLevel={averageMoisture}
@@ -229,17 +229,17 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       ) : (
-        <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-          <TabsContent value="overview" className="space-y-6">
+        <Tabs value={activeView} onValueChange={setActiveView} className="space-y-4">
+          <TabsContent value="overview" className="space-y-4">
             {/* Enhanced Stats Overview */}
             <div className="dashboard-card p-6 fade-in">
               <DashboardStats devices={devices} zones={zones} readings={readings} />
             </div>
             
             {/* Enhanced Overview Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
               {/* Left Column - Gauges and Quick Actions */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="dashboard-card p-6 hover-scale fade-in" style={{ animationDelay: '0.1s' }}>
                     <GaugeChart
@@ -268,7 +268,7 @@ const Dashboard: React.FC = () => {
               </div>
               
               {/* Center Column - Charts and Health */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4">
                 <div className="dashboard-card hover-scale fade-in" style={{ animationDelay: '0.4s' }}>
                   <SensorReadingsChart readings={readings} />
                 </div>
@@ -278,7 +278,7 @@ const Dashboard: React.FC = () => {
               </div>
               
               {/* Right Column - Alerts and Activity */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4">
                 <div className="dashboard-card hover-scale fade-in" style={{ animationDelay: '0.6s' }}>
                   <AlertsWidget alerts={alerts} />
                 </div>
@@ -289,7 +289,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Bottom Row - Device Status and Weather */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="dashboard-card hover-scale fade-in" style={{ animationDelay: '0.8s' }}>
                 <DeviceStatusList devices={devices} />
               </div>
@@ -313,12 +313,12 @@ const Dashboard: React.FC = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <SensorReadingsChart readings={readings} />
               <SystemHealthWidget devices={devices} zones={zones} />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <GaugeChart
                 title={t('widgets.soilMoisture.title')}
                 value={averageMoisture}
@@ -350,8 +350,8 @@ const Dashboard: React.FC = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="monitoring" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="monitoring" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
                 <RecentActivityWidget activities={automationHistory} />
               </div>
@@ -362,12 +362,12 @@ const Dashboard: React.FC = () => {
             <DeviceStatusList devices={devices} />
           </TabsContent>
 
-          <TabsContent value="insights" className="space-y-6">
+          <TabsContent value="insights" className="space-y-4">
             <PredictiveAnalyticsWidget 
               currentWeather={currentWeather || undefined}
               moistureLevel={averageMoisture}
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <QuickAutomationPanel />
               <SystemHealthWidget devices={devices} zones={zones} />
             </div>

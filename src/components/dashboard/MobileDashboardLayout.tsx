@@ -86,9 +86,65 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-3">
+        <TabsContent value="overview" className="px-3">
           {children}
-        </div>
+        </TabsContent>
+
+        <TabsContent value="charts" className="px-3">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('mobileDashboard.charts')}</CardTitle>
+                <CardDescription>Analytics and sensor data visualization</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Chart content will be displayed here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="px-3">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('mobileDashboard.alerts')}</CardTitle>
+                <CardDescription>System alerts and notifications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Alerts content will be displayed here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="activity" className="px-3">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('mobileDashboard.activity')}</CardTitle>
+                <CardDescription>Recent system activity and events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Activity content will be displayed here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="insights" className="px-3">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('mobileDashboard.insights')}</CardTitle>
+                <CardDescription>AI-powered insights and recommendations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Insights content will be displayed here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t shadow-lg">
           <TabsList className="grid w-full grid-cols-5 h-16 bg-transparent p-1">

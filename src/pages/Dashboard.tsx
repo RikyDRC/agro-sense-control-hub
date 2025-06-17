@@ -111,6 +111,8 @@ const Dashboard: React.FC = () => {
           totalAlerts={unreadAlerts}
           systemHealth={systemHealth}
           waterUsage={waterUsage}
+          activeView={activeView}
+          setActiveView={setActiveView}
         >
           <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
             <TabsContent value="overview" className="space-y-3">
@@ -154,17 +156,51 @@ const Dashboard: React.FC = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="charts" className="space-y-3">
+            <TabsContent value="analytics" className="space-y-3">
               <SensorReadingsChart readings={readings} />
               <SystemHealthWidget devices={devices} zones={zones} />
+              <div className="dashboard-grid dashboard-grid-4 gap-4">
+                <GaugeChart
+                  title={t('widgets.soilMoisture.title')}
+                  value={averageMoisture}
+                  max={100}
+                  unit="%"
+                  color="hsl(152, 37%, 38%)"
+                />
+                <GaugeChart
+                  title={t('widgets.systemHealth.title')}
+                  value={systemHealth}
+                  max={100}
+                  unit="%"
+                  color={systemHealth > 80 ? "hsl(152, 37%, 38%)" : "hsl(0, 84%, 60%)"}
+                />
+                <GaugeChart
+                  title={t('widgets.activeDevices.title')}
+                  value={activeDevices}
+                  max={devices.length || 1}
+                  unit=""
+                  color="hsl(200, 70%, 50%)"
+                />
+                <GaugeChart
+                  title={t('widgets.waterUsage.title')}
+                  value={parseInt(waterUsage) || 0}
+                  max={500}
+                  unit="L"
+                  color="hsl(210, 40%, 50%)"
+                />
+              </div>
             </TabsContent>
 
-            <TabsContent value="alerts" className="space-y-3">
-              <AlertsWidget alerts={alerts} />
-            </TabsContent>
-
-            <TabsContent value="activity" className="space-y-3">
-              <RecentActivityWidget activities={automationHistory} />
+            <TabsContent value="monitoring" className="space-y-3">
+              <div className="dashboard-grid dashboard-grid-3 gap-4">
+                <div className="lg:col-span-2">
+                  <RecentActivityWidget activities={automationHistory} />
+                </div>
+                <div>
+                  <AlertsWidget alerts={alerts} />
+                </div>
+              </div>
+              <DeviceStatusList devices={devices} />
             </TabsContent>
 
             <TabsContent value="insights" className="space-y-3">
@@ -172,6 +208,10 @@ const Dashboard: React.FC = () => {
                 currentWeather={currentWeather || undefined}
                 moistureLevel={averageMoisture}
               />
+              <div className="dashboard-grid dashboard-grid-2 gap-4">
+                <QuickAutomationPanel />
+                <SystemHealthWidget devices={devices} zones={zones} />
+              </div>
             </TabsContent>
           </Tabs>
         </MobileDashboardLayout>
@@ -324,7 +364,7 @@ const Dashboard: React.FC = () => {
                 value={averageMoisture}
                 max={100}
                 unit="%"
-                color="hsl(152, 37%,        )"
+                color="hsl(152, 37%, 38%)"
               />
               <GaugeChart
                 title={t('widgets.systemHealth.title')}

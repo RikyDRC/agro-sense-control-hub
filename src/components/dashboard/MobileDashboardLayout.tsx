@@ -25,6 +25,8 @@ interface MobileDashboardLayoutProps {
   totalAlerts: number;
   systemHealth: number;
   waterUsage: string;
+  activeView: string;
+  setActiveView: (view: string) => void;
 }
 
 const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
@@ -32,10 +34,11 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
   activeDevices,
   totalAlerts,
   systemHealth,
-  waterUsage
+  waterUsage,
+  activeView,
+  setActiveView
 }) => {
   const { t } = useTranslation('dashboard');
-  const [activeTab, setActiveTab] = useState('overview');
   const isMobile = useIsMobile();
 
   if (!isMobile) {
@@ -85,112 +88,59 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsContent value="overview" className="px-3">
-          {children}
-        </TabsContent>
+      <div className="px-3">
+        {children}
+      </div>
 
-        <TabsContent value="charts" className="px-3">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('mobileDashboard.charts')}</CardTitle>
-                <CardDescription>Analytics and sensor data visualization</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Chart content will be displayed here</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="px-3">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('mobileDashboard.alerts')}</CardTitle>
-                <CardDescription>System alerts and notifications</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Alerts content will be displayed here</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="activity" className="px-3">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('mobileDashboard.activity')}</CardTitle>
-                <CardDescription>Recent system activity and events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Activity content will be displayed here</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="insights" className="px-3">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('mobileDashboard.insights')}</CardTitle>
-                <CardDescription>AI-powered insights and recommendations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Insights content will be displayed here</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t shadow-lg">
-          <TabsList className="grid w-full grid-cols-5 h-16 bg-transparent p-1">
-            <TabsTrigger 
-              value="overview" 
-              className="flex flex-col gap-1 h-full px-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all"
-            >
-              <Home className="h-4 w-4 flex-shrink-0" />
-              <span className="text-xs font-medium leading-none">{t('mobileDashboard.overview')}</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="charts" 
-              className="flex flex-col gap-1 h-full px-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all"
-            >
-              <BarChart3 className="h-4 w-4 flex-shrink-0" />
-              <span className="text-xs font-medium leading-none">{t('mobileDashboard.charts')}</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="alerts" 
-              className="flex flex-col gap-1 h-full px-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all relative"
-            >
-              <Bell className="h-4 w-4 flex-shrink-0" />
-              <span className="text-xs font-medium leading-none">{t('mobileDashboard.alerts')}</span>
-              {totalAlerts > 0 && (
-                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
-                  {totalAlerts}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="activity" 
-              className="flex flex-col gap-1 h-full px-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all"
-            >
-              <Activity className="h-4 w-4 flex-shrink-0" />
-              <span className="text-xs font-medium leading-none">{t('mobileDashboard.activity')}</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="insights" 
-              className="flex flex-col gap-1 h-full px-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all"
-            >
-              <TrendingUp className="h-4 w-4 flex-shrink-0" />
-              <span className="text-xs font-medium leading-none">{t('mobileDashboard.insights')}</span>
-            </TabsTrigger>
-          </TabsList>
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+        <div className="grid w-full grid-cols-4 h-16 bg-transparent p-1">
+          <button 
+            onClick={() => setActiveView('overview')}
+            className={cn(
+              "flex flex-col gap-1 h-full px-2 py-2 rounded-lg transition-all items-center justify-center",
+              activeView === 'overview' ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            <Home className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs font-medium leading-none">{t('mobileDashboard.overview')}</span>
+          </button>
+          <button 
+            onClick={() => setActiveView('analytics')}
+            className={cn(
+              "flex flex-col gap-1 h-full px-2 py-2 rounded-lg transition-all items-center justify-center",
+              activeView === 'analytics' ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            <BarChart3 className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs font-medium leading-none">{t('mobileDashboard.charts')}</span>
+          </button>
+          <button 
+            onClick={() => setActiveView('monitoring')}
+            className={cn(
+              "flex flex-col gap-1 h-full px-2 py-2 rounded-lg transition-all items-center justify-center relative",
+              activeView === 'monitoring' ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            <Bell className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs font-medium leading-none">{t('mobileDashboard.alerts')}</span>
+            {totalAlerts > 0 && (
+              <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
+                {totalAlerts}
+              </Badge>
+            )}
+          </button>
+          <button 
+            onClick={() => setActiveView('insights')}
+            className={cn(
+              "flex flex-col gap-1 h-full px-2 py-2 rounded-lg transition-all items-center justify-center",
+              activeView === 'insights' ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            <TrendingUp className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs font-medium leading-none">{t('mobileDashboard.insights')}</span>
+          </button>
         </div>
-      </Tabs>
+      </div>
     </div>
   );
 };

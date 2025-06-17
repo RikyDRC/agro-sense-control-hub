@@ -3,6 +3,16 @@
   "title": "Dashboard",
   "subtitle": "Monitor and manage your smart irrigation system",
   "loading": "Loading...",
+  "mobileDashboard": {
+    "overview": "Overview",
+    "charts": "Charts", 
+    "alerts": "Alerts",
+    "activity": "Activity",
+    "insights": "Insights",
+    "devices": "Devices",
+    "health": "Health",
+    "water": "Water"
+  },
   "stats": {
     "waterUsage": "Water Usage",
     "avgMoisture": "Avg Moisture",

@@ -3,6 +3,16 @@
   "title": "Tableau de bord",
   "subtitle": "Surveillez et gérez votre système d'irrigation intelligent",
   "loading": "Chargement...",
+  "mobileDashboard": {
+    "overview": "Aperçu",
+    "charts": "Graphiques",
+    "alerts": "Alertes", 
+    "activity": "Activité",
+    "insights": "Analyses",
+    "devices": "Appareils",
+    "health": "Santé",
+    "water": "Eau"
+  },
   "stats": {
     "waterUsage": "Consommation d'eau",
     "avgMoisture": "Humidité moyenne",

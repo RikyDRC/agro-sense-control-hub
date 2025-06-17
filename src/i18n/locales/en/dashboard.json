@@ -33,7 +33,24 @@
     },
     "systemHealth": {
       "title": "System Health",
-      "description": "Overall system status"
+      "description": "Overall system status and performance",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor",
+      "devicesOnline": "Devices Online",
+      "zonesActive": "Zones Active",
+      "lastUpdate": "Last Update",
+      "network": "Network",
+      "deviceUptime": "Device Uptime",
+      "averageUptime": "Average uptime",
+      "dataQuality": "Data Quality",
+      "sensorAccuracy": "Sensor accuracy",
+      "batteryHealth": "Battery Health",
+      "averageBatteryLevel": "Average battery level",
+      "irrigationEfficiency": "Irrigation Efficiency",
+      "systemEfficiency": "System efficiency",
+      "needsAttention": "Needs Attention"
     },
     "activeDevices": {
       "title": "Active Devices",
@@ -106,17 +123,6 @@
       "deviceConnected": "Device connected",
       "deviceDisconnected": "Device disconnected",
       "alertGenerated": "Alert generated"
-    },
-    "systemHealth": {
-      "title": "System Health",
-      "description": "Overall system status and performance",
-      "excellent": "Excellent",
-      "good": "Good",
-      "fair": "Fair",
-      "poor": "Poor",
-      "devicesOnline": "Devices Online",
-      "zonesActive": "Zones Active",
-      "lastUpdate": "Last Update"
     },
     "quickActions": {
       "title": "Quick Actions",

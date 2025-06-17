@@ -33,7 +33,24 @@
     },
     "systemHealth": {
       "title": "Santé du système",
-      "description": "État général du système"
+      "description": "État général et performances du système",
+      "excellent": "Excellent",
+      "good": "Bon",
+      "fair": "Correct",
+      "poor": "Faible",
+      "devicesOnline": "Appareils en ligne",
+      "zonesActive": "Zones actives",
+      "lastUpdate": "Dernière mise à jour",
+      "network": "Réseau",
+      "deviceUptime": "Temps de fonctionnement",
+      "averageUptime": "Temps de fonctionnement moyen",
+      "dataQuality": "Qualité des données",
+      "sensorAccuracy": "Précision des capteurs",
+      "batteryHealth": "Santé de la batterie",
+      "averageBatteryLevel": "Niveau moyen de batterie",
+      "irrigationEfficiency": "Efficacité d'irrigation",
+      "systemEfficiency": "Efficacité du système",
+      "needsAttention": "Nécessite attention"
     },
     "activeDevices": {
       "title": "Appareils actifs",
@@ -106,17 +123,6 @@
       "deviceConnected": "Appareil connecté",
       "deviceDisconnected": "Appareil déconnecté",
       "alertGenerated": "Alerte générée"
-    },
-    "systemHealth": {
-      "title": "Santé du système",
-      "description": "État général et performances du système",
-      "excellent": "Excellent",
-      "good": "Bon",
-      "fair": "Correct",
-      "poor": "Faible",
-      "devicesOnline": "Appareils en ligne",
-      "zonesActive": "Zones actives",
-      "lastUpdate": "Dernière mise à jour"
     },
     "quickActions": {
       "title": "Actions rapides",

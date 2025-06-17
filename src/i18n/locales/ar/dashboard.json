@@ -33,7 +33,24 @@
     },
     "systemHealth": {
       "title": "صحة النظام",
-      "description": "حالة النظام الإجمالية"
+      "description": "حالة النظام الإجمالية والأداء",
+      "excellent": "ممتاز",
+      "good": "جيد",
+      "fair": "مقبول",
+      "poor": "ضعيف",
+      "devicesOnline": "الأجهزة المتصلة",
+      "zonesActive": "المناطق النشطة",
+      "lastUpdate": "آخر تحديث",
+      "network": "الشبكة",
+      "deviceUptime": "وقت تشغيل الجهاز",
+      "averageUptime": "متوسط وقت التشغيل",
+      "dataQuality": "جودة البيانات",
+      "sensorAccuracy": "دقة أجهزة الاستشعار",
+      "batteryHealth": "صحة البطارية",
+      "averageBatteryLevel": "متوسط مستوى البطارية",
+      "irrigationEfficiency": "كفاءة الري",
+      "systemEfficiency": "كفاءة النظام",
+      "needsAttention": "يحتاج إلى اهتمام"
     },
     "activeDevices": {
       "title": "الأجهزة النشطة",
@@ -106,17 +123,6 @@
       "deviceConnected": "تم توصيل الجهاز",
       "deviceDisconnected": "تم قطع الجهاز",
       "alertGenerated": "تم إنتاج تنبيه"
-    },
-    "systemHealth": {
-      "title": "صحة النظام",
-      "description": "حالة النظام الإجمالية والأداء",
-      "excellent": "ممتاز",
-      "good": "جيد",
-      "fair": "مقبول",
-      "poor": "ضعيف",
-      "devicesOnline": "الأجهزة المتصلة",
-      "zonesActive": "المناطق النشطة",
-      "lastUpdate": "آخر تحديث"
     },
     "quickActions": {
       "title": "الإجراءات السريعة",

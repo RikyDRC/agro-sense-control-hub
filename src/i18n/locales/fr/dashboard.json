@@ -147,6 +147,7 @@
     },
     "predictiveAnalytics": {
       "title": "Analyses prédictives",
+      "subtitle": "Informations et recommandations basées sur l'IA",
       "description": "Informations et recommandations basées sur l'IA",
       "recommendation": "Recommandation",
       "wateringRecommended": "Arrosage recommandé",
@@ -154,7 +155,27 @@
       "optimalTime": "Heure optimale",
       "weatherImpact": "Impact météorologique",
       "moistureProjection": "Projection d'humidité",
-      "nextWatering": "Prochain arrosage"
+      "nextWatering": "Prochain arrosage",
+      "confidence": "confiant",
+      "priorities": {
+        "high": "Élevé",
+        "medium": "Moyen",
+        "low": "Faible"
+      },
+      "types": {
+        "irrigation": "Irrigation",
+        "weather": "Météo",
+        "crop": "Culture",
+        "resource": "Ressource"
+      },
+      "actions": {
+        "adjustSchedule": "Ajuster l'horaire",
+        "startIrrigation": "Démarrer l'irrigation",
+        "waterNow": "Arroser maintenant",
+        "maintain": "Maintenir",
+        "updatePlan": "Mettre à jour le plan",
+        "schedule": "Programmer"
+      }
     },
     "quickAutomation": {
       "title": "Automatisation rapide",
@@ -164,6 +185,9 @@
       "scheduleNow": "Programmer maintenant",
       "pauseSchedules": "Suspendre les programmes",
       "resumeSchedules": "Reprendre les programmes"
+    },
+    "gaugeChart": {
+      "of": "de"
     }
   },
   "quickAutomation": {

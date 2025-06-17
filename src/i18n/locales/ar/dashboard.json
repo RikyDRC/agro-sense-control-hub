@@ -3,6 +3,16 @@
   "title": "لوحة التحكم",
   "subtitle": "راقب وأدر نظام الري الذكي الخاص بك",
   "loading": "جاري التحميل...",
+  "mobileDashboard": {
+    "overview": "نظرة عامة",
+    "charts": "الرسوم البيانية",
+    "alerts": "التنبيهات", 
+    "activity": "النشاط",
+    "insights": "الرؤى",
+    "devices": "الأجهزة",
+    "health": "الصحة",
+    "water": "المياه"
+  },
   "stats": {
     "waterUsage": "استهلاك المياه",
     "avgMoisture": "متوسط الرطوبة",
@@ -137,6 +147,7 @@
     },
     "predictiveAnalytics": {
       "title": "التحليلات التنبؤية",
+      "subtitle": "رؤى وتوصيات مدعومة بالذكاء الاصطناعي",
       "description": "رؤى وتوصيات مدعومة بالذكاء الاصطناعي",
       "recommendation": "التوصية",
       "wateringRecommended": "الري موصى به",
@@ -144,7 +155,27 @@
       "optimalTime": "الوقت الأمثل",
       "weatherImpact": "تأثير الطقس",
       "moistureProjection": "إسقاط الرطوبة",
-      "nextWatering": "الري التالي"
+      "nextWatering": "الري التالي",
+      "confidence": "واثق",
+      "priorities": {
+        "high": "عالي",
+        "medium": "متوسط",
+        "low": "منخفض"
+      },
+      "types": {
+        "irrigation": "الري",
+        "weather": "الطقس",
+        "crop": "المحصول",
+        "resource": "المورد"
+      },
+      "actions": {
+        "adjustSchedule": "تعديل الجدول",
+        "startIrrigation": "بدء الري",
+        "waterNow": "الري الآن",
+        "maintain": "الحفاظ",
+        "updatePlan": "تحديث الخطة",
+        "schedule": "جدولة"
+      }
     },
     "quickAutomation": {
       "title": "الأتمتة السريعة",
@@ -154,6 +185,9 @@
       "scheduleNow": "جدولة الآن",
       "pauseSchedules": "إيقاف الجداول مؤقتاً",
       "resumeSchedules": "استئناف الجداول"
+    },
+    "gaugeChart": {
+      "of": "من"
     }
   },
   "quickAutomation": {

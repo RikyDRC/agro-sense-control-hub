@@ -35,29 +35,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Mobile overlay */}
+      {/* Mobile overlay with higher z-index and solid background */}
       {isMobile && sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300" 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden transition-all duration-300" 
           onClick={closeSidebar}
         />
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar with enhanced mobile styling */}
       <div className={cn(
         "fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0",
+        "bg-card border-r border-border shadow-xl",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
-        isMobile ? "w-64" : sidebarOpen ? "w-64" : "w-20"
+        isMobile ? "w-72 max-w-[80vw]" : sidebarOpen ? "w-64" : "w-20"
       )}>
         <Sidebar isCollapsed={!sidebarOpen && !isMobile} onNavigate={closeSidebar} />
       </div>
       
-      {/* Main content */}
+      {/* Main content with improved mobile responsiveness */}
       <div className="flex flex-col flex-1 overflow-hidden min-w-0 bg-background">
         <Header toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
-        <main className="flex-1 overflow-hidden p-3 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+        <main className="flex-1 overflow-hidden p-2 sm:p-4 lg:p-6 bg-gradient-to-br from-background via-background to-muted/10">
           <ScrollArea className="h-full w-full">
-            <div className="min-w-0 max-w-7xl mx-auto">
+            <div className="min-w-0 max-w-7xl mx-auto space-y-4 sm:space-y-6">
               {children}
             </div>
           </ScrollArea>

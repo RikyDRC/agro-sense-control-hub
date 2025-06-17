@@ -65,15 +65,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
         to={item.to}
         onClick={onNavigate}
         className={cn(
-          'sidebar-nav-item group flex items-center w-full text-left',
+          'sidebar-nav-item group flex items-center w-full text-left transition-colors duration-200',
           isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5',
-          isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+          isActive 
+            ? 'bg-primary text-primary-foreground shadow-sm' 
+            : 'text-sidebar-foreground hover:bg-accent hover:text-accent-foreground'
         )}
       >
         <item.icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed ? '' : 'mr-3')} />
-        {!isCollapsed && <span className="truncate">{item.label}</span>}
+        {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
         {isActive && !isCollapsed && (
-          <div className="absolute left-0 top-0 h-full w-1 bg-sidebar-primary rounded-r-full" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />
         )}
       </NavLink>
     );
@@ -85,8 +87,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
             <TooltipTrigger asChild>
               {content}
             </TooltipTrigger>
-            <TooltipContent side="right" className="bg-sidebar-background border-sidebar-border">
-              <p className="text-sidebar-foreground">{item.label}</p>
+            <TooltipContent side="right" className="bg-popover border-border shadow-md z-50">
+              <p className="text-popover-foreground font-medium">{item.label}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -97,31 +99,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-sidebar-background border-r border-sidebar-border shadow-lg">
-      <div className="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto">
+    <div className="flex h-full w-full flex-col bg-card border-r border-border shadow-lg relative z-50">
+      <div className="flex-1 flex flex-col pt-4 pb-4 overflow-y-auto bg-card">
         <div className={cn(
-          "flex items-center flex-shrink-0 px-4 mb-8",
+          "flex items-center flex-shrink-0 px-4 mb-6",
           isCollapsed && "justify-center px-2"
         )}>
           {isCollapsed ? (
-            <div className="h-10 w-10 bg-sidebar-primary rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-sidebar-primary-foreground font-bold text-lg">AS</span>
+            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-primary-foreground font-bold text-lg">AS</span>
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-sidebar-primary rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-sidebar-primary-foreground font-bold text-lg">AS</span>
+              <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-primary-foreground font-bold text-lg">AS</span>
               </div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">{t('header.appName')}</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('header.appName')}</h1>
             </div>
           )}
         </div>
         
-        <nav className={cn("flex-1 space-y-8", isCollapsed ? "px-2" : "px-3")}>
+        <nav className={cn("flex-1 space-y-6", isCollapsed ? "px-2" : "px-3")}>
           {/* Main Navigation */}
           <div>
             {!isCollapsed && (
-              <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
+              <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {t('sidebar.main')}
               </h3>
             )}
@@ -135,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           {/* Tools */}
           <div>
             {!isCollapsed && (
-              <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
+              <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {t('sidebar.tools')}
               </h3>
             )}
@@ -150,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           {adminNavItems.length > 0 && (
             <div>
               {!isCollapsed && (
-                <h3 className="px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-3">
+                <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   {t('sidebar.administration')}
                 </h3>
               )}

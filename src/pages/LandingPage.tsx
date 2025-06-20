@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -636,30 +637,30 @@ const LandingPage = () => {
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.product')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/features" className="text-gray-400 hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link to="/integrations" className="text-gray-400 hover:text-white transition-colors">Integrations</Link></li>
-                <li><Link to="/documentation" className="text-gray-400 hover:text-white transition-colors">Documentation</Link></li>
+                <li><Link to="/features" className="text-gray-400 hover:text-white transition-colors">{t('footer.features')}</Link></li>
+                <li><Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">{t('footer.pricing')}</Link></li>
+                <li><Link to="/integrations" className="text-gray-400 hover:text-white transition-colors">{t('footer.integrations')}</Link></li>
+                <li><Link to="/documentation" className="text-gray-400 hover:text-white transition-colors">{t('footer.documentation')}</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.company')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About</Link></li>
-                <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="/careers" className="text-gray-400 hover:text-white transition-colors">Careers</Link></li>
-                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+                <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">{t('footer.about')}</Link></li>
+                <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">{t('footer.blog')}</Link></li>
+                <li><Link to="/careers" className="text-gray-400 hover:text-white transition-colors">{t('footer.careers')}</Link></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">{t('footer.contact')}</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">{t('footer.support')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/help-center" className="text-gray-400 hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link to="/community" className="text-gray-400 hover:text-white transition-colors">Community</Link></li>
-                <li><Link to="/status" className="text-gray-400 hover:text-white transition-colors">Status</Link></li>
-                <li><Link to="/api-docs" className="text-gray-400 hover:text-white transition-colors">API Docs</Link></li>
+                <li><Link to="/help-center" className="text-gray-400 hover:text-white transition-colors">{t('footer.helpCenter')}</Link></li>
+                <li><Link to="/community" className="text-gray-400 hover:text-white transition-colors">{t('footer.community')}</Link></li>
+                <li><Link to="/status" className="text-gray-400 hover:text-white transition-colors">{t('footer.status')}</Link></li>
+                <li><Link to="/api-docs" className="text-gray-400 hover:text-white transition-colors">{t('footer.apiDocs')}</Link></li>
               </ul>
             </div>
           </div>

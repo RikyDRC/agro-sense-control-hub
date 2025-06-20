@@ -1,7 +1,8 @@
+
 import React, { lazy } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { LazyComponent } from '@/components/LazyComponent';
-import { HeroSection } from '@/components/landing/HeroSection';
+import HeroSection from '@/components/landing/HeroSection';
 
 // Lazy load components for better performance
 const Features = lazy(() => import('@/components/landing/Features'));

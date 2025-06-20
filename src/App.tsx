@@ -1,26 +1,25 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { HelmetProvider } from 'react-helmet-async';
-import { Skeleton } from "@/components/ui/skeleton";
-import "./App.css";
 
-// Lazy load components for better performance
-const LandingPage = lazy(() => import("./pages/LandingPage"));
+// Lazy load pages for better performance
 const OptimizedLandingPage = lazy(() => import("./pages/OptimizedLandingPage"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const DevicesPage = lazy(() => import("./pages/DevicesPage"));
 const ZonesPage = lazy(() => import("./pages/ZonesPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const CropsPage = lazy(() => import("./pages/CropsPage"));
-const MapPage = lazy(() => import("./pages/MapPage"));
 const WeatherPage = lazy(() => import("./pages/WeatherPage"));
+const MapPage = lazy(() => import("./pages/MapPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const SubscriptionPlansPage = lazy(() => import("./pages/SubscriptionPlansPage"));
+const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
+const SubscriptionPendingPage = lazy(() => import("./pages/SubscriptionPendingPage"));
 const DeviceConnectivity = lazy(() => import("./pages/DeviceConnectivity"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -29,26 +28,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
       refetchOnWindowFocus: false,
       retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });
-
-const LoadingFallback = () => (
-  <div className="min-h-screen bg-gray-50 p-4">
-    <div className="max-w-7xl mx-auto space-y-6">
-      <Skeleton className="h-16 w-full" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    </div>
-  </div>
-);
 
 function App() {
   return (
@@ -58,18 +43,25 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <BrowserRouter>
-              <Suspense fallback={<LoadingFallback />}>
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+                </div>
+              }>
                 <Routes>
                   <Route path="/" element={<OptimizedLandingPage />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/devices" element={<DevicesPage />} />
                   <Route path="/zones" element={<ZonesPage />} />
                   <Route path="/automation" element={<AutomationPage />} />
                   <Route path="/crops" element={<CropsPage />} />
-                  <Route path="/map" element={<MapPage />} />
                   <Route path="/weather" element={<WeatherPage />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
+                  <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
+                  <Route path="/subscription-pending" element={<SubscriptionPendingPage />} />
                   <Route path="/device-connectivity" element={<DeviceConnectivity />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

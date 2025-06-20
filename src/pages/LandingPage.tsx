@@ -7,6 +7,8 @@ import { ArrowRight, Shield, Zap, Users, CheckCircle, Star, Mail, Phone, MapPin,
 import { Link } from 'react-router-dom';
 import NewsletterForm from '@/components/forms/NewsletterForm';
 import ContactForm from '@/components/forms/ContactForm';
+import HeroSection from '@/components/landing/HeroSection';
+import LanguageSelector from '@/components/ui/language-selector';
 
 const LandingPage = () => {
   return (
@@ -27,6 +29,7 @@ const LandingPage = () => {
               <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
               <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">About</Link>
               <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+              <LanguageSelector />
               <Link to="/auth">
                 <Button variant="outline" className="mr-2">Login</Button>
               </Link>
@@ -39,33 +42,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <Badge variant="secondary" className="mb-4 px-4 py-2">
-            🌱 Smart Farming Revolution
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-agro-green to-primary bg-clip-text text-transparent mb-6">
-            Transform Your Farm with Irrify
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Advanced smart irrigation management that maximizes crop yield while minimizing water usage. 
-            Monitor, automate, and optimize your farming operations with cutting-edge IoT technology.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth">
-              <Button size="lg" className="bg-agro-green hover:bg-agro-green-dark text-white px-8 py-3">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/features">
-              <Button size="lg" variant="outline" className="px-8 py-3">
-                Explore Features
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Features Grid */}
       <section className="container mx-auto px-4 py-20">

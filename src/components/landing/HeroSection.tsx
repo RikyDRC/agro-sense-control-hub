@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Sprout } from 'lucide-react';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const HeroSection = () => {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="bg-gradient-to-br from-agro-green-dark/80 to-agro-green-light/80 absolute inset-0 z-0" />
+      <div className="bg-gradient-to-br from-green-600/80 to-green-400/80 absolute inset-0 z-0" />
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center opacity-30" 
         style={{ 
@@ -36,9 +37,14 @@ const HeroSection = () => {
       />
       
       <div className="relative z-10 px-4 py-24 md:py-32 lg:py-40 max-w-6xl mx-auto text-center">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-          {t('hero.title')}
-        </h1>
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center shadow-xl">
+            <Sprout className="h-10 w-10 text-green-600" />
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+            Irrify
+          </h1>
+        </div>
         
         <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
           {t('hero.subtitle')}
@@ -47,7 +53,7 @@ const HeroSection = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
           <Button 
             size="lg" 
-            className="bg-white text-agro-green-dark hover:bg-white/90 text-lg px-8"
+            className="bg-white text-green-600 hover:bg-white/90 text-lg px-8"
             onClick={handleGetStarted}
           >
             {t('hero.getStarted')}

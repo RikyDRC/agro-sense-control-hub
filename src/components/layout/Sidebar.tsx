@@ -16,7 +16,8 @@ import {
   CreditCard,
   MessageSquare,
   ShieldCheck,
-  Send
+  Send,
+  Sprout
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -108,15 +109,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           isCollapsed && "justify-center px-2"
         )}>
           {isCollapsed ? (
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-primary-foreground font-bold text-lg">AS</span>
+            <div className="h-10 w-10 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
+              <Sprout className="h-6 w-6 text-white" />
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-primary-foreground font-bold text-lg">AS</span>
+              <div className="h-10 w-10 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
+                <Sprout className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">{t('header.appName')}</h1>
+              <h1 className="text-xl font-bold text-foreground">Irrify</h1>
             </div>
           )}
         </div>

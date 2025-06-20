@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
+import { LogIn, UserPlus, AlertTriangle, Sprout } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const AuthPage = () => {
@@ -120,8 +120,13 @@ const AuthPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">AgroSense Hub</h1>
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="h-12 w-12 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Sprout className="h-7 w-7 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">Irrify</h1>
+          </div>
           <p className="text-muted-foreground">Smart irrigation and farm management</p>
         </div>
 

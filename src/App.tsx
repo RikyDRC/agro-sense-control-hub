@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -39,7 +40,7 @@ import SubscriptionPendingPage from '@/pages/SubscriptionPendingPage';
 
 // Import contexts
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -198,3 +199,4 @@ function App() {
 }
 
 export default App;
+

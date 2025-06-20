@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import pages
@@ -18,7 +19,6 @@ import DeviceConnectivity from '@/pages/DeviceConnectivity';
 import FarmersManagementPage from '@/pages/admin/FarmersManagementPage';
 import ContactSubmissionsPage from '@/pages/admin/ContactSubmissionsPage';
 import BroadcastMessagesPage from '@/pages/admin/BroadcastMessagesPage';
-import AdminConfigPage from '@/pages/admin/AdminConfigPage';
 import PaymentGatewaysPage from '@/pages/admin/PaymentGatewaysPage';
 import NotFound from '@/pages/NotFound';
 import FeaturesPage from '@/pages/FeaturesPage';
@@ -39,7 +39,7 @@ import SubscriptionPendingPage from '@/pages/SubscriptionPendingPage';
 
 // Import contexts
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -175,14 +175,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PlatformPagesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/config"
-              element={
-                <ProtectedRoute>
-                  <AdminConfigPage />
                 </ProtectedRoute>
               }
             />

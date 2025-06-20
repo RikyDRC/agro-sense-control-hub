@@ -95,47 +95,37 @@
   "pricing": {
     "title": "Choisissez Votre Plan",
     "subtitle": "Tarification flexible qui grandit avec votre ferme",
-    "starter": {
-      "name": "Débutant",
-      "price": "99€",
+    "free": {
+      "name": "Gratuit",
+      "price": "0€",
       "period": "/mois",
       "description": "Parfait pour les petites fermes qui commencent avec l'agriculture intelligente",
       "features": [
-        "Jusqu'à 10 capteurs",
-        "Règles d'automatisation de base",
-        "Accès application mobile",
-        "Support par email",
-        "Rapports hebdomadaires"
+        "1 Zone",
+        "2 Appareils",
+        "1 Culture",
+        "Surveillance de base",
+        "API météo partagée",
+        "API cartes partagée",
+        "Support communautaire"
       ]
     },
-    "professional": {
-      "name": "Professionnel",
-      "price": "199€",
-      "period": "/mois",
+    "premium": {
+      "name": "Premium",
+      "price": "Nous Contacter",
+      "period": "pour les tarifs",
       "description": "Fonctionnalités avancées pour les opérations agricoles en croissance",
       "features": [
-        "Jusqu'à 50 capteurs",
+        "Zones illimitées",
+        "Appareils illimités",
+        "Cultures illimitées",
         "Automatisation avancée",
         "Analyses en temps réel",
         "Support prioritaire",
         "Intégration météorologique",
-        "Accès API"
+        "Fonctionnalités personnalisées"
       ],
       "mostPopular": "Le Plus Populaire"
-    },
-    "enterprise": {
-      "name": "Entreprise",
-      "price": "399€",
-      "period": "/mois",
-      "description": "Solution complète pour les opérations agricoles à grande échelle",
-      "features": [
-        "Capteurs illimités",
-        "Automatisations personnalisées",
-        "Analyses avancées",
-        "Support 24/7",
-        "Intégrations personnalisées",
-        "Formation sur site"
-      ]
     },
     "selectPlan": "Sélectionner le Plan"
   },

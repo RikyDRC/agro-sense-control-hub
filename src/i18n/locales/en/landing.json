@@ -95,47 +95,37 @@
   "pricing": {
     "title": "Choose Your Plan", 
     "subtitle": "Flexible pricing that grows with your farm",
-    "starter": {
-      "name": "Starter",
-      "price": "$99",
+    "free": {
+      "name": "Free",
+      "price": "$0",
       "period": "/month",
       "description": "Perfect for small farms getting started with smart agriculture",
       "features": [
-        "Up to 10 sensors",
-        "Basic automation rules",
-        "Mobile app access",
-        "Email support",
-        "Weekly reports"
+        "1 Zone",
+        "2 Devices", 
+        "1 Crop",
+        "Basic monitoring",
+        "Shared weather API",
+        "Shared maps API",
+        "Community support"
       ]
     },
-    "professional": {
-      "name": "Professional", 
-      "price": "$199",
-      "period": "/month",
+    "premium": {
+      "name": "Premium", 
+      "price": "Contact Us",
+      "period": "for pricing",
       "description": "Advanced features for growing agricultural operations",
       "features": [
-        "Up to 50 sensors",
+        "Unlimited zones",
+        "Unlimited devices",
+        "Unlimited crops",
         "Advanced automation",
         "Real-time analytics",
         "Priority support", 
         "Weather integration",
-        "API access"
+        "Custom features"
       ],
       "mostPopular": "Most Popular"
-    },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "$399", 
-      "period": "/month",
-      "description": "Complete solution for large-scale agricultural operations",
-      "features": [
-        "Unlimited sensors",
-        "Custom automations",
-        "Advanced analytics",
-        "24/7 support",
-        "Custom integrations",
-        "On-site training"
-      ]
     },
     "selectPlan": "Select Plan"
   },

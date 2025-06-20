@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -430,32 +429,24 @@ const LandingPage = () => {
               <p className="text-xl text-gray-600">{t('pricing.subtitle')}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {[
                 {
-                  name: t('pricing.starter.name'),
-                  price: t('pricing.starter.price'),
-                  period: t('pricing.starter.period'),
-                  description: t('pricing.starter.description'),
-                  features: t('pricing.starter.features', { returnObjects: true }) as string[],
+                  name: t('pricing.free.name'),
+                  price: t('pricing.free.price'),
+                  period: t('pricing.free.period'),
+                  description: t('pricing.free.description'),
+                  features: t('pricing.free.features', { returnObjects: true }) as string[],
                   highlighted: false
                 },
                 {
-                  name: t('pricing.professional.name'),
-                  price: t('pricing.professional.price'),
-                  period: t('pricing.professional.period'),
-                  description: t('pricing.professional.description'),
-                  features: t('pricing.professional.features', { returnObjects: true }) as string[],
+                  name: t('pricing.premium.name'),
+                  price: t('pricing.premium.price'),
+                  period: t('pricing.premium.period'),
+                  description: t('pricing.premium.description'),
+                  features: t('pricing.premium.features', { returnObjects: true }) as string[],
                   highlighted: true,
-                  badge: t('pricing.professional.mostPopular')
-                },
-                {
-                  name: t('pricing.enterprise.name'),
-                  price: t('pricing.enterprise.price'),
-                  period: t('pricing.enterprise.period'),
-                  description: t('pricing.enterprise.description'),
-                  features: t('pricing.enterprise.features', { returnObjects: true }) as string[],
-                  highlighted: false
+                  badge: t('pricing.premium.mostPopular')
                 }
               ].map((plan, index) => (
                 <Card 
@@ -499,7 +490,7 @@ const LandingPage = () => {
                         )}
                         asChild
                       >
-                        <Link to="/auth">{t('pricing.selectPlan')}</Link>
+                        <Link to="/subscription-plans">{t('pricing.selectPlan')}</Link>
                       </Button>
                     </div>
                   </CardContent>

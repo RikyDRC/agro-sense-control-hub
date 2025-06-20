@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -457,11 +458,16 @@ const LandingPage = () => {
                   )}
                 >
                   {plan.badge && (
-                    <div className="absolute top-0 left-0 right-0 bg-agro-green text-white text-center py-2 text-sm font-medium">
-                      {plan.badge}
+                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-agro-green via-agro-green-dark to-agro-green text-white text-center py-3 text-sm font-semibold tracking-wide shadow-lg">
+                      <div className="flex items-center justify-center gap-2">
+                        <Star className="w-4 h-4 fill-current" />
+                        <span className="uppercase">{plan.badge}</span>
+                        <Star className="w-4 h-4 fill-current" />
+                      </div>
+                      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                     </div>
                   )}
-                  <CardContent className={cn("p-8", plan.badge && "pt-12")}>
+                  <CardContent className={cn("p-8", plan.badge && "pt-16")}>
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>

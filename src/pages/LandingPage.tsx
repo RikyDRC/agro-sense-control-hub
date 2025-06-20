@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -425,12 +424,18 @@ const LandingPage = () => {
         {/* Pricing */}
         <section id="pricing" className="py-20 md:py-32">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('pricing.title')}</h2>
-              <p className="text-xl text-gray-600">{t('pricing.subtitle')}</p>
+            <div className="text-center mb-16 space-y-4">
+              <Badge variant="outline" className="bg-agro-green/10 text-agro-green border-agro-green/20">
+                <Star className="w-3 h-3 mr-1" />
+                {t('pricing.badge')}
+              </Badge>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">{t('pricing.title')}</h2>
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                {t('pricing.subtitle')}
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {[
                 {
                   name: t('pricing.free.name'),
@@ -453,55 +458,105 @@ const LandingPage = () => {
                 <Card 
                   key={index} 
                   className={cn(
-                    "relative overflow-hidden transition-all duration-300 hover:shadow-xl",
-                    plan.highlighted ? "ring-2 ring-agro-green shadow-xl scale-105" : "hover:-translate-y-1"
+                    "relative overflow-hidden transition-all duration-300 hover:shadow-2xl group",
+                    plan.highlighted 
+                      ? "ring-2 ring-agro-green shadow-2xl lg:scale-105 bg-gradient-to-br from-white to-agro-green/5" 
+                      : "hover:-translate-y-2 shadow-lg hover:shadow-xl"
                   )}
                 >
                   {plan.badge && (
-                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-agro-green via-agro-green-dark to-agro-green text-white text-center py-3 text-sm font-semibold tracking-wide shadow-lg">
-                      <div className="flex items-center justify-center gap-2">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="uppercase">{plan.badge}</span>
-                        <Star className="w-4 h-4 fill-current" />
+                    <div className="absolute top-0 left-0 right-0 z-10">
+                      <div className="bg-gradient-to-r from-agro-green via-agro-green-dark to-agro-green text-white text-center py-3 shadow-lg">
+                        <div className="flex items-center justify-center gap-2">
+                          <Star className="w-4 h-4 fill-current animate-pulse" />
+                          <span className="text-sm font-bold uppercase tracking-wider">{plan.badge}</span>
+                          <Star className="w-4 h-4 fill-current animate-pulse" />
+                        </div>
                       </div>
-                      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                      <div className="h-1 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 shadow-sm" />
                     </div>
                   )}
-                  <CardContent className={cn("p-8", plan.badge && "pt-16")}>
+                  <CardContent className={cn(
+                    "p-6 md:p-8", 
+                    plan.badge && "pt-16 md:pt-20"
+                  )}>
                     <div className="space-y-6">
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
-                        <div className="mt-2 flex items-baseline">
-                          <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
-                          <span className="ml-1 text-gray-500">{plan.period}</span>
+                      <div className="text-center space-y-4">
+                        <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{plan.name}</h3>
+                        <div className="flex items-center justify-center">
+                          <span className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-agro-green-dark to-agro-green bg-clip-text text-transparent">
+                            {plan.price}
+                          </span>
+                          {plan.period && (
+                            <span className="ml-2 text-lg text-gray-500 self-end mb-2">{plan.period}</span>
+                          )}
                         </div>
-                        <p className="mt-4 text-gray-600">{plan.description}</p>
+                        <p className="text-gray-600 leading-relaxed px-2">{plan.description}</p>
                       </div>
                       
-                      <ul className="space-y-3">
-                        {Array.isArray(plan.features) && plan.features.map((feature: string, featureIndex: number) => (
-                          <li key={featureIndex} className="flex items-start gap-3">
-                            <CheckCircle className="h-5 w-5 text-agro-green flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-600">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-gray-900 text-center border-b border-gray-200 pb-2">
+                          Features Included:
+                        </h4>
+                        <ul className="space-y-3">
+                          {Array.isArray(plan.features) && plan.features.map((feature: string, featureIndex: number) => (
+                            <li key={featureIndex} className="flex items-start gap-3 group">
+                              <CheckCircle className="h-5 w-5 text-agro-green flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-gray-600 text-sm md:text-base leading-relaxed">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                       
-                      <Button 
-                        className={cn(
-                          "w-full", 
-                          plan.highlighted 
-                            ? "bg-agro-green hover:bg-agro-green-dark" 
-                            : "bg-gray-900 hover:bg-gray-800"
-                        )}
-                        asChild
-                      >
-                        <Link to="/subscription-plans">{t('pricing.selectPlan')}</Link>
-                      </Button>
+                      <div className="pt-4">
+                        <Button 
+                          className={cn(
+                            "w-full py-3 md:py-4 text-base font-semibold shadow-lg transition-all duration-300 group", 
+                            plan.highlighted 
+                              ? "bg-gradient-to-r from-agro-green to-agro-green-dark hover:from-agro-green-dark hover:to-agro-green text-white shadow-agro-green/25 hover:shadow-xl hover:shadow-agro-green/40 hover:scale-105" 
+                              : "bg-gray-900 hover:bg-gray-800 text-white hover:scale-105"
+                          )}
+                          asChild
+                        >
+                          <Link to="/subscription-plans" className="flex items-center justify-center gap-2">
+                            {t('pricing.selectPlan')}
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </Button>
+                      </div>
+                      
+                      {plan.highlighted && (
+                        <div className="text-center pt-2">
+                          <p className="text-sm text-agro-green font-medium flex items-center justify-center gap-1">
+                            <Award className="w-4 h-4" />
+                            Recommended for professionals
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               ))}
+            </div>
+            
+            <div className="text-center mt-12 space-y-4">
+              <p className="text-gray-600">
+                All plans include 24/7 customer support and a 30-day money-back guarantee
+              </p>
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-agro-green" />
+                  <span>Secure & Encrypted</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-agro-green" />
+                  <span>Global Coverage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-agro-green" />
+                  <span>Expert Support</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>

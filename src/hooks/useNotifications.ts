@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export interface Notification {
   id: string;
@@ -49,7 +49,9 @@ export const useNotifications = () => {
         category: notification.category,
         isRead: notification.is_read,
         isPushSent: notification.is_push_sent,
-        data: notification.data || {},
+        data: (notification.data && typeof notification.data === 'object' && !Array.isArray(notification.data)) 
+          ? notification.data as Record<string, any>
+          : {},
         createdAt: notification.created_at,
         expiresAt: notification.expires_at
       }));
@@ -159,7 +161,9 @@ export const useNotifications = () => {
             category: payload.new.category,
             isRead: payload.new.is_read,
             isPushSent: payload.new.is_push_sent,
-            data: payload.new.data || {},
+            data: (payload.new.data && typeof payload.new.data === 'object' && !Array.isArray(payload.new.data)) 
+              ? payload.new.data as Record<string, any>
+              : {},
             createdAt: payload.new.created_at,
             expiresAt: payload.new.expires_at
           };

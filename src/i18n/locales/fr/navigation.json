@@ -19,8 +19,8 @@
     "paymentGateways": "Passerelles de paiement"
   },
   "header": {
-    "appName": "AgroSense Hub",
-    "controlHub": "Centre de contrôle AgroSense",
+    "appName": "Irrify",
+    "controlHub": "Centre de contrôle Irrify",
     "notifications": "Notifications",
     "profile": "Profil",
     "subscription": "Abonnement",

@@ -19,8 +19,8 @@
     "paymentGateways": "Payment Gateways"
   },
   "header": {
-    "appName": "AgroSense Hub",
-    "controlHub": "AgroSense Control Hub",
+    "appName": "Irrify",
+    "controlHub": "Irrify Control Hub",
     "notifications": "Notifications",
     "profile": "Profile",
     "subscription": "Subscription",

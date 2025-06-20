@@ -52,7 +52,7 @@
   },
   "demo": {
     "badge": "Live Dashboard",
-    "title": "See AgroSense in Action",
+    "title": "See Irrify in Action",
     "subtitle": "Experience our intuitive dashboard that brings all your farm data together in one beautiful, easy-to-use interface.",
     "features": {
       "realTime": "Real-time sensor monitoring",
@@ -64,7 +64,7 @@
   },
   "stats": {
     "title": "Proven Results for Farmers",
-    "subtitle": "Join thousands of farmers who have transformed their operations with AgroSense",
+    "subtitle": "Join thousands of farmers who have transformed their operations with Irrify",
     "timeSaved": "Time Saved",
     "timeSavedDesc": "Reduce manual monitoring and irrigation tasks",
     "waterReduced": "Water Reduced",
@@ -75,9 +75,9 @@
   "testimonials": {
     "badge": "Customer Stories",
     "title": "What Farmers Say About Us",
-    "subtitle": "Real stories from farmers who have transformed their operations with AgroSense",
+    "subtitle": "Real stories from farmers who have transformed their operations with Irrify",
     "testimonial1": {
-      "quote": "AgroSense has completely transformed how I manage my farm. The automated irrigation alone has saved me 30% on water costs while improving my crop yields.",
+      "quote": "Irrify has completely transformed how I manage my farm. The automated irrigation alone has saved me 30% on water costs while improving my crop yields.",
       "author": "Sarah Johnson",
       "role": "Wheat Farmer, Nebraska"
     },
@@ -141,7 +141,7 @@
   },
   "cta": {
     "title": "Ready to Transform Your Farm?",
-    "subtitle": "Join thousands of farmers who have increased their yields while reducing costs with AgroSense.",
+    "subtitle": "Join thousands of farmers who have increased their yields while reducing costs with Irrify.",
     "startTrial": "Start Free Trial",
     "signIn": "Sign In",
     "secure": "Bank-level Security",

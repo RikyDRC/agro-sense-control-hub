@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +46,7 @@ const LandingPage = () => {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-agro-green rounded-full animate-pulse" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-agro-green-dark to-agro-green bg-clip-text text-transparent">
-              AgroSense Hub
+              Irrify
             </span>
           </div>
           
@@ -564,7 +565,7 @@ const LandingPage = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Sprout className="text-agro-green-light h-8 w-8" />
-                <span className="text-xl font-bold text-white">AgroSense Hub</span>
+                <span className="text-xl font-bold text-white">Irrify</span>
               </div>
               <p className="text-gray-400 leading-relaxed">
                 {t('footer.description')}
@@ -613,7 +614,7 @@ const LandingPage = () => {
           
           <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">
-              © {new Date().getFullYear()} AgroSense Hub. {t('footer.copyright')}
+              © {new Date().getFullYear()} Irrify. {t('footer.copyright')}
             </p>
             <div className="mt-4 md:mt-0 flex gap-6">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.privacy')}</a>

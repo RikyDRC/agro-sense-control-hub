@@ -52,7 +52,7 @@
   },
   "demo": {
     "badge": "Tableau de Bord en Direct",
-    "title": "Voyez AgroSense en Action",
+    "title": "Voyez Irrify en Action",
     "subtitle": "Découvrez notre tableau de bord intuitif qui rassemble toutes les données de votre ferme dans une interface belle et facile à utiliser.",
     "features": {
       "realTime": "Surveillance des capteurs en temps réel",
@@ -64,7 +64,7 @@
   },
   "stats": {
     "title": "Résultats Prouvés pour les Agriculteurs",
-    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont transformé leurs opérations avec AgroSense",
+    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont transformé leurs opérations avec Irrify",
     "timeSaved": "Temps Économisé",
     "timeSavedDesc": "Réduisez les tâches de surveillance et d'irrigation manuelles",
     "waterReduced": "Eau Réduite",
@@ -75,9 +75,9 @@
   "testimonials": {
     "badge": "Histoires de Clients",
     "title": "Ce que les Agriculteurs Disent de Nous",
-    "subtitle": "Vraies histoires d'agriculteurs qui ont transformé leurs opérations avec AgroSense",
+    "subtitle": "Vraies histoires d'agriculteurs qui ont transformé leurs opérations avec Irrify",
     "testimonial1": {
-      "quote": "AgroSense a complètement transformé la façon dont je gère ma ferme. L'irrigation automatisée seule m'a fait économiser 30% sur les coûts d'eau tout en améliorant mes rendements.",
+      "quote": "Irrify a complètement transformé la façon dont je gère ma ferme. L'irrigation automatisée seule m'a fait économiser 30% sur les coûts d'eau tout en améliorant mes rendements.",
       "author": "Sarah Johnson",
       "role": "Cultivatrice de Blé, Nebraska"
     },
@@ -141,7 +141,7 @@
   },
   "cta": {
     "title": "Prêt à Transformer Votre Ferme?",
-    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont augmenté leurs rendements tout en réduisant les coûts avec AgroSense.",
+    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont augmenté leurs rendements tout en réduisant les coûts avec Irrify.",
     "startTrial": "Commencer l'Essai Gratuit",
     "signIn": "Se Connecter",
     "secure": "Sécurité Bancaire",

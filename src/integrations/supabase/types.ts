@@ -175,6 +175,57 @@ export type Database = {
           },
         ]
       }
+      broadcast_messages: {
+        Row: {
+          created_at: string
+          created_by: string
+          delivered_count: number | null
+          id: string
+          message: string
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          target_audience: string
+          target_user_ids: string[] | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          delivered_count?: number | null
+          id?: string
+          message: string
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_audience?: string
+          target_user_ids?: string[] | null
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          delivered_count?: number | null
+          id?: string
+          message?: string
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_audience?: string
+          target_user_ids?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           additional_notes: string | null
@@ -542,6 +593,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          category: string
+          created_at: string
+          data: Json | null
+          expires_at: string | null
+          id: string
+          is_push_sent: boolean
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_push_sent?: boolean
+          is_read?: boolean
+          message: string
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_push_sent?: boolean
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_config: {
         Row: {
           created_at: string
@@ -708,6 +804,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_device_tokens: {
+        Row: {
+          created_at: string
+          device_token: string
+          id: string
+          is_active: boolean
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_token: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_token?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_notification_preferences: {
+        Row: {
+          broadcast_messages: boolean
+          created_at: string
+          device_alerts: boolean
+          email_notifications_enabled: boolean
+          id: string
+          irrigation_alerts: boolean
+          maintenance_alerts: boolean
+          push_notifications_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          system_alerts: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          broadcast_messages?: boolean
+          created_at?: string
+          device_alerts?: boolean
+          email_notifications_enabled?: boolean
+          id?: string
+          irrigation_alerts?: boolean
+          maintenance_alerts?: boolean
+          push_notifications_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          system_alerts?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          broadcast_messages?: boolean
+          created_at?: string
+          device_alerts?: boolean
+          email_notifications_enabled?: boolean
+          id?: string
+          irrigation_alerts?: boolean
+          maintenance_alerts?: boolean
+          push_notifications_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          system_alerts?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -904,6 +1078,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_notification: {
+        Args: {
+          _user_id: string
+          _title: string
+          _message: string
+          _type?: string
+          _category?: string
+          _data?: Json
+        }
+        Returns: string
+      }
       get_profile_by_id: {
         Args: { user_id: string }
         Returns: Json

@@ -2,46 +2,27 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BellIcon, InfoIcon, Save } from 'lucide-react';
-import { UserSettings } from '@/services/settingsService';
-import { useAlerts } from '@/hooks/useAlerts';
+import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
+import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from '@/components/ui/use-toast';
 
-interface NotificationSettingsProps {
-  settings: UserSettings;
-  onSettingsChange: (settings: UserSettings) => void;
-  onSave: () => void;
-  saving: boolean;
-}
+const NotificationSettings: React.FC = () => {
+  const { preferences, loading, saving, savePreferences } = useNotificationPreferences();
+  const { notifications } = useNotifications();
 
-const NotificationSettings: React.FC<NotificationSettingsProps> = ({
-  settings,
-  onSettingsChange,
-  onSave,
-  saving
-}) => {
-  const { alerts, loading: alertsLoading } = useAlerts();
-
-  const updateNotificationSetting = (key: keyof UserSettings['notifications'], value: any) => {
-    onSettingsChange({
-      ...settings,
-      notifications: {
-        ...settings.notifications,
-        [key]: value,
-      },
-    });
+  const handleToggle = (key: keyof typeof preferences, value: boolean) => {
+    const updatedPreferences = { ...preferences, [key]: value };
+    savePreferences(updatedPreferences);
   };
 
-  // Real-time notification handling
+  // Request notification permission when push notifications are enabled
   useEffect(() => {
-    if (settings.notifications.enabled && 'Notification' in window) {
-      // Request notification permission if not already granted
+    if (preferences.pushNotificationsEnabled && 'Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
@@ -53,21 +34,17 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         });
       }
     }
-  }, [settings.notifications.enabled]);
+  }, [preferences.pushNotificationsEnabled]);
 
-  // Monitor for new alerts and show notifications
-  useEffect(() => {
-    if (!settings.notifications.enabled || !alerts.length) return;
-
-    const latestAlert = alerts[0];
-    if (!latestAlert.isRead && Notification.permission === 'granted') {
-      new Notification(`AgroSense Alert: ${latestAlert.title}`, {
-        body: latestAlert.message,
-        icon: '/favicon.ico',
-        tag: latestAlert.id,
-      });
-    }
-  }, [alerts, settings.notifications.enabled]);
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading notification settings...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -83,90 +60,123 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="notifications-enabled">Enable Notifications</Label>
+              <Label htmlFor="push-notifications">Push Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Turn on/off all notifications
+                Receive real-time notifications on your device
               </p>
             </div>
             <Switch 
-              id="notifications-enabled" 
-              checked={settings.notifications.enabled}
-              onCheckedChange={(checked) => updateNotificationSetting('enabled', checked)}
+              id="push-notifications" 
+              checked={preferences.pushNotificationsEnabled}
+              onCheckedChange={(checked) => handleToggle('pushNotificationsEnabled', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-notifications">Email Notifications</Label>
+              <p className="text-sm text-muted-foreground">
+                Receive notifications via email
+              </p>
+            </div>
+            <Switch 
+              id="email-notifications" 
+              checked={preferences.emailNotificationsEnabled}
+              onCheckedChange={(checked) => handleToggle('emailNotificationsEnabled', checked)}
             />
           </div>
           
           <Separator />
           
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Notification Channels</h3>
+            <h3 className="text-sm font-medium">Alert Categories</h3>
             
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
+                <Label htmlFor="device-alerts">Device Alerts</Label>
                 <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
+                  Notifications for device failures and status changes
                 </p>
               </div>
               <Switch 
-                id="email-notifications" 
-                checked={settings.notifications.email}
-                onCheckedChange={(checked) => updateNotificationSetting('email', checked)}
-                disabled={!settings.notifications.enabled}
+                id="device-alerts" 
+                checked={preferences.deviceAlerts}
+                onCheckedChange={(checked) => handleToggle('deviceAlerts', checked)}
+                disabled={!preferences.pushNotificationsEnabled && !preferences.emailNotificationsEnabled}
               />
             </div>
             
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
+                <Label htmlFor="irrigation-alerts">Irrigation Alerts</Label>
                 <p className="text-sm text-muted-foreground">
-                  Receive push notifications on your device
+                  Notifications for irrigation schedules and completion
                 </p>
               </div>
               <Switch 
-                id="push-notifications" 
-                checked={settings.notifications.push}
-                onCheckedChange={(checked) => updateNotificationSetting('push', checked)}
-                disabled={!settings.notifications.enabled}
+                id="irrigation-alerts" 
+                checked={preferences.irrigationAlerts}
+                onCheckedChange={(checked) => handleToggle('irrigationAlerts', checked)}
+                disabled={!preferences.pushNotificationsEnabled && !preferences.emailNotificationsEnabled}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="system-alerts">System Alerts</Label>
+                <p className="text-sm text-muted-foreground">
+                  Notifications for system issues and updates
+                </p>
+              </div>
+              <Switch 
+                id="system-alerts" 
+                checked={preferences.systemAlerts}
+                onCheckedChange={(checked) => handleToggle('systemAlerts', checked)}
+                disabled={!preferences.pushNotificationsEnabled && !preferences.emailNotificationsEnabled}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="maintenance-alerts">Maintenance Alerts</Label>
+                <p className="text-sm text-muted-foreground">
+                  Notifications for scheduled maintenance and reminders
+                </p>
+              </div>
+              <Switch 
+                id="maintenance-alerts" 
+                checked={preferences.maintenanceAlerts}
+                onCheckedChange={(checked) => handleToggle('maintenanceAlerts', checked)}
+                disabled={!preferences.pushNotificationsEnabled && !preferences.emailNotificationsEnabled}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="broadcast-messages">Broadcast Messages</Label>
+                <p className="text-sm text-muted-foreground">
+                  Notifications from administrators and system announcements
+                </p>
+              </div>
+              <Switch 
+                id="broadcast-messages" 
+                checked={preferences.broadcastMessages}
+                onCheckedChange={(checked) => handleToggle('broadcastMessages', checked)}
+                disabled={!preferences.pushNotificationsEnabled && !preferences.emailNotificationsEnabled}
               />
             </div>
           </div>
           
-          <Separator />
-          
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Alert Settings</h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="alertThreshold">Alert Threshold (%)</Label>
-              <div className="grid grid-cols-4 gap-4 items-center">
-                <Input 
-                  id="alertThreshold" 
-                  type="number" 
-                  value={settings.notifications.alertThreshold}
-                  onChange={(e) => updateNotificationSetting('alertThreshold', parseInt(e.target.value) || 15)}
-                  min="5"
-                  max="50"
-                  className="col-span-3"
-                  disabled={!settings.notifications.enabled}
-                />
-                <Badge>{settings.notifications.alertThreshold}%</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Receive alerts when moisture levels deviate from ideal by this percentage
-              </p>
-            </div>
-          </div>
-          
-          {!alertsLoading && alerts.length > 0 && (
+          {notifications.length > 0 && (
             <>
               <Separator />
               <div className="space-y-2">
-                <h3 className="text-sm font-medium">Recent Alerts</h3>
+                <h3 className="text-sm font-medium">Recent Notifications</h3>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {alerts.slice(0, 3).map((alert) => (
-                    <div key={alert.id} className="text-xs p-2 bg-muted rounded">
-                      <div className="font-medium">{alert.title}</div>
-                      <div className="text-muted-foreground">{alert.message}</div>
+                  {notifications.slice(0, 3).map((notification) => (
+                    <div key={notification.id} className="text-xs p-2 bg-muted rounded">
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-muted-foreground">{notification.message}</div>
                     </div>
                   ))}
                 </div>
@@ -182,15 +192,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </AlertDescription>
           </Alert>
         </CardContent>
-        <CardFooter className="flex justify-end">
-          <Button onClick={onSave} disabled={saving}>
-            {saving ? 'Saving...' : (
-              <>
-                <Save className="mr-2 h-4 w-4" /> Save Changes
-              </>
-            )}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

@@ -15,7 +15,8 @@ import {
   Users,
   CreditCard,
   MessageSquare,
-  ShieldCheck
+  ShieldCheck,
+  Send
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,7 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
   const adminNavItems = [
     ...(isRoleAdmin() || isRoleSuperAdmin() ? [
       { to: '/admin/farmers', icon: Users, label: t('sidebar.farmersManagement') },
-      { to: '/admin/contact-submissions', icon: MessageSquare, label: t('sidebar.contactSubmissions') }
+      { to: '/admin/contact-submissions', icon: MessageSquare, label: t('sidebar.contactSubmissions') },
+      { to: '/admin/broadcast-messages', icon: Send, label: 'Broadcast Messages' }
     ] : []),
     ...(isRoleSuperAdmin() ? [
       { to: '/admin/config', icon: ShieldCheck, label: t('sidebar.platformConfig') },

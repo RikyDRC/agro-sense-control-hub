@@ -1,0 +1,8 @@
+
+{
+  "mobile:build": "node scripts/mobile-build.js",
+  "mobile:android": "npx cap run android",
+  "mobile:ios": "npx cap run ios",
+  "mobile:sync": "npx cap sync",
+  "mobile:clean": "npx cap sync --force"
+}

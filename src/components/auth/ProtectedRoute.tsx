@@ -9,9 +9,11 @@ import { toast } from '@/components/ui/sonner';
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles?: UserRole[];
+  requireAdmin?: boolean;
+  requireSuperAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, allowedRoles, requireAdmin, requireSuperAdmin }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
   const [localLoading, setLocalLoading] = useState(true);
   const navigate = useNavigate();
@@ -57,6 +59,17 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Check for admin/super admin requirements
+  if (requireSuperAdmin && profile && profile.role !== 'super_admin') {
+    toast.error("You don't have permission to access this page. Super admin role required.");
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireAdmin && profile && !['admin', 'super_admin'].includes(profile.role)) {
+    toast.error("You don't have permission to access this page. Admin role required.");
+    return <Navigate to="/dashboard" replace />;
   }
 
   // For role-protected routes, check role if profile is available

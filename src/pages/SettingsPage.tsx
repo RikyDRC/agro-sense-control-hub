@@ -322,12 +322,7 @@ const SettingsPage: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="notifications">
-            <NotificationSettings
-              settings={userSettings}
-              onSettingsChange={setUserSettings}
-              onSave={handleSaveSettings}
-              saving={saving}
-            />
+            <NotificationSettings />
           </TabsContent>
           
           <TabsContent value="system">

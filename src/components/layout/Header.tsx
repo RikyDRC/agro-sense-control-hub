@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Bell, User, Settings, LogOut, Shield } from 'lucide-react';
+import { Menu, Bell, User, Settings, LogOut, Shield, Sprout } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -56,9 +56,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
             <Menu className="h-5 w-5" />
           </Button>
           
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-3">
+            <div className="relative">
+              <Sprout className="text-agro-green-dark h-8 w-8" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-agro-green rounded-full animate-pulse" />
+            </div>
             <h2 className="text-lg font-semibold text-foreground">
-              AgroSense Control Hub
+              Irrify Control Hub
             </h2>
           </div>
         </div>

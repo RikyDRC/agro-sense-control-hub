@@ -16,7 +16,9 @@ import {
   CreditCard,
   MessageSquare,
   ShieldCheck,
-  Send
+  Send,
+  Sprout,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
       { to: '/admin/broadcast-messages', icon: Send, label: 'Broadcast Messages' }
     ] : []),
     ...(isRoleSuperAdmin() ? [
+      { to: '/admin/pages', icon: FileText, label: 'Platform Pages' },
       { to: '/admin/config', icon: ShieldCheck, label: t('sidebar.platformConfig') },
       { to: '/admin/payments', icon: CreditCard, label: t('sidebar.paymentGateways') }
     ] : [])
@@ -108,15 +111,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onNavigate }) =>
           isCollapsed && "justify-center px-2"
         )}>
           {isCollapsed ? (
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-primary-foreground font-bold text-lg">AS</span>
+            <div className="relative">
+              <Sprout className="text-agro-green-dark h-8 w-8" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-agro-green rounded-full animate-pulse" />
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-primary-foreground font-bold text-lg">AS</span>
+              <div className="relative">
+                <Sprout className="text-agro-green-dark h-8 w-8" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-agro-green rounded-full animate-pulse" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">{t('header.appName')}</h1>
+              <h1 className="text-xl font-bold text-foreground">Irrify</h1>
             </div>
           )}
         </div>

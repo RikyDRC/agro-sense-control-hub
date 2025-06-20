@@ -3,146 +3,165 @@
   "hero": {
     "badge": "IoT-Powered Agriculture",
     "title": "Smart Farming for the Future",
-    "subtitle": "Transform your agricultural operations with IoT sensors, automated irrigation, and real-time monitoring. Increase yields while reducing water consumption.",
-    "getStarted": "Get Started",
+    "subtitle": "Transform your agricultural operations with IoT sensors, automated irrigation, and real-time monitoring. Increase yields while reducing water consumption by up to 30%.",
+    "getStarted": "Get Started Free",
     "watchDemo": "Watch Demo",
     "stats": {
       "farmers": "Happy Farmers",
-      "sensors": "Data Points",
+      "sensors": "Data Points Collected",
       "waterSaved": "Water Saved"
     }
   },
   "navigation": {
     "features": "Features",
     "pricing": "Pricing", 
-    "about": "About",
+    "about": "About Us",
     "signIn": "Sign In",
     "getStarted": "Get Started"
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for Smart Farming",
-    "subtitle": "Our comprehensive IoT platform provides all the tools you need to optimize your agricultural operations and increase productivity.",
+    "badge": "Advanced Features",
+    "title": "Everything You Need for Smart Agriculture",
+    "subtitle": "Our comprehensive IoT platform provides cutting-edge tools to optimize your agricultural operations, increase productivity, and ensure sustainable farming practices.",
     "list": {
       "realTimeData": {
-        "title": "Real-Time Sensor Data",
-        "description": "Monitor soil moisture, temperature, humidity, and other critical metrics in real-time from anywhere."
+        "title": "Real-Time Monitoring",
+        "description": "Monitor soil moisture, temperature, humidity, and other critical environmental factors in real-time from anywhere in the world."
       },
       "automatedWatering": {
-        "title": "Automated Irrigation",
-        "description": "Set intelligent rules to automatically trigger irrigation based on sensor readings and weather forecasts."
+        "title": "Smart Irrigation System",
+        "description": "Deploy intelligent automation rules to trigger irrigation based on sensor readings, weather forecasts, and crop-specific requirements."
       },
       "remoteControl": {
-        "title": "Remote Control",
-        "description": "Control your irrigation systems, pumps, and valves remotely from your smartphone or computer."
+        "title": "Remote Management",
+        "description": "Control your entire irrigation infrastructure remotely through our intuitive mobile app and web dashboard from anywhere."
       },
       "weatherIntegration": {
-        "title": "Weather Integration",
-        "description": "Integrate local weather data to make smarter irrigation decisions and protect your crops."
+        "title": "Weather Intelligence",
+        "description": "Seamlessly integrate real-time weather data and forecasts to optimize irrigation schedules and protect your crops from adverse conditions."
       },
       "smartAlerts": {
-        "title": "Smart Alerts",
-        "description": "Receive instant notifications when conditions fall outside optimal ranges or equipment needs attention."
+        "title": "Intelligent Alerts",
+        "description": "Receive instant notifications via SMS, email, or push notifications when conditions fall outside optimal ranges or equipment requires attention."
       },
       "energyEfficiency": {
-        "title": "Energy Efficiency",
-        "description": "Optimize water and energy usage with our intelligent algorithms and scheduling systems."
+        "title": "Energy Optimization",
+        "description": "Maximize water and energy efficiency with our AI-powered algorithms and intelligent scheduling systems that reduce operational costs."
       }
     }
   },
   "demo": {
-    "badge": "Live Dashboard",
-    "title": "See Irrify in Action",
-    "subtitle": "Experience our intuitive dashboard that brings all your farm data together in one beautiful, easy-to-use interface.",
+    "badge": "Live Dashboard Preview",
+    "title": "Experience Irrify in Action",
+    "subtitle": "Explore our intuitive dashboard that consolidates all your farm data into one comprehensive, easy-to-use interface with real-time insights and analytics.",
     "features": {
-      "realTime": "Real-time sensor monitoring",
-      "automation": "Automated irrigation control", 
-      "analytics": "Advanced analytics and insights",
-      "alerts": "Smart alerts and notifications"
+      "realTime": "Real-time sensor monitoring and data visualization",
+      "automation": "Automated irrigation control and scheduling", 
+      "analytics": "Advanced analytics with predictive insights",
+      "alerts": "Smart notification system with customizable alerts"
     },
-    "cta": "Start Your Free Trial"
+    "cta": "Start Your Free Trial Today"
   },
   "stats": {
-    "title": "Proven Results for Farmers",
-    "subtitle": "Join thousands of farmers who have transformed their operations with Irrify",
-    "timeSaved": "Time Saved",
-    "timeSavedDesc": "Reduce manual monitoring and irrigation tasks",
-    "waterReduced": "Water Reduced",
-    "waterReducedDesc": "Optimize water usage with precision irrigation",
-    "yieldIncrease": "Yield Increase", 
-    "yieldIncreaseDesc": "Improve crop health and productivity"
+    "title": "Proven Results Across Thousands of Farms",
+    "subtitle": "Join the growing community of farmers who have revolutionized their operations with Irrify's smart agriculture platform",
+    "timeSaved": "Time Saved Daily",
+    "timeSavedDesc": "Automate routine monitoring and irrigation tasks to focus on what matters most",
+    "waterReduced": "Water Usage Reduced",
+    "waterReducedDesc": "Optimize water consumption with precision irrigation and smart scheduling",
+    "yieldIncrease": "Average Yield Increase", 
+    "yieldIncreaseDesc": "Improve crop health and maximize productivity with data-driven decisions"
   },
   "testimonials": {
-    "badge": "Customer Stories",
-    "title": "What Farmers Say About Us",
-    "subtitle": "Real stories from farmers who have transformed their operations with Irrify",
+    "badge": "Customer Success Stories",
+    "title": "Trusted by Farmers Worldwide",
+    "subtitle": "Real testimonials from agricultural professionals who have transformed their farming operations with our smart irrigation solutions",
     "testimonial1": {
-      "quote": "Irrify has completely transformed how I manage my farm. The automated irrigation alone has saved me 30% on water costs while improving my crop yields.",
+      "quote": "Irrify has revolutionized how I manage my 200-acre farm. The automated irrigation system alone has saved me 35% on water costs while increasing my crop yields by 20%. The ROI was evident within the first growing season.",
       "author": "Sarah Johnson",
-      "role": "Wheat Farmer, Nebraska"
+      "role": "Wheat & Corn Farmer, Nebraska"
     },
     "testimonial2": {
-      "quote": "The real-time monitoring gives me peace of mind. I can check on my crops from anywhere and get alerts if anything needs attention. It's like having eyes everywhere.",
+      "quote": "The real-time monitoring capabilities give me complete peace of mind. I can monitor my vineyard's conditions from anywhere and receive immediate alerts if intervention is needed. It's like having a dedicated farm manager 24/7.",
       "author": "Miguel Rodriguez", 
-      "role": "Vineyard Owner, California"
+      "role": "Vineyard Owner, Napa Valley"
     },
     "testimonial3": {
-      "quote": "Setup was incredibly easy and the support team was fantastic. Within a week, I had complete visibility into all my fields and automated most of my irrigation.",
+      "quote": "Implementation was surprisingly straightforward, and the customer support team was exceptional throughout the process. Within just two weeks, I had complete visibility across all my fields and had automated 80% of my irrigation tasks.",
       "author": "David Kim",
-      "role": "Organic Farm, Oregon"
+      "role": "Organic Produce Farm, Oregon"
     }
   },
   "pricing": {
-    "title": "Choose Your Plan", 
-    "subtitle": "Flexible pricing that grows with your farm",
+    "badge": "Flexible Pricing Plans",
+    "title": "Choose the Perfect Plan for Your Farm", 
+    "subtitle": "Scalable pricing solutions designed to grow with your agricultural business, from small family farms to large commercial operations",
     "free": {
-      "name": "Free",
+      "name": "Starter",
       "price": "$0",
       "period": "/month",
-      "description": "Perfect for small farms getting started with smart agriculture",
+      "description": "Perfect for small farms and hobby growers getting started with smart agriculture technology",
       "features": [
-        "1 Zone",
-        "2 Devices", 
-        "1 Crop",
-        "Basic monitoring",
-        "Shared weather API",
-        "Shared maps API",
-        "Community support"
+        "Monitor up to 1 zone",
+        "Connect 2 IoT devices", 
+        "Track 1 crop type",
+        "Basic real-time monitoring",
+        "Standard weather API access",
+        "Basic mapping features",
+        "Community forum support",
+        "Email notifications",
+        "7-day data history"
       ]
     },
     "premium": {
-      "name": "Premium", 
+      "name": "Professional", 
       "price": "Contact Us",
-      "period": "for pricing",
-      "description": "Advanced features for growing agricultural operations",
+      "period": "for custom pricing",
+      "description": "Advanced features and unlimited scalability for growing agricultural enterprises and commercial operations",
       "features": [
-        "Unlimited zones",
-        "Unlimited devices",
-        "Unlimited crops",
-        "Advanced automation",
-        "Real-time analytics",
-        "Priority support", 
-        "Weather integration",
-        "Custom features"
+        "Unlimited zones and fields",
+        "Unlimited IoT device connections",
+        "Track unlimited crop varieties",
+        "Advanced automation rules",
+        "Real-time analytics dashboard",
+        "Priority technical support", 
+        "Premium weather integration",
+        "Advanced mapping with satellite imagery",
+        "Custom reporting and exports",
+        "API access for integrations",
+        "Multi-user team management",
+        "Advanced alert customization"
       ],
-      "mostPopular": "Most Popular"
+      "mostPopular": "Most Popular Choice"
     },
-    "selectPlan": "Select Plan"
+    "selectPlan": "Choose This Plan"
   },
   "cta": {
-    "title": "Ready to Transform Your Farm?",
-    "subtitle": "Join thousands of farmers who have increased their yields while reducing costs with Irrify.",
-    "startTrial": "Start Free Trial",
-    "signIn": "Sign In",
-    "secure": "Bank-level Security",
-    "worldwide": "Global Support", 
-    "certified": "ISO Certified"
+    "title": "Ready to Transform Your Agricultural Operations?",
+    "subtitle": "Join thousands of forward-thinking farmers who have increased their yields, reduced costs, and embraced sustainable farming practices with Irrify's smart irrigation platform.",
+    "startTrial": "Start Your Free Trial",
+    "signIn": "Sign In to Dashboard",
+    "secure": "Bank-Level Security",
+    "worldwide": "Global Support Network", 
+    "certified": "ISO 27001 Certified"
   },
   "footer": {
-    "description": "Advanced IoT solutions for modern agriculture. Monitor, control, and optimize your farming operations with cutting-edge technology.",
+    "description": "Irrify provides cutting-edge IoT solutions for modern agriculture. Monitor, control, and optimize your farming operations with industry-leading smart irrigation technology.",
     "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "integrations": "Integrations",
+    "documentation": "Documentation",
     "company": "Company", 
+    "about": "About Us",
+    "blog": "Blog",
+    "careers": "Careers",
+    "contact": "Contact Us",
     "support": "Support",
+    "helpCenter": "Help Center",
+    "community": "Community",
+    "status": "System Status",
+    "apiDocs": "API Documentation",
     "copyright": "All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",

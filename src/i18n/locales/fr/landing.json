@@ -1,14 +1,14 @@
 
 {
   "hero": {
-    "badge": "Agriculture IoT",
-    "title": "Agriculture Intelligente du Futur",
-    "subtitle": "Transformez vos opérations agricoles avec des capteurs IoT, l'irrigation automatisée et la surveillance en temps réel. Augmentez les rendements tout en réduisant la consommation d'eau.",
-    "getStarted": "Commencer",
+    "badge": "Agriculture Connectée IoT",
+    "title": "L'Agriculture Intelligente du Futur",
+    "subtitle": "Transformez vos opérations agricoles avec des capteurs IoT, l'irrigation automatisée et la surveillance en temps réel. Augmentez vos rendements tout en réduisant la consommation d'eau jusqu'à 30%.",
+    "getStarted": "Commencer Gratuitement",
     "watchDemo": "Voir la Démo",
     "stats": {
       "farmers": "Agriculteurs Satisfaits",
-      "sensors": "Points de Données",
+      "sensors": "Points de Données Collectés",
       "waterSaved": "Eau Économisée"
     }
   },
@@ -20,129 +20,148 @@
     "getStarted": "Commencer"
   },
   "features": {
-    "badge": "Fonctionnalités de la Plateforme",
+    "badge": "Fonctionnalités Avancées",
     "title": "Tout ce dont Vous Avez Besoin pour l'Agriculture Intelligente",
-    "subtitle": "Notre plateforme IoT complète fournit tous les outils nécessaires pour optimiser vos opérations agricoles et augmenter la productivité.",
+    "subtitle": "Notre plateforme IoT complète fournit des outils de pointe pour optimiser vos opérations agricoles, augmenter la productivité et assurer des pratiques agricoles durables.",
     "list": {
       "realTimeData": {
-        "title": "Données de Capteurs en Temps Réel",
-        "description": "Surveillez l'humidité du sol, la température, l'humidité et d'autres métriques critiques en temps réel depuis n'importe où."
+        "title": "Surveillance en Temps Réel",
+        "description": "Surveillez l'humidité du sol, la température, l'humidité et d'autres facteurs environnementaux critiques en temps réel depuis n'importe où dans le monde."
       },
       "automatedWatering": {
-        "title": "Irrigation Automatisée",
-        "description": "Définissez des règles intelligentes pour déclencher automatiquement l'irrigation basée sur les lectures des capteurs et les prévisions météo."
+        "title": "Système d'Irrigation Intelligent",
+        "description": "Déployez des règles d'automatisation intelligentes pour déclencher l'irrigation basée sur les lectures de capteurs, les prévisions météo et les exigences spécifiques des cultures."
       },
       "remoteControl": {
-        "title": "Contrôle à Distance",
-        "description": "Contrôlez vos systèmes d'irrigation, pompes et vannes à distance depuis votre smartphone ou ordinateur."
+        "title": "Gestion à Distance",
+        "description": "Contrôlez toute votre infrastructure d'irrigation à distance grâce à notre application mobile intuitive et tableau de bord web depuis n'importe où."
       },
       "weatherIntegration": {
-        "title": "Intégration Météorologique",
-        "description": "Intégrez les données météorologiques locales pour prendre des décisions d'irrigation plus intelligentes et protéger vos cultures."
+        "title": "Intelligence Météorologique",
+        "description": "Intégrez en toute transparence les données météorologiques en temps réel et les prévisions pour optimiser les programmes d'irrigation et protéger vos cultures des conditions défavorables."
       },
       "smartAlerts": {
         "title": "Alertes Intelligentes",
-        "description": "Recevez des notifications instantanées lorsque les conditions sortent des plages optimales ou que l'équipement nécessite une attention."
+        "description": "Recevez des notifications instantanées par SMS, email ou notifications push lorsque les conditions sortent des plages optimales ou que l'équipement nécessite une attention."
       },
       "energyEfficiency": {
-        "title": "Efficacité Énergétique",
-        "description": "Optimisez l'utilisation de l'eau et de l'énergie avec nos algorithmes intelligents et systèmes de planification."
+        "title": "Optimisation Énergétique",
+        "description": "Maximisez l'efficacité de l'eau et de l'énergie avec nos algorithmes alimentés par IA et systèmes de planification intelligents qui réduisent les coûts opérationnels."
       }
     }
   },
   "demo": {
-    "badge": "Tableau de Bord en Direct",
-    "title": "Voyez Irrify en Action",
-    "subtitle": "Découvrez notre tableau de bord intuitif qui rassemble toutes les données de votre ferme dans une interface belle et facile à utiliser.",
+    "badge": "Aperçu du Tableau de Bord en Direct",
+    "title": "Découvrez Irrify en Action",
+    "subtitle": "Explorez notre tableau de bord intuitif qui consolide toutes les données de votre ferme dans une interface complète et facile à utiliser avec des insights et analyses en temps réel.",
     "features": {
-      "realTime": "Surveillance des capteurs en temps réel",
-      "automation": "Contrôle d'irrigation automatisé",
-      "analytics": "Analyses et insights avancés",
-      "alerts": "Alertes et notifications intelligentes"
+      "realTime": "Surveillance des capteurs en temps réel et visualisation des données",
+      "automation": "Contrôle et planification de l'irrigation automatisée",
+      "analytics": "Analyses avancées avec insights prédictifs",
+      "alerts": "Système de notification intelligent avec alertes personnalisables"
     },
-    "cta": "Commencer Votre Essai Gratuit"
+    "cta": "Commencez Votre Essai Gratuit Aujourd'hui"
   },
   "stats": {
-    "title": "Résultats Prouvés pour les Agriculteurs",
-    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont transformé leurs opérations avec Irrify",
-    "timeSaved": "Temps Économisé",
-    "timeSavedDesc": "Réduisez les tâches de surveillance et d'irrigation manuelles",
-    "waterReduced": "Eau Réduite",
-    "waterReducedDesc": "Optimisez l'utilisation de l'eau avec l'irrigation de précision",
-    "yieldIncrease": "Augmentation du Rendement",
-    "yieldIncreaseDesc": "Améliorez la santé et la productivité des cultures"
+    "title": "Résultats Prouvés sur des Milliers d'Exploitations",
+    "subtitle": "Rejoignez la communauté croissante d'agriculteurs qui ont révolutionné leurs opérations avec la plateforme d'agriculture intelligente d'Irrify",
+    "timeSaved": "Temps Économisé Quotidiennement",
+    "timeSavedDesc": "Automatisez les tâches de surveillance et d'irrigation de routine pour vous concentrer sur ce qui compte le plus",
+    "waterReduced": "Utilisation d'Eau Réduite",
+    "waterReducedDesc": "Optimisez la consommation d'eau avec l'irrigation de précision et la planification intelligente",
+    "yieldIncrease": "Augmentation Moyenne du Rendement",
+    "yieldIncreaseDesc": "Améliorez la santé des cultures et maximisez la productivité avec des décisions basées sur les données"
   },
   "testimonials": {
-    "badge": "Histoires de Clients",
-    "title": "Ce que les Agriculteurs Disent de Nous",
-    "subtitle": "Vraies histoires d'agriculteurs qui ont transformé leurs opérations avec Irrify",
+    "badge": "Histoires de Réussite Client",
+    "title": "Fait Confiance par les Agriculteurs du Monde Entier",
+    "subtitle": "Vrais témoignages de professionnels agricoles qui ont transformé leurs opérations agricoles avec nos solutions d'irrigation intelligente",
     "testimonial1": {
-      "quote": "Irrify a complètement transformé la façon dont je gère ma ferme. L'irrigation automatisée seule m'a fait économiser 30% sur les coûts d'eau tout en améliorant mes rendements.",
+      "quote": "Irrify a révolutionné la façon dont je gère ma ferme de 80 hectares. Le système d'irrigation automatisé seul m'a fait économiser 35% sur les coûts d'eau tout en augmentant mes rendements de culture de 20%. Le retour sur investissement était évident dès la première saison de croissance.",
       "author": "Sarah Johnson",
-      "role": "Cultivatrice de Blé, Nebraska"
+      "role": "Cultivatrice de Blé et Maïs, Nebraska"
     },
     "testimonial2": {
-      "quote": "La surveillance en temps réel me donne la tranquillité d'esprit. Je peux vérifier mes cultures de n'importe où et recevoir des alertes si quelque chose nécessite attention.",
+      "quote": "Les capacités de surveillance en temps réel me donnent une tranquillité d'esprit complète. Je peux surveiller les conditions de mon vignoble depuis n'importe où et recevoir des alertes immédiates si une intervention est nécessaire. C'est comme avoir un gestionnaire de ferme dédié 24h/24 et 7j/7.",
       "author": "Miguel Rodriguez",
-      "role": "Propriétaire de Vignoble, Californie"
+      "role": "Propriétaire de Vignoble, Napa Valley"
     },
     "testimonial3": {
-      "quote": "L'installation était incroyablement facile et l'équipe de support était fantastique. En une semaine, j'avais une visibilité complète sur tous mes champs.",
+      "quote": "La mise en œuvre était étonnamment simple, et l'équipe de support client était exceptionnelle tout au long du processus. En seulement deux semaines, j'avais une visibilité complète sur tous mes champs et avais automatisé 80% de mes tâches d'irrigation.",
       "author": "David Kim",
-      "role": "Ferme Biologique, Oregon"
+      "role": "Ferme de Produits Biologiques, Oregon"
     }
   },
   "pricing": {
-    "title": "Choisissez Votre Plan",
-    "subtitle": "Tarification flexible qui grandit avec votre ferme",
+    "badge": "Plans de Tarification Flexibles",
+    "title": "Choisissez le Plan Parfait pour Votre Ferme",
+    "subtitle": "Solutions de tarification évolutives conçues pour grandir avec votre entreprise agricole, des petites fermes familiales aux grandes opérations commerciales",
     "free": {
-      "name": "Gratuit",
+      "name": "Démarrage",
       "price": "0€",
       "period": "/mois",
-      "description": "Parfait pour les petites fermes qui commencent avec l'agriculture intelligente",
+      "description": "Parfait pour les petites fermes et les cultivateurs amateurs qui commencent avec la technologie agricole intelligente",
       "features": [
-        "1 Zone",
-        "2 Appareils",
-        "1 Culture",
-        "Surveillance de base",
-        "API météo partagée",
-        "API cartes partagée",
-        "Support communautaire"
+        "Surveiller jusqu'à 1 zone",
+        "Connecter 2 appareils IoT",
+        "Suivre 1 type de culture",
+        "Surveillance de base en temps réel",
+        "Accès API météo standard",
+        "Fonctionnalités de cartographie de base",
+        "Support forum communautaire",
+        "Notifications par email",
+        "Historique des données de 7 jours"
       ]
     },
     "premium": {
-      "name": "Premium",
+      "name": "Professionnel",
       "price": "Nous Contacter",
-      "period": "pour les tarifs",
-      "description": "Fonctionnalités avancées pour les opérations agricoles en croissance",
+      "period": "pour tarification personnalisée",
+      "description": "Fonctionnalités avancées et évolutivité illimitée pour les entreprises agricoles en croissance et les opérations commerciales",
       "features": [
-        "Zones illimitées",
-        "Appareils illimités",
-        "Cultures illimitées",
-        "Automatisation avancée",
-        "Analyses en temps réel",
-        "Support prioritaire",
-        "Intégration météorologique",
-        "Fonctionnalités personnalisées"
+        "Zones et champs illimités",
+        "Connexions d'appareils IoT illimitées",
+        "Suivre des variétés de cultures illimitées",
+        "Règles d'automatisation avancées",
+        "Tableau de bord d'analyses en temps réel",
+        "Support technique prioritaire",
+        "Intégration météorologique premium",
+        "Cartographie avancée avec imagerie satellite",
+        "Rapports personnalisés et exports",
+        "Accès API pour intégrations",
+        "Gestion d'équipe multi-utilisateurs",
+        "Personnalisation d'alertes avancée"
       ],
-      "mostPopular": "Le Plus Populaire"
+      "mostPopular": "Choix le Plus Populaire"
     },
-    "selectPlan": "Sélectionner le Plan"
+    "selectPlan": "Choisir ce Plan"
   },
   "cta": {
-    "title": "Prêt à Transformer Votre Ferme?",
-    "subtitle": "Rejoignez des milliers d'agriculteurs qui ont augmenté leurs rendements tout en réduisant les coûts avec Irrify.",
-    "startTrial": "Commencer l'Essai Gratuit",
-    "signIn": "Se Connecter",
-    "secure": "Sécurité Bancaire",
-    "worldwide": "Support Mondial",
-    "certified": "Certifié ISO"
+    "title": "Prêt à Transformer Vos Opérations Agricoles?",
+    "subtitle": "Rejoignez des milliers d'agriculteurs visionnaires qui ont augmenté leurs rendements, réduit leurs coûts et adopté des pratiques agricoles durables avec la plateforme d'irrigation intelligente d'Irrify.",
+    "startTrial": "Commencer Votre Essai Gratuit",
+    "signIn": "Se Connecter au Tableau de Bord",
+    "secure": "Sécurité de Niveau Bancaire",
+    "worldwide": "Réseau de Support Mondial",
+    "certified": "Certifié ISO 27001"
   },
   "footer": {
-    "description": "Solutions IoT avancées pour l'agriculture moderne. Surveillez, contrôlez et optimisez vos opérations agricoles avec une technologie de pointe.",
+    "description": "Irrify fournit des solutions IoT de pointe pour l'agriculture moderne. Surveillez, contrôlez et optimisez vos opérations agricoles avec une technologie d'irrigation intelligente leader de l'industrie.",
     "product": "Produit",
+    "features": "Fonctionnalités",
+    "pricing": "Tarification",
+    "integrations": "Intégrations",
+    "documentation": "Documentation",
     "company": "Entreprise",
+    "about": "À Propos",
+    "blog": "Blog",
+    "careers": "Carrières",
+    "contact": "Nous Contacter",
     "support": "Support",
+    "helpCenter": "Centre d'Aide",
+    "community": "Communauté",
+    "status": "Statut du Système",
+    "apiDocs": "Documentation API",
     "copyright": "Tous droits réservés.",
     "privacy": "Politique de Confidentialité",
     "terms": "Conditions d'Utilisation",

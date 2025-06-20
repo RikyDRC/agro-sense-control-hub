@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -47,6 +46,9 @@ import CommunityPage from '@/pages/CommunityPage';
 import IntegrationsPage from '@/pages/IntegrationsPage';
 import StatusPage from '@/pages/StatusPage';
 import CareersPage from '@/pages/CareersPage';
+import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage';
+import TermsOfServicePage from '@/pages/TermsOfServicePage';
+import CookiePolicyPage from '@/pages/CookiePolicyPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,14 +79,22 @@ function App() {
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/documentation" element={<DocumentationPage />} />
                   <Route path="/api-docs" element={<ApiDocsPage />} />
+                  <Route path="/help-center" element={<HelpCenterPage />} />
                   <Route path="/help" element={<HelpCenterPage />} />
                   <Route path="/community" element={<CommunityPage />} />
                   <Route path="/integrations" element={<IntegrationsPage />} />
                   <Route path="/status" element={<StatusPage />} />
                   <Route path="/careers" element={<CareersPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/terms" element={<TermsOfServicePage />} />
+                  <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+                  <Route path="/cookies" element={<CookiePolicyPage />} />
                   
                   {/* Subscription routes */}
                   <Route path="/subscription/plans" element={<SubscriptionPlansPage />} />
+                  <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
                   <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
                   <Route path="/subscription/pending" element={<SubscriptionPendingPage />} />
 

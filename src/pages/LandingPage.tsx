@@ -669,9 +669,9 @@ const LandingPage = () => {
               © {new Date().getFullYear()} Irrify. {t('footer.copyright')}
             </p>
             <div className="mt-4 md:mt-0 flex gap-6">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.privacy')}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.terms')}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.cookies')}</a>
+              <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">{t('footer.privacy')}</Link>
+              <Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">{t('footer.terms')}</Link>
+              <Link to="/cookie-policy" className="text-gray-400 hover:text-white transition-colors">{t('footer.cookies')}</Link>
             </div>
           </div>
         </div>

@@ -18,6 +18,9 @@ import enMap from './locales/en/map.json';
 import enConnectivity from './locales/en/connectivity.json';
 import enLanding from './locales/en/landing.json';
 import enSubscription from './locales/en/subscription.json';
+import enPrivacy from './locales/en/privacy.json';
+import enTerms from './locales/en/terms.json';
+import enCookies from './locales/en/cookies.json';
 
 import frCommon from './locales/fr/common.json';
 import frDashboard from './locales/fr/dashboard.json';
@@ -33,6 +36,9 @@ import frMap from './locales/fr/map.json';
 import frConnectivity from './locales/fr/connectivity.json';
 import frLanding from './locales/fr/landing.json';
 import frSubscription from './locales/fr/subscription.json';
+import frPrivacy from './locales/fr/privacy.json';
+import frTerms from './locales/fr/terms.json';
+import frCookies from './locales/fr/cookies.json';
 
 import arCommon from './locales/ar/common.json';
 import arDashboard from './locales/ar/dashboard.json';
@@ -48,6 +54,9 @@ import arMap from './locales/ar/map.json';
 import arConnectivity from './locales/ar/connectivity.json';
 import arLanding from './locales/ar/landing.json';
 import arSubscription from './locales/ar/subscription.json';
+import arPrivacy from './locales/ar/privacy.json';
+import arTerms from './locales/ar/terms.json';
+import arCookies from './locales/ar/cookies.json';
 
 const resources = {
   en: {
@@ -65,6 +74,9 @@ const resources = {
     connectivity: enConnectivity,
     landing: enLanding,
     subscription: enSubscription,
+    privacy: enPrivacy,
+    terms: enTerms,
+    cookies: enCookies,
   },
   fr: {
     common: frCommon,
@@ -81,6 +93,9 @@ const resources = {
     connectivity: frConnectivity,
     landing: frLanding,
     subscription: frSubscription,
+    privacy: frPrivacy,
+    terms: frTerms,
+    cookies: frCookies,
   },
   ar: {
     common: arCommon,
@@ -97,6 +112,9 @@ const resources = {
     connectivity: arConnectivity,
     landing: arLanding,
     subscription: arSubscription,
+    privacy: arPrivacy,
+    terms: arTerms,
+    cookies: arCookies,
   },
 };
 

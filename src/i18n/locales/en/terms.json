@@ -1,0 +1,31 @@
+
+{
+  "title": "Terms of Service",
+  "backToHome": "Back to Home", 
+  "lastUpdated": "Last updated: June 20, 2025",
+  "sections": {
+    "acceptance": {
+      "title": "Acceptance of Terms",
+      "content": "By accessing and using Irrify's smart irrigation platform, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services."
+    },
+    "userAccounts": {
+      "title": "User Accounts",
+      "intro": "To use our platform, you must create an account. You agree to:",
+      "items": [
+        "Provide accurate and complete information during registration",
+        "Maintain the security of your account credentials",
+        "Accept responsibility for all activities under your account",
+        "Notify us immediately of any unauthorized use",
+        "Use the service only for legitimate agricultural purposes"
+      ]
+    },
+    "serviceUse": {
+      "title": "Acceptable Use",
+      "content": "You may use our platform only for lawful purposes and in accordance with these Terms. You agree not to use the service to transmit harmful content, interfere with system security, or violate any applicable laws or regulations."
+    },
+    "liability": {
+      "title": "Limitation of Liability",
+      "content": "Irrify provides the platform 'as is' without warranties. We are not liable for any damages arising from your use of the service, including but not limited to crop damage, equipment failure, or data loss. Your use of automated irrigation systems is at your own risk."
+    }
+  }
+}

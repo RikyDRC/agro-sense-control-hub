@@ -1,0 +1,32 @@
+
+{
+  "title": "Politique de Confidentialité",
+  "backToHome": "Retour à l'accueil",
+  "lastUpdated": "Dernière mise à jour : 20 juin 2025",
+  "sections": {
+    "overview": {
+      "title": "Aperçu",
+      "content": "Chez Irrify, nous nous engageons à protéger votre vie privée et à assurer la sécurité de vos informations personnelles. Cette Politique de Confidentialité explique comment nous collectons, utilisons et protégeons vos données lorsque vous utilisez notre plateforme d'irrigation intelligente et nos services."
+    },
+    "dataCollection": {
+      "title": "Données que Nous Collectons",
+      "intro": "Nous collectons les types d'informations suivants pour fournir et améliorer nos services :",
+      "items": [
+        "Informations de compte (nom, adresse e-mail, coordonnées)",
+        "Données d'appareils et de capteurs de vos systèmes d'irrigation",
+        "Modèles d'utilisation et préférences au sein de notre plateforme",
+        "Données de localisation pour l'intégration météo et les services de cartographie",
+        "Informations de paiement pour la gestion des abonnements",
+        "Informations techniques sur vos appareils et la connectivité réseau"
+      ]
+    },
+    "cookies": {
+      "title": "Cookies et Suivi",
+      "content": "Nous utilisons des cookies et des technologies similaires pour améliorer votre expérience, mémoriser vos préférences et analyser comment notre plateforme est utilisée. Vous pouvez contrôler les paramètres des cookies via les préférences de votre navigateur. Pour plus de détails, veuillez consulter notre Politique des Cookies."
+    },
+    "contact": {
+      "title": "Nous Contacter",
+      "content": "Si vous avez des questions sur cette Politique de Confidentialité ou sur la façon dont nous traitons vos données, veuillez nous contacter à privacy@irrify.com. Nous nous engageons à répondre à vos préoccupations rapidement et de manière transparente."
+    }
+  }
+}

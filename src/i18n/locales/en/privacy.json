@@ -1,0 +1,32 @@
+
+{
+  "title": "Privacy Policy",
+  "backToHome": "Back to Home",
+  "lastUpdated": "Last updated: June 20, 2025",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "content": "At Irrify, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our smart irrigation platform and services."
+    },
+    "dataCollection": {
+      "title": "Data We Collect",
+      "intro": "We collect the following types of information to provide and improve our services:",
+      "items": [
+        "Account information (name, email address, contact details)",
+        "Device and sensor data from your irrigation systems",
+        "Usage patterns and preferences within our platform",
+        "Location data for weather integration and mapping services",
+        "Payment information for subscription management",
+        "Technical information about your devices and network connectivity"
+      ]
+    },
+    "cookies": {
+      "title": "Cookies and Tracking",
+      "content": "We use cookies and similar technologies to enhance your experience, remember your preferences, and analyze how our platform is used. You can control cookie settings through your browser preferences. For more details, please see our Cookie Policy."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "content": "If you have any questions about this Privacy Policy or how we handle your data, please contact us at privacy@irrify.com. We are committed to addressing your concerns promptly and transparently."
+    }
+  }
+}

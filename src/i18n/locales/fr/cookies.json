@@ -1,0 +1,24 @@
+
+{
+  "title": "Politique des Cookies",
+  "backToHome": "Retour à l'accueil",
+  "lastUpdated": "Dernière mise à jour : 20 juin 2025",
+  "sections": {
+    "whatAreCookies": {
+      "title": "Que Sont les Cookies",
+      "content": "Les cookies sont de petits fichiers texte qui sont stockés sur votre appareil lorsque vous visitez notre site web. Ils nous aident à vous offrir une meilleure expérience en mémorisant vos préférences et en analysant comment vous utilisez notre plateforme."
+    },
+    "essential": {
+      "title": "Cookies Essentiels",
+      "content": "Ces cookies sont nécessaires au bon fonctionnement du site web. Ils permettent des fonctionnalités de base comme l'authentification utilisateur, la sécurité et la mémorisation de votre statut de connexion. Ces cookies ne peuvent pas être désactivés car ils sont essentiels au fonctionnement de la plateforme."
+    },
+    "analytics": {
+      "title": "Cookies d'Analyse",
+      "content": "Nous utilisons des cookies d'analyse pour comprendre comment les visiteurs interagissent avec notre site web. Cela nous aide à améliorer notre plateforme et à fournir de meilleurs services. Ces cookies collectent des informations anonymes sur vos habitudes d'utilisation."
+    },
+    "control": {
+      "title": "Gestion des Cookies",
+      "content": "Vous pouvez contrôler et gérer les cookies via les paramètres de votre navigateur. Cependant, veuillez noter que le blocage de certains types de cookies peut impacter votre expérience et la fonctionnalité de notre plateforme. Les cookies essentiels ne peuvent pas être désactivés."
+    }
+  }
+}

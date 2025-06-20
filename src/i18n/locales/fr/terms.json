@@ -1,0 +1,31 @@
+
+{
+  "title": "Conditions d'Utilisation",
+  "backToHome": "Retour à l'accueil",
+  "lastUpdated": "Dernière mise à jour : 20 juin 2025", 
+  "sections": {
+    "acceptance": {
+      "title": "Acceptation des Conditions",
+      "content": "En accédant et en utilisant la plateforme d'irrigation intelligente d'Irrify, vous acceptez et convenez d'être lié par ces Conditions d'Utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services."
+    },
+    "userAccounts": {
+      "title": "Comptes Utilisateur",
+      "intro": "Pour utiliser notre plateforme, vous devez créer un compte. Vous acceptez de :",
+      "items": [
+        "Fournir des informations exactes et complètes lors de l'inscription",
+        "Maintenir la sécurité de vos identifiants de compte",
+        "Accepter la responsabilité de toutes les activités sous votre compte",
+        "Nous notifier immédiatement de toute utilisation non autorisée",
+        "Utiliser le service uniquement à des fins agricoles légitimes"
+      ]
+    },
+    "serviceUse": {
+      "title": "Utilisation Acceptable",
+      "content": "Vous ne pouvez utiliser notre plateforme qu'à des fins légales et conformément à ces Conditions. Vous acceptez de ne pas utiliser le service pour transmettre du contenu nuisible, interférer avec la sécurité du système ou violer les lois ou réglementations applicables."
+    },
+    "liability": {
+      "title": "Limitation de Responsabilité",
+      "content": "Irrify fournit la plateforme 'en l'état' sans garanties. Nous ne sommes pas responsables des dommages résultant de votre utilisation du service, y compris mais sans s'y limiter les dommages aux cultures, les pannes d'équipement ou la perte de données. Votre utilisation des systèmes d'irrigation automatisés est à vos propres risques."
+    }
+  }
+}

@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
+import LanguageSelector from '@/components/ui/language-selector';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -67,6 +68,9 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarOpen }) => {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Language Selector */}
+          <LanguageSelector variant="ghost" size="sm" />
+
           {/* Notifications */}
           <Popover open={notificationOpen} onOpenChange={setNotificationOpen}>
             <PopoverTrigger asChild>
